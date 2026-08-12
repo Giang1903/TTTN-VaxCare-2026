@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: localhost:3306
--- Thời gian đã tạo: Th8 12, 2026 lúc 05:34 AM
+-- Thời gian đã tạo: Th8 12, 2026 lúc 06:09 AM
 -- Phiên bản máy phục vụ: 8.0.41
 -- Phiên bản PHP: 8.3.16
 
@@ -525,19 +525,19 @@ CREATE TABLE `vaccines` (
 --
 
 INSERT INTO `vaccines` (`vaccine_id`, `category_id`, `vaccine_name`, `manufacturer`, `target_disease`, `required_doses`, `dose_interval_days`, `description`, `image_url`, `average_rating`, `total_bookings`, `status`) VALUES
-(1, 1, 'Vắc xin BCG (Bacille Calmette–Guérin)', 'BCG Vaccine / tùy sản phẩm tại cơ sở', 'Bệnh lao', 1, NULL, 'Vắc xin BCG được sử dụng để tạo miễn dịch chống lại vi khuẩn gây bệnh lao. Vaccine đặc biệt có ý nghĩa trong việc giảm nguy cơ mắc các thể lao nặng ở trẻ nhỏ.', NULL, 4.9, 860, 'ACTIVE'),
-(2, 1, 'Vắc xin Viêm gan B (Hepatitis B)', 'GSK / MSD / tùy sản phẩm', 'Viêm gan B', 3, 30, 'Vắc xin viêm gan B giúp cơ thể hình thành miễn dịch chống lại virus viêm gan B. Nhiễm virus có thể dẫn đến viêm gan mạn tính, xơ gan hoặc ung thư gan.', NULL, 4.8, 1420, 'ACTIVE'),
-(3, 2, 'Vắc xin Bạch hầu – Ho gà – Uốn ván (DTaP/Tdap)', 'GSK / Sanofi / tùy vaccine', 'Bạch hầu, ho gà, uốn ván', 5, 60, 'Vắc xin phối hợp giúp phòng ngừa ba bệnh truyền nhiễm gồm bạch hầu, ho gà và uốn ván.', NULL, 4.9, 1180, 'ACTIVE'),
-(4, 1, 'Vắc xin Bại liệt (IPV)', 'Sanofi / tùy sản phẩm', 'Bệnh bại liệt', 4, 60, 'Vắc xin IPV giúp tạo miễn dịch chống lại poliovirus, virus gây bệnh bại liệt.', NULL, 4.8, 930, 'ACTIVE'),
-(5, 1, 'Vắc xin Hib (Haemophilus influenzae type b)', 'GSK / tùy sản phẩm', 'Các bệnh xâm lấn do Hib', 3, 60, 'Vắc xin Hib giúp phòng ngừa các bệnh nghiêm trọng do vi khuẩn Haemophilus influenzae type b.', NULL, 4.9, 760, 'ACTIVE'),
-(6, 2, 'Vắc xin MMR (Sởi – Quai bị – Rubella)', 'GSK / MSD / tùy sản phẩm', 'Sởi, quai bị, rubella', 2, 28, 'MMR là vaccine phối hợp giúp phòng ngừa ba bệnh: sởi, quai bị và rubella.', NULL, 4.9, 1050, 'ACTIVE'),
-(7, 2, 'Vắc xin Thủy đậu (Varicella)', 'MSD / tùy sản phẩm', 'Thủy đậu', 2, 28, 'Vắc xin thủy đậu giúp phòng bệnh thủy đậu do virus Varicella-zoster gây ra.', NULL, 4.8, 980, 'ACTIVE'),
-(8, 3, 'Vắc xin Phế cầu (Pneumococcal)', 'Pfizer / MSD / tùy sản phẩm', 'Bệnh do phế cầu', 2, 60, 'Vắc xin phế cầu giúp bảo vệ chống lại các bệnh do Streptococcus pneumoniae.', NULL, 4.9, 1360, 'ACTIVE'),
-(9, 2, 'Vắc xin Viêm não Nhật Bản', 'Sanofi / tùy sản phẩm', 'Viêm não Nhật Bản', 3, 28, 'Vắc xin viêm não Nhật Bản giúp phòng ngừa bệnh viêm não Nhật Bản do virus gây ra.', NULL, 4.8, 720, 'ACTIVE'),
-(10, 5, 'Vắc xin Cúm mùa (Influenza)', 'Sanofi / GSK / tùy sản phẩm', 'Cúm mùa', 1, 365, 'Vắc xin cúm mùa giúp giảm nguy cơ mắc cúm và các biến chứng liên quan. Đây là vaccine quan trọng cho phần AI dự báo nhu cầu.', NULL, 4.9, 2180, 'ACTIVE'),
-(11, 2, 'Vắc xin HPV (Human Papillomavirus)', 'MSD – Hoa Kỳ', 'Ung thư cổ tử cung, sùi mào gà và các bệnh liên quan HPV', 2, 180, 'Vắc xin HPV giúp phòng ngừa nhiễm các type HPV nguy cơ cao và một số bệnh ung thư liên quan HPV.', NULL, 4.9, 1240, 'ACTIVE'),
-(12, 3, 'Vắc xin COVID-19', 'Theo vaccine được cơ sở triển khai', 'COVID-19 (SARS-CoV-2)', 2, 180, 'Vắc xin COVID-19 giúp giảm nguy cơ mắc bệnh nặng và các biến chứng liên quan đến COVID-19.', NULL, 4.7, 1890, 'ACTIVE'),
-(13, 4, 'Vắc xin Zona (Shingrix)', 'GSK', 'Zona (Herpes Zoster)', 2, 60, 'Vắc xin Zona giúp giảm nguy cơ mắc bệnh zona và biến chứng đau thần kinh sau zona. Dành cho người từ 50 tuổi trở lên.', NULL, 4.9, 640, 'ACTIVE');
+(1, 1, 'Vắc xin BCG (Bacille Calmette–Guérin)', 'BCG Vaccine / tùy sản phẩm tại cơ sở', 'Bệnh lao', 1, NULL, 'Vắc xin BCG được sử dụng để tạo miễn dịch chống lại vi khuẩn gây bệnh lao. Vaccine đặc biệt có ý nghĩa trong việc giảm nguy cơ mắc các thể lao nặng ở trẻ nhỏ.', 'https://cdn.nhathuoclongchau.com.vn/v1/static/vac_xin_bcg_cua_nuoc_nao_doi_tuong_chi_dinh_va_chong_chi_dinh_tiem_chung_bcg_3a9393f6e7.jpg', 4.9, 860, 'ACTIVE'),
+(2, 1, 'Vắc xin Viêm gan B (Hepatitis B)', 'GSK / MSD / tùy sản phẩm', 'Viêm gan B', 3, 30, 'Vắc xin viêm gan B giúp cơ thể hình thành miễn dịch chống lại virus viêm gan B. Nhiễm virus có thể dẫn đến viêm gan mạn tính, xơ gan hoặc ung thư gan.', 'https://cdn.nhathuoclongchau.com.vn/v1/static/vac_xin_heberbiovac_1ml_cuba_d84523e571.jpg', 4.8, 1420, 'ACTIVE'),
+(3, 2, 'Vắc xin Bạch hầu – Ho gà – Uốn ván (DTaP/Tdap)', 'GSK / Sanofi / tùy vaccine', 'Bạch hầu, ho gà, uốn ván', 5, 60, 'Vắc xin phối hợp giúp phòng ngừa ba bệnh truyền nhiễm gồm bạch hầu, ho gà và uốn ván.', 'https://cdn.nhathuoclongchau.com.vn/v1/static/tdap_vaccine_la_gi_va_tam_quan_trong_voi_tre_so_sinh_3_7762b399fb.jpg', 4.9, 1180, 'ACTIVE'),
+(4, 1, 'Vắc xin Bại liệt (IPV)', 'Sanofi / tùy sản phẩm', 'Bệnh bại liệt', 4, 60, 'Vắc xin IPV giúp tạo miễn dịch chống lại poliovirus, virus gây bệnh bại liệt.', 'https://pharmog.com/wp/wp-content/uploads/2019/01/Polio-vaccine.png', 4.8, 930, 'ACTIVE'),
+(5, 1, 'Vắc xin Hib (Haemophilus influenzae type b)', 'GSK / tùy sản phẩm', 'Các bệnh xâm lấn do Hib', 3, 60, 'Vắc xin Hib giúp phòng ngừa các bệnh nghiêm trọng do vi khuẩn Haemophilus influenzae type b.', 'https://davac.com.vn/wp-content/uploads/2024/11/13f4dd9b-49ca-4325-a833-db95f57ad7c5.jpeg', 4.9, 760, 'ACTIVE'),
+(6, 2, 'Vắc xin MMR (Sởi – Quai bị – Rubella)', 'GSK / MSD / tùy sản phẩm', 'Sởi, quai bị, rubella', 2, 28, 'MMR là vaccine phối hợp giúp phòng ngừa ba bệnh: sởi, quai bị và rubella.', 'https://vnvc.vn/wp-content/uploads/2022/06/MMR.jpg', 4.9, 1050, 'ACTIVE'),
+(7, 2, 'Vắc xin Thủy đậu (Varicella)', 'MSD / tùy sản phẩm', 'Thủy đậu', 2, 28, 'Vắc xin thủy đậu giúp phòng bệnh thủy đậu do virus Varicella-zoster gây ra.', 'https://cdccantho.vn/uploads/news/2022_06/vac-xin-phong-thuy-dau-varicella-gcc.jpg', 4.8, 980, 'ACTIVE'),
+(8, 3, 'Vắc xin Phế cầu (Pneumococcal)', 'Pfizer / MSD / tùy sản phẩm', 'Bệnh do phế cầu', 2, 60, 'Vắc xin phế cầu giúp bảo vệ chống lại các bệnh do Streptococcus pneumoniae.', 'https://bacsigiadinhhanoi.vn/wp-content/uploads/2021/10/image-102.png', 4.9, 1360, 'ACTIVE'),
+(9, 2, 'Vắc xin Viêm não Nhật Bản', 'Sanofi / tùy sản phẩm', 'Viêm não Nhật Bản', 3, 28, 'Vắc xin viêm não Nhật Bản giúp phòng ngừa bệnh viêm não Nhật Bản do virus gây ra.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRwDZoRKVb88YzWvyTRgO6puS8kXDcEkyIrfnkMSHXNh-SbrFgGEuPTNWWt&s=10', 4.8, 720, 'ACTIVE'),
+(10, 5, 'Vắc xin Cúm mùa (Influenza)', 'Sanofi / GSK / tùy sản phẩm', 'Cúm mùa', 1, 365, 'Vắc xin cúm mùa giúp giảm nguy cơ mắc cúm và các biến chứng liên quan. Đây là vaccine quan trọng cho phần AI dự báo nhu cầu.', 'https://bizweb.dktcdn.net/thumb/1024x1024/100/524/140/products/influvac-percentage-20tetra-f5c693c5-38e5-4e84-82cd-e8ae2d5fbfbf.jpg?v=1726452738863', 4.9, 2180, 'ACTIVE'),
+(11, 2, 'Vắc xin HPV (Human Papillomavirus)', 'MSD – Hoa Kỳ', 'Ung thư cổ tử cung, sùi mào gà và các bệnh liên quan HPV', 2, 180, 'Vắc xin HPV giúp phòng ngừa nhiễm các type HPV nguy cơ cao và một số bệnh ung thư liên quan HPV.', 'https://benhvienthucuc.vn/wp-content/uploads/2023/01/vac-xin-hpv-co-may-loai-thong-tin-chi-tiet-ve-doi-tuong-va-lich-tiem.jpg', 4.9, 1240, 'ACTIVE'),
+(12, 3, 'Vắc xin COVID-19', 'Theo vaccine được cơ sở triển khai', 'COVID-19 (SARS-CoV-2)', 2, 180, 'Vắc xin COVID-19 giúp giảm nguy cơ mắc bệnh nặng và các biến chứng liên quan đến COVID-19.', 'https://suckhoedoisong.qltns.mediacdn.vn/324455921873985536/2022/1/23/vaccine-ngua-covid-19-ky-tich-tao-nen-lich-su-1642929583876933197764.jpg', 4.7, 1890, 'ACTIVE'),
+(13, 4, 'Vắc xin Zona (Shingrix)', 'GSK', 'Zona (Herpes Zoster)', 2, 60, 'Vắc xin Zona giúp giảm nguy cơ mắc bệnh zona và biến chứng đau thần kinh sau zona. Dành cho người từ 50 tuổi trở lên.', 'https://cdn.nhathuoclongchau.com.vn/v1/static/vac_xin_shingrix_bi_phong_ngua_benh_zona_than_kinh_0_5d9be89ac1.png', 4.9, 640, 'ACTIVE');
 
 -- --------------------------------------------------------
 
