@@ -1,0 +1,14 @@
+{
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Spring Boot-VaxcareApplication<vaxcare_be>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "com.vaxcare.VaxcareApplication",
+      "projectName": "vaxcare_be",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
+    }
+  ]
+}
