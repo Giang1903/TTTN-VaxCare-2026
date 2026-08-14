@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDateTime;
 
@@ -13,9 +14,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ApiResponse<T> {
     @Builder.Default
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime timestamp = LocalDateTime.now();
     private int status;
-    private String message;
+    private String mess age;
     private T data;
 
     public static <T> ApiResponse<T> success(String message, T data) {
