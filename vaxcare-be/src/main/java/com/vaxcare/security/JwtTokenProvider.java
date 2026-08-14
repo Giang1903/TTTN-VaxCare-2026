@@ -17,24 +17,35 @@ public class JwtTokenProvider {
 
     private final Key key;
     private final long jwtExpirationInMs;
+    private final long jwtRefreshExpirationInMs;
 
     public JwtTokenProvider(
             @Value("${app.jwt.secret}") String jwtSecret,
-            @Value("${app.jwt.expiration-ms}") long jwtExpirationInMs) {
+            @Value("${app.jwt.expiration-ms}") long jwtExpirationInMs,
+            @Value("${app.jwt.refresh-expiration-ms:604800000}") long jwtRefreshExpirationInMs) {
         byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
         this.key = Keys.hmacShaKeyFor(keyBytes);
         this.jwtExpirationInMs = jwtExpirationInMs;
+        this.jwtRefreshExpirationInMs = jwtRefreshExpirationInMs;
     }
 
     public String generateToken(Authentication authentication) {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        return generateTokenFromUserId(userPrincipal.getId(), jwtExpirationInMs);
+    }
 
+    public String generateRefreshToken(Authentication authentication) {
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        return generateTokenFromUserId(userPrincipal.getId(), jwtRefreshExpirationInMs);
+    }
+
+    public String generateTokenFromUserId(Long userId, long expirationMs) {
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
+        Date expiryDate = new Date(now.getTime() + expirationMs);
 
         return Jwts.builder()
-                .setSubject(Long.toString(userPrincipal.getId()))
-                .setIssuedAt(new Date())
+                .setSubject(Long.toString(userId))
+                .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
