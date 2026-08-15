@@ -3,6 +3,7 @@ package com.vaxcare.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.vaxcare.common.dto.ApiResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -29,13 +30,10 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        // Tạo object response lỗi của bạn
-        // Giả sử ApiResponse của bạn có constructor hoặc builder
-        ApiResponse<Object> apiResponse = ApiResponse.builder()
-                .success(false)
-                .message(authException.getMessage())
-                .timestamp(java.time.LocalDateTime.now())
-                .build();
+        ApiResponse<Object> apiResponse = ApiResponse.error(
+                HttpServletResponse.SC_UNAUTHORIZED,
+                authException.getMessage()
+        );
 
         // Ghi response
         mapper.writeValue(response.getOutputStream(), apiResponse);

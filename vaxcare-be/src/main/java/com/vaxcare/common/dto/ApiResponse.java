@@ -17,7 +17,7 @@ public class ApiResponse<T> {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime timestamp = LocalDateTime.now();
     private int status;
-    private String mess age;
+    private String message;
     private T data;
 
     public static <T> ApiResponse<T> success(String message, T data) {
