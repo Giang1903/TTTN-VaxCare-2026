@@ -1,6 +1,5 @@
 package com.vaxcare.feature.auth.dto;
 
-import com.vaxcare.common.enums.Role;
 import lombok.*;
 
 @Getter
@@ -8,14 +7,11 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AuthResponse {
+public class TokenRefreshResponse {
 
     private String accessToken;
     private String refreshToken;
+
     @Builder.Default
     private String tokenType = "Bearer";
-    private Long accountId;
-    private String email;
-    private String fullName;
-    private Role role;
 }
