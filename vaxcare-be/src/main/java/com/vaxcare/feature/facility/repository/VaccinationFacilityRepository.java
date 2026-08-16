@@ -11,4 +11,8 @@ import java.util.List;
 public interface VaccinationFacilityRepository extends JpaRepository<VaccinationFacility, Long> {
 
     List<VaccinationFacility> findByStatus(ActiveStatus status);
+
+    boolean existsByFacilityNameIgnoreCase(String facilityName);
+
+    boolean existsByFacilityNameIgnoreCaseAndFacilityIdNot(String facilityName, Long facilityId);
 }
