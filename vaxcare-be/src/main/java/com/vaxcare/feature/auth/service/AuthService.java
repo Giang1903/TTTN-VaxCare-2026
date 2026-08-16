@@ -79,19 +79,6 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        System.out.println("====== DEBUG LOGIN ======");
-        System.out.println("1. Email gửi lên: " + request.getEmail());
-        System.out.println("2. Mật khẩu gửi lên: " + request.getPassword());
-
-        Account accountDb = accountRepository.findByEmail(request.getEmail()).orElse(null);
-        if (accountDb != null) {
-            System.out.println("3. PasswordHash trong DB: " + accountDb.getPasswordHash());
-            boolean matches = passwordEncoder.matches(request.getPassword(), accountDb.getPasswordHash());
-            System.out.println("4. BCrypt so sánh khớp không?: " + matches);
-        } else {
-            System.out.println("3. KHÔNG TÌM THẤY EMAIL NÀY TRONG DB!");
-        }
-        System.out.println("=========================");
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
