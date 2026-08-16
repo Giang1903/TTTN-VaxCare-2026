@@ -6,6 +6,8 @@ import HomePage from '../pages/home/HomePage';
 import FacilitiesPage from '../pages/facilities/FacilitiesPage';
 import VaccinesPage from '../pages/vaccines/VaccinesPage';
 import VaccineDetailPage from '../pages/vaccine-detail/VaccineDetailPage';
+import AboutPage from '../pages/about/AboutPage';
+import SupportPage from '../pages/support/SupportPage';
 
 
 // import ProtectedRoute from './ProtectedRoute'; // TODO: bọc quanh các route patient/staff/admin
@@ -19,6 +21,8 @@ export default function AppRoutes() {
         <Route path="/facilities" element={<FacilitiesPage />} />
         <Route path="/vaccines" element={<VaccinesPage />} />
         <Route path="/vaccines/:id" element={<VaccineDetailPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/support" element={<SupportPage />} />
       </Route>
       
       {/* ===== AUTH (full-screen split layout, không Navbar/Footer) ===== */}
