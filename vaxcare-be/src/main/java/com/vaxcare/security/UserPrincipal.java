@@ -1,5 +1,6 @@
 package com.vaxcare.security;
 
+import com.vaxcare.common.enums.AccountStatus;
 import com.vaxcare.feature.auth.entity.Account;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,6 +18,7 @@ public class UserPrincipal implements UserDetails {
     private final Long id;
     private final String email;
     private final String password;
+    private final AccountStatus status;
     private final Collection<? extends GrantedAuthority> authorities;
 
     public static UserPrincipal create(Account account) {
@@ -25,6 +27,7 @@ public class UserPrincipal implements UserDetails {
                 account.getAccountId(),
                 account.getEmail(),
                 account.getPasswordHash(),
+                account.getStatus(),
                 Collections.singletonList(authority)
         );
     }
@@ -49,9 +52,14 @@ public class UserPrincipal implements UserDetails {
         return true;
     }
 
+    /**
+     * Bug đã fix (16/08): trước đây luôn trả về true bất kể account.status, nghĩa là
+     * một tài khoản đã bị khóa (SUSPENDED) vẫn đăng nhập được bình thường vì
+     * CustomUserDetailsService/DaoAuthenticationProvider không hề kiểm tra field này.
+     */
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return status != AccountStatus.SUSPENDED;
     }
 
     @Override
@@ -61,6 +69,6 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return status == AccountStatus.ACTIVE;
     }
 }

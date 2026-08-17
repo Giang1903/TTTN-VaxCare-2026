@@ -4,6 +4,7 @@ import com.vaxcare.common.dto.ApiResponse;
 import com.vaxcare.feature.auth.dto.*;
 import com.vaxcare.feature.auth.service.AuthService;
 import com.vaxcare.security.UserPrincipal;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
+@Tag(name = "1. Authentication", description = "Đăng ký, đăng nhập, làm mới token, thông tin tài khoản hiện tại")
 public class AuthController {
 
     private final AuthService authService;

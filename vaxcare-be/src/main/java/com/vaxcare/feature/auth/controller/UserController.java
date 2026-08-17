@@ -5,6 +5,7 @@ import com.vaxcare.feature.auth.dto.UserProfileRequest;
 import com.vaxcare.feature.auth.dto.UserProfileResponse;
 import com.vaxcare.feature.auth.service.UserService;
 import com.vaxcare.security.UserPrincipal;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
+@Tag(name = "2. User Profile", description = "Xem và cập nhật hồ sơ cá nhân của User")
 public class UserController {
 
     private final UserService userService;
