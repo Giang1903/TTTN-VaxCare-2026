@@ -34,6 +34,7 @@ import static org.mockito.Mockito.when;
  * Không cần Spring context / DB thật -> chạy nhanh, phù hợp CI.
  */
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class VaccinationFacilityServiceTest {
 
     @Mock
