@@ -1,5 +1,15 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+
 export default function Navbar() {
+  const { pathname } = useLocation();
+
+  const links = [
+    { to: '/vaccines', label: 'Vắc xin', match: (p) => p.startsWith('/vaccines') },
+    { to: '/facilities', label: 'Cơ sở tiêm chủng', match: (p) => p.startsWith('/facilities') },
+    { to: '/about', label: 'Giới thiệu', match: (p) => p === '/about' },
+    { to: '/support', label: 'Hỗ trợ', match: (p) => p === '/support' },
+  ];
+
   return (
     <header className="navbar">
       <div className="wrap">
@@ -10,10 +20,15 @@ export default function Navbar() {
           VaxCare
         </Link>
         <nav className="nav-menu">
-          <Link to="/vaccines">Vắc xin</Link>
-          <Link to="/facilities">Cơ sở tiêm chủng</Link>
-          <Link to="/about">Giới thiệu</Link>
-          <Link to="/support">Hỗ trợ</Link>
+          {links.map((l) => (
+            <Link
+              key={l.to}
+              to={l.to}
+              className={l.match(pathname) ? 'active' : undefined}
+            >
+              {l.label}
+            </Link>
+          ))}
         </nav>
         <div className="nav-actions">
           <Link to="/login" className="btn-text">Đăng nhập</Link>

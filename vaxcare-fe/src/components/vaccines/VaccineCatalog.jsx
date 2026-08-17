@@ -63,7 +63,6 @@ export default function VaccineCatalog() {
             {vaccines.map((v) => (
               <div className="card vaccine-card" key={v.name}>
                 <div className="vaccine-photo">
-                  {v.recommended && <span className="badge badge-recommended vaccine-tag">Khuyến nghị</span>}
                   <img src={v.image} alt={v.alt} />
                 </div>
                 <div className="vaccine-body">
