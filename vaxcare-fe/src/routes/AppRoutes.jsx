@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout';
+import DashboardLayout from '../layouts/DashboardLayout';
 import LoginPage from '../pages/auth/LoginPage';
 import RegisterPage from '../pages/auth/RegisterPage';
 import HomePage from '../pages/home/HomePage';
@@ -8,6 +9,10 @@ import VaccinesPage from '../pages/vaccines/VaccinesPage';
 import VaccineDetailPage from '../pages/vaccine-detail/VaccineDetailPage';
 import AboutPage from '../pages/about/AboutPage';
 import SupportPage from '../pages/support/SupportPage';
+import DashboardPage from '../pages/dashboard/DashboardPage';
+import AppointmentsPage from '../pages/appointments/AppointmentsPage';
+import RecordPage from '../pages/record/RecordPage';
+import BookingPage from '../pages/booking/BookingPage';
 
 
 // import ProtectedRoute from './ProtectedRoute'; // TODO: bọc quanh các route patient/staff/admin
@@ -25,6 +30,14 @@ export default function AppRoutes() {
         <Route path="/support" element={<SupportPage />} />
       </Route>
       
+      {/* ===== SAU ĐĂNG NHẬP (navbar + mobile nav riêng, CSS riêng dashboard.css) ===== */}
+      <Route element={<DashboardLayout />}>
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/appointments" element={<AppointmentsPage />} />
+        <Route path="/record" element={<RecordPage />} />
+        <Route path="/booking" element={<BookingPage />} />
+      </Route>
+
       {/* ===== AUTH (full-screen split layout, không Navbar/Footer) ===== */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />

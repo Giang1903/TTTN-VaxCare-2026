@@ -34,9 +34,6 @@ export default function DetailTop() {
           </div>
 
           <div className="detail-info">
-            <span className="badge badge-recommended" style={{ marginBottom: '14px' }}>
-              Khuyến nghị
-            </span>
             <div className="manu-row">
               <span className="manu-name">Nhà sản xuất: GSK — Bỉ</span>
             </div>
