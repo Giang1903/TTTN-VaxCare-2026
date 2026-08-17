@@ -68,6 +68,10 @@ public class SecurityConfig {
                         // Các route quản trị phải xét TRƯỚC route public GET để không bị permitAll "nuốt" mất
                         .requestMatchers(HttpMethod.GET, "/api/v1/facilities/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/facilities/**").permitAll()
+                        // Vắc xin & bảng giá: tra cứu (GET) là public, còn quản trị (POST/PUT/DELETE) yêu cầu đăng nhập + phân quyền qua @PreAuthorize
+                        .requestMatchers(HttpMethod.GET, "/api/v1/vaccine-categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/vaccines/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/price-lists").permitAll()
                         .anyRequest().authenticated()
                 );
         
