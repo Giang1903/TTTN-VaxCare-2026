@@ -6,4 +6,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface VaccineCategoryRepository extends JpaRepository<VaccineCategory, Long> {
+
+    boolean existsByCategoryNameIgnoreCase(String categoryName);
+
+    boolean existsByCategoryNameIgnoreCaseAndCategoryIdNot(String categoryName, Long categoryId);
 }

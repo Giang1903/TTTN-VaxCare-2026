@@ -1,10 +1,15 @@
 package com.vaxcare.feature.vaccine.service;
 
+import com.vaxcare.common.enums.ActiveStatus;
+import com.vaxcare.common.exception.BadRequestException;
 import com.vaxcare.common.exception.ResourceNotFoundException;
+import com.vaxcare.feature.vaccine.dto.VaccineRequest;
 import com.vaxcare.feature.vaccine.dto.VaccineResponse;
 import com.vaxcare.feature.vaccine.entity.PriceList;
 import com.vaxcare.feature.vaccine.entity.Vaccine;
+import com.vaxcare.feature.vaccine.entity.VaccineCategory;
 import com.vaxcare.feature.vaccine.repository.PriceListRepository;
+import com.vaxcare.feature.vaccine.repository.VaccineCategoryRepository;
 import com.vaxcare.feature.vaccine.repository.VaccineRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,6 +24,7 @@ import java.util.List;
 public class VaccineService {
 
     private final VaccineRepository vaccineRepository;
+    private final VaccineCategoryRepository vaccineCategoryRepository;
     private final PriceListRepository priceListRepository;
 
     /**
@@ -48,6 +54,116 @@ public class VaccineService {
     private Vaccine findVaccineOrThrow(Long vaccineId) {
         return vaccineRepository.findById(vaccineId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy vắc xin có ID: " + vaccineId));
+    }
+
+    // ===================== ADMIN =====================
+
+    @Transactional(readOnly = true)
+    public List<VaccineResponse> getAllVaccinesForAdmin() {
+        return vaccineRepository.findAll().stream()
+                .map(vaccine -> mapToResponse(vaccine, null))
+                .toList();
+    }
+
+    @Transactional
+    public VaccineResponse createVaccine(VaccineRequest request) {
+        String vaccineName = normalizeName(request.getVaccineName());
+        if (vaccineName.isEmpty()) {
+            throw new BadRequestException("Tên vắc xin không được để trống");
+        }
+        if (vaccineRepository.existsByVaccineNameIgnoreCase(vaccineName)) {
+            throw new BadRequestException("Đã tồn tại vắc xin với tên: " + vaccineName);
+        }
+
+        VaccineCategory category = resolveCategory(request.getCategoryId());
+
+        Vaccine vaccine = Vaccine.builder()
+                .category(category)
+                .vaccineName(vaccineName)
+                .manufacturer(request.getManufacturer())
+                .targetDisease(request.getTargetDisease())
+                .requiredDoses(request.getRequiredDoses() != null ? request.getRequiredDoses() : 1)
+                .doseIntervalDays(request.getDoseIntervalDays())
+                .description(request.getDescription())
+                .imageUrl(request.getImageUrl())
+                .status(request.getStatus() != null ? request.getStatus() : ActiveStatus.ACTIVE)
+                .build();
+
+        return mapToResponse(vaccineRepository.save(vaccine), null);
+    }
+
+    @Transactional
+    public VaccineResponse updateVaccine(Long vaccineId, VaccineRequest request) {
+        Vaccine vaccine = findVaccineOrThrow(vaccineId);
+
+        if (request.getVaccineName() != null) {
+            String vaccineName = normalizeName(request.getVaccineName());
+            if (vaccineName.isEmpty()) {
+                throw new BadRequestException("Tên vắc xin không được để trống");
+            }
+            if (vaccineRepository.existsByVaccineNameIgnoreCaseAndVaccineIdNot(vaccineName, vaccineId)) {
+                throw new BadRequestException("Đã tồn tại vắc xin với tên: " + vaccineName);
+            }
+            vaccine.setVaccineName(vaccineName);
+        }
+        if (request.getCategoryId() != null) {
+            vaccine.setCategory(resolveCategory(request.getCategoryId()));
+        }
+        if (request.getManufacturer() != null) {
+            vaccine.setManufacturer(request.getManufacturer());
+        }
+        if (request.getTargetDisease() != null) {
+            vaccine.setTargetDisease(request.getTargetDisease());
+        }
+        if (request.getRequiredDoses() != null) {
+            vaccine.setRequiredDoses(request.getRequiredDoses());
+        }
+        if (request.getDoseIntervalDays() != null) {
+            vaccine.setDoseIntervalDays(request.getDoseIntervalDays());
+        }
+        if (request.getDescription() != null) {
+            vaccine.setDescription(request.getDescription());
+        }
+        if (request.getImageUrl() != null) {
+            vaccine.setImageUrl(request.getImageUrl());
+        }
+        if (request.getStatus() != null) {
+            vaccine.setStatus(request.getStatus());
+        }
+
+        return mapToResponse(vaccineRepository.save(vaccine), null);
+    }
+
+    @Transactional
+    public void deactivateVaccine(Long vaccineId) {
+        Vaccine vaccine = findVaccineOrThrow(vaccineId);
+        if (vaccine.getStatus() == ActiveStatus.INACTIVE) {
+            throw new BadRequestException("Vắc xin này đã ở trạng thái vô hiệu hóa");
+        }
+        vaccine.setStatus(ActiveStatus.INACTIVE);
+        vaccineRepository.save(vaccine);
+    }
+
+    @Transactional
+    public VaccineResponse reactivateVaccine(Long vaccineId) {
+        Vaccine vaccine = findVaccineOrThrow(vaccineId);
+        if (vaccine.getStatus() == ActiveStatus.ACTIVE) {
+            throw new BadRequestException("Vắc xin này đang hoạt động");
+        }
+        vaccine.setStatus(ActiveStatus.ACTIVE);
+        return mapToResponse(vaccineRepository.save(vaccine), null);
+    }
+
+    private VaccineCategory resolveCategory(Long categoryId) {
+        if (categoryId == null) {
+            return null;
+        }
+        return vaccineCategoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy danh mục vắc xin có ID: " + categoryId));
+    }
+
+    private String normalizeName(String name) {
+        return name == null ? "" : name.trim();
     }
 
     private VaccineResponse mapToResponse(Vaccine vaccine, Long facilityId) {
