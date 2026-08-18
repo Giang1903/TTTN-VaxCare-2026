@@ -17,7 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/vaccines")
 @RequiredArgsConstructor
-@Tag(name = "6. Vaccine Catalog", description = "Tra cứu vắc xin theo danh mục / đối tượng / độ tuổi (public)")
+@Tag(name = "06. Vaccine Catalog", description = "Tra cứu vắc xin theo danh mục / đối tượng / độ tuổi (public)")
 public class VaccineController {
 
     private final VaccineService vaccineService;

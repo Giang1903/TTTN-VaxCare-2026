@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/price-lists")
 @RequiredArgsConstructor
-@Tag(name = "7. Price List", description = "Bảng giá vắc xin (public GET giá hiện hành, ADMIN quản lý)")
+@Tag(name = "07. Price List", description = "Bảng giá vắc xin (public GET giá hiện hành, ADMIN quản lý)")
 public class PriceListController {
 
     private final PriceListService priceListService;

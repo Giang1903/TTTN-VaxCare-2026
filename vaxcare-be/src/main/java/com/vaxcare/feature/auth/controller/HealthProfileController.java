@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/health-profiles")
 @RequiredArgsConstructor
-@Tag(name = "3. Health Profile", description = "CRUD hồ sơ sức khỏe (người thân/trẻ em) của User")
+@Tag(name = "03. Health Profile", description = "CRUD hồ sơ sức khỏe (người thân/trẻ em) của User")
 public class HealthProfileController {
 
     private final HealthProfileService healthProfileService;
