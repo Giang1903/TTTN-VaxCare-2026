@@ -8,11 +8,31 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springdoc.core.utils.SpringDocUtils;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Configuration
 public class OpenApiConfig {
 
     private static final String SECURITY_SCHEME_NAME = "bearerAuth";
+
+  
+    static {
+        LocalDate today = LocalDate.now();
+        LocalTime nowTime = LocalTime.now().withSecond(0).withNano(0);
+        LocalDateTime nowDateTime = LocalDateTime.now().withSecond(0).withNano(0);
+
+        SpringDocUtils.getConfig()
+                .replaceWithSchema(LocalDate.class, new io.swagger.v3.oas.models.media.StringSchema()
+                        .example(today.toString()).format("date"))
+                .replaceWithSchema(LocalTime.class, new io.swagger.v3.oas.models.media.StringSchema()
+                        .example(nowTime.toString()).format("time"))
+                .replaceWithSchema(LocalDateTime.class, new io.swagger.v3.oas.models.media.StringSchema()
+                        .example(nowDateTime.toString()).format("date-time"));
+    }
 
     @Bean
     public OpenAPI vaxcareOpenAPI() {
