@@ -18,6 +18,12 @@ public interface VaccineRepository extends JpaRepository<Vaccine, Long> {
 
     List<Vaccine> findByVaccineNameContainingIgnoreCase(String keyword);
 
+    boolean existsByVaccineNameIgnoreCase(String vaccineName);
+
+    boolean existsByVaccineNameIgnoreCaseAndVaccineIdNot(String vaccineName, Long vaccineId);
+
+    boolean existsByCategory_CategoryId(Long categoryId);
+
     @Query("""
             SELECT DISTINCT v FROM Vaccine v
             LEFT JOIN VaccinationProtocol vp ON vp.vaccine = v

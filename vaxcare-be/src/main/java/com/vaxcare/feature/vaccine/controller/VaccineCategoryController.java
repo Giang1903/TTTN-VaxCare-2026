@@ -14,7 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/vaccine-categories")
 @RequiredArgsConstructor
-@Tag(name = "5. Vaccine Category", description = "Danh mục vắc xin (public GET)")
+@Tag(name = "05. Vaccine Category", description = "Danh mục vắc xin (public GET)")
 public class VaccineCategoryController {
 
     private final VaccineCategoryService categoryService;

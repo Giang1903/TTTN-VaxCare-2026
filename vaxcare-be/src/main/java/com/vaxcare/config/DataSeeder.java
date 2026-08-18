@@ -236,6 +236,36 @@ public class DataSeeder implements CommandLineRunner {
         seedProtocol(vaccineVat, "Phác đồ cho phụ nữ mang thai", 2,
                 new int[][]{{180, 0, 0}, {181, 0, 30}});
         seedPrice(vaccineVat, new BigDecimal("120000"));
+
+        // 5) Vắc xin Viêm gan B đơn - trẻ sơ sinh 0-2 tháng tuổi (mũi sơ sinh)
+        Vaccine vaccineHepB = vaccineRepository.save(Vaccine.builder()
+                .category(childCategory)
+                .vaccineName("Vắc xin Viêm gan B (Euvax B)")
+                .manufacturer("LG Chem")
+                .targetDisease("Viêm gan B")
+                .requiredDoses(3)
+                .doseIntervalDays(30)
+                .description("Tiêm mũi sơ sinh trong vòng 24h đầu sau sinh để phòng lây truyền từ mẹ sang con")
+                .imageUrl("https://images.example.com/vaccine-hepb.jpg")
+                .build());
+        seedProtocol(vaccineHepB, "Phác đồ sơ sinh", 3,
+                new int[][]{{0, 2, 0}, {1, 3, 30}, {6, 8, 150}});
+        seedPrice(vaccineHepB, new BigDecimal("185000"));
+
+        // 6) Vắc xin phòng Dại - mọi lứa tuổi, tiêm dự phòng trước phơi nhiễm
+        Vaccine vaccineRabies = vaccineRepository.save(Vaccine.builder()
+                .category(adultCategory)
+                .vaccineName("Vắc xin phòng Dại (Verorab)")
+                .manufacturer("Sanofi Pasteur")
+                .targetDisease("Bệnh Dại")
+                .requiredDoses(3)
+                .doseIntervalDays(7)
+                .description("Tiêm dự phòng trước phơi nhiễm cho người có nguy cơ cao (thú y, người hay tiếp xúc động vật)")
+                .imageUrl("https://images.example.com/vaccine-rabies.jpg")
+                .build());
+        seedProtocol(vaccineRabies, "Phác đồ dự phòng trước phơi nhiễm", 3,
+                new int[][]{{0, 0, 0}, {0, 0, 7}, {0, 0, 21}});
+        seedPrice(vaccineRabies, new BigDecimal("270000"));
     }
 
     /**

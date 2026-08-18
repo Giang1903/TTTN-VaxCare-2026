@@ -15,7 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/facilities")
 @RequiredArgsConstructor
-@Tag(name = "4. Vaccination Facility", description = "Quản lý cơ sở tiêm chủng (public GET, ADMIN/STAFF ghi)")
+@Tag(name = "04. Vaccination Facility", description = "Quản lý cơ sở tiêm chủng (public GET, ADMIN/STAFF ghi)")
 public class VaccinationFacilityController {
 
     private final VaccinationFacilityService facilityService;
