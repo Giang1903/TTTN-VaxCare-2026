@@ -2,7 +2,6 @@ package com.vaxcare.feature.appointment.service;
 
 import com.vaxcare.common.enums.ActiveStatus;
 import com.vaxcare.common.enums.AppointmentStatus;
-import com.vaxcare.common.enums.Role;
 import com.vaxcare.common.exception.BadRequestException;
 import com.vaxcare.common.exception.ResourceNotFoundException;
 import com.vaxcare.common.exception.UnauthorizedException;
@@ -13,7 +12,6 @@ import com.vaxcare.feature.appointment.dto.CancelAppointmentRequest;
 import com.vaxcare.feature.appointment.entity.Appointment;
 import com.vaxcare.feature.appointment.repository.AppointmentRepository;
 import com.vaxcare.feature.auth.entity.Account;
-import com.vaxcare.feature.auth.entity.MedicalStaff;
 import com.vaxcare.feature.auth.entity.User;
 import com.vaxcare.feature.auth.repository.AccountRepository;
 import com.vaxcare.feature.facility.entity.VaccinationFacility;
@@ -39,10 +37,6 @@ import java.util.Set;
 @SuppressWarnings("null")
 public class AppointmentService {
 
-    /**
-     * Độ dài mỗi khung giờ đặt lịch. Schema không có cột riêng cho việc này nên tạm cố định 30 phút/slot,
-     * chia đều từ opening_time đến closing_time của từng cơ sở.
-     */
     private static final int SLOT_DURATION_MINUTES = 30;
 
     private static final Set<AppointmentStatus> ACTIVE_STATUSES =
@@ -209,93 +203,6 @@ public class AppointmentService {
         return mapToResponse(appointmentRepository.save(appointment));
     }
 
-    // ===================== STAFF QUẢN LÝ LỊCH HẸN (22/08) =====================
-
-    /**
-     * Staff xem & lọc lịch hẹn. Staff chỉ được xem lịch hẹn tại đúng cơ sở mình phụ trách
-     * (facilityId truyền vào từ FE sẽ bị bỏ qua nếu khác cơ sở của Staff).
-     * Admin có thể lọc theo facilityId tuỳ ý, hoặc để trống để xem toàn bộ hệ thống.
-     */
-    @Transactional(readOnly = true)
-    public List<AppointmentResponse> getAppointmentsForStaff(Long currentAccountId, Long facilityId,
-                                                               AppointmentStatus status,
-                                                               LocalDate fromDate, LocalDate toDate) {
-        Account account = findAccountOrThrow(currentAccountId);
-        Long effectiveFacilityId = resolveFacilityScope(account, facilityId);
-
-        return appointmentRepository.searchForStaff(effectiveFacilityId, status, fromDate, toDate).stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-    @Transactional
-    public AppointmentResponse confirmAppointment(Long appointmentId, Long currentAccountId) {
-        Account account = findAccountOrThrow(currentAccountId);
-        Appointment appointment = findAppointmentOrThrow(appointmentId);
-        checkStaffFacilityAccess(account, appointment);
-
-        if (appointment.getStatus() != AppointmentStatus.PENDING) {
-            throw new BadRequestException(
-                    "Chỉ có thể xác nhận lịch hẹn đang ở trạng thái PENDING (hiện tại: " + appointment.getStatus() + ")");
-        }
-
-        appointment.setStatus(AppointmentStatus.CONFIRMED);
-        if (account.getMedicalStaff() != null) {
-            appointment.setStaff(account.getMedicalStaff());
-        }
-
-        return mapToResponse(appointmentRepository.save(appointment));
-    }
-
-    @Transactional
-    public AppointmentResponse staffCancelAppointment(Long appointmentId, Long currentAccountId,
-                                                        CancelAppointmentRequest request) {
-        Account account = findAccountOrThrow(currentAccountId);
-        Appointment appointment = findAppointmentOrThrow(appointmentId);
-        checkStaffFacilityAccess(account, appointment);
-        ensureModifiable(appointment, "hủy lịch hẹn");
-
-        if (request == null || request.getReason() == null || request.getReason().isBlank()) {
-            throw new BadRequestException("Vui lòng nhập lý do hủy lịch hẹn");
-        }
-
-        appointment.setStatus(AppointmentStatus.CANCELLED);
-        appointment.setCancelledAt(LocalDateTime.now());
-        appointment.setCancellationReason(request.getReason());
-        if (account.getMedicalStaff() != null) {
-            appointment.setStaff(account.getMedicalStaff());
-        }
-
-        return mapToResponse(appointmentRepository.save(appointment));
-    }
-
-    private Long resolveFacilityScope(Account account, Long requestedFacilityId) {
-        if (account.getRole() == Role.MEDICAL_STAFF) {
-            MedicalStaff staff = account.getMedicalStaff();
-            if (staff == null || staff.getFacility() == null) {
-                throw new BadRequestException("Tài khoản nhân viên y tế chưa được gán cơ sở tiêm chủng");
-            }
-            return staff.getFacility().getFacilityId();
-        }
-        // ADMIN: lọc theo facilityId nếu có, null = xem toàn bộ hệ thống
-        return requestedFacilityId;
-    }
-
-    private void checkStaffFacilityAccess(Account account, Appointment appointment) {
-        if (account.getRole() == Role.MEDICAL_STAFF) {
-            MedicalStaff staff = account.getMedicalStaff();
-            if (staff == null || staff.getFacility() == null
-                    || !staff.getFacility().getFacilityId().equals(appointment.getFacility().getFacilityId())) {
-                throw new UnauthorizedException("Bạn chỉ được thao tác trên lịch hẹn thuộc cơ sở tiêm chủng của mình");
-            }
-        }
-    }
-
-    private Account findAccountOrThrow(Long accountId) {
-        return accountRepository.findById(accountId)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tài khoản với ID: " + accountId));
-    }
-
     // ===================== HELPERS =====================
 
     private void validateFacilityAndVaccineActive(VaccinationFacility facility, Vaccine vaccine) {
@@ -381,11 +288,15 @@ public class AppointmentService {
         return prices.stream().findFirst().map(PriceList::getPrice).orElse(null);
     }
 
-    private AppointmentResponse mapToResponse(Appointment appointment) {
+    /**
+     * Mở public để StaffAppointmentService tái sử dụng cùng logic mapping, tránh lặp code.
+     */
+    public AppointmentResponse mapToResponse(Appointment appointment) {
         return AppointmentResponse.builder()
                 .appointmentId(appointment.getAppointmentId())
                 .userId(appointment.getUser().getUserId())
                 .userFullName(appointment.getUser().getFullName())
+                .userPhone(appointment.getUser().getAccount() != null ? appointment.getUser().getAccount().getPhone() : null)
                 .facilityId(appointment.getFacility().getFacilityId())
                 .facilityName(appointment.getFacility().getFacilityName())
                 .vaccineId(appointment.getVaccine().getVaccineId())
