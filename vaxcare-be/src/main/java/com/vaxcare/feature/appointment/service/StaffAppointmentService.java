@@ -1,0 +1,128 @@
+package com.vaxcare.feature.appointment.service;
+
+import com.vaxcare.common.enums.AppointmentStatus;
+import com.vaxcare.common.enums.Role;
+import com.vaxcare.common.exception.BadRequestException;
+import com.vaxcare.common.exception.ResourceNotFoundException;
+import com.vaxcare.common.exception.UnauthorizedException;
+import com.vaxcare.feature.appointment.dto.AppointmentResponse;
+import com.vaxcare.feature.appointment.dto.CancelAppointmentRequest;
+import com.vaxcare.feature.appointment.entity.Appointment;
+import com.vaxcare.feature.appointment.repository.AppointmentRepository;
+import com.vaxcare.feature.auth.entity.Account;
+import com.vaxcare.feature.auth.entity.MedicalStaff;
+import com.vaxcare.feature.auth.repository.AccountRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
+
+@Service
+@RequiredArgsConstructor
+public class StaffAppointmentService {
+
+    private static final Set<AppointmentStatus> CANCELLABLE_STATUSES =
+            Set.of(AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED);
+
+    private final AppointmentRepository appointmentRepository;
+    private final AccountRepository accountRepository;
+    private final AppointmentService appointmentService;
+
+    @Transactional(readOnly = true)
+    public List<AppointmentResponse> searchAppointments(Long currentAccountId, Long facilityId,
+                                                          LocalDate date, AppointmentStatus status, String keyword) {
+        Account account = findAccountOrThrow(currentAccountId);
+        Long effectiveFacilityId = resolveEffectiveFacilityId(account, facilityId);
+        String normalizedKeyword = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
+
+        return appointmentRepository.searchForStaff(effectiveFacilityId, date, status, normalizedKeyword).stream()
+                .map(appointmentService::mapToResponse)
+                .toList();
+    }
+
+    @Transactional
+    public AppointmentResponse confirmAppointment(Long appointmentId, Long currentAccountId) {
+        Account account = findAccountOrThrow(currentAccountId);
+        Appointment appointment = findAppointmentOrThrow(appointmentId);
+        checkFacilityScope(account, appointment);
+
+        if (appointment.getStatus() != AppointmentStatus.PENDING) {
+            throw new BadRequestException(
+                    "Chỉ có thể xác nhận lịch hẹn đang ở trạng thái PENDING (hiện tại: " + appointment.getStatus() + ")");
+        }
+
+        appointment.setStatus(AppointmentStatus.CONFIRMED);
+        assignStaffIfPossible(account, appointment);
+
+        return appointmentService.mapToResponse(appointmentRepository.save(appointment));
+    }
+
+    @Transactional
+    public AppointmentResponse cancelAppointment(Long appointmentId, Long currentAccountId, CancelAppointmentRequest request) {
+        Account account = findAccountOrThrow(currentAccountId);
+        Appointment appointment = findAppointmentOrThrow(appointmentId);
+        checkFacilityScope(account, appointment);
+
+        if (!CANCELLABLE_STATUSES.contains(appointment.getStatus())) {
+            throw new BadRequestException(
+                    "Không thể hủy lịch hẹn đang ở trạng thái " + appointment.getStatus());
+        }
+        if (request == null || request.getReason() == null || request.getReason().isBlank()) {
+            throw new BadRequestException("Vui lòng nhập lý do hủy lịch hẹn");
+        }
+
+        appointment.setStatus(AppointmentStatus.CANCELLED);
+        appointment.setCancelledAt(LocalDateTime.now());
+        appointment.setCancellationReason(request.getReason());
+        assignStaffIfPossible(account, appointment);
+
+        return appointmentService.mapToResponse(appointmentRepository.save(appointment));
+    }
+
+    // ===================== HELPERS =====================
+
+    private Long resolveEffectiveFacilityId(Account account, Long requestedFacilityId) {
+        if (account.getRole() == Role.MEDICAL_STAFF) {
+            MedicalStaff staff = requireStaffProfile(account);
+            return staff.getFacility().getFacilityId();
+        }
+        return requestedFacilityId; // ADMIN: null = xem tất cả cơ sở
+    }
+
+    private void checkFacilityScope(Account account, Appointment appointment) {
+        if (account.getRole() == Role.MEDICAL_STAFF) {
+            MedicalStaff staff = requireStaffProfile(account);
+            if (!staff.getFacility().getFacilityId().equals(appointment.getFacility().getFacilityId())) {
+                throw new UnauthorizedException("Bạn chỉ được quản lý lịch hẹn thuộc cơ sở tiêm chủng của mình!");
+            }
+        }
+        // ADMIN: không giới hạn theo cơ sở
+    }
+
+    private void assignStaffIfPossible(Account account, Appointment appointment) {
+        if (account.getRole() == Role.MEDICAL_STAFF && account.getMedicalStaff() != null) {
+            appointment.setStaff(account.getMedicalStaff());
+        }
+    }
+
+    private MedicalStaff requireStaffProfile(Account account) {
+        if (account.getMedicalStaff() == null || account.getMedicalStaff().getFacility() == null) {
+            throw new BadRequestException("Tài khoản nhân viên y tế này chưa được gán cơ sở tiêm chủng!");
+        }
+        return account.getMedicalStaff();
+    }
+
+    private Account findAccountOrThrow(Long accountId) {
+        return accountRepository.findById(accountId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tài khoản với ID: " + accountId));
+    }
+
+    private Appointment findAppointmentOrThrow(Long appointmentId) {
+        return appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lịch hẹn có ID: " + appointmentId));
+    }
+}

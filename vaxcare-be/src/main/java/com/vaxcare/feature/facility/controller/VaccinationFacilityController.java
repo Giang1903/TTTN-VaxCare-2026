@@ -4,6 +4,7 @@ import com.vaxcare.common.dto.ApiResponse;
 import com.vaxcare.feature.facility.dto.FacilityRequest;
 import com.vaxcare.feature.facility.dto.FacilityResponse;
 import com.vaxcare.feature.facility.service.VaccinationFacilityService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,6 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/facilities")
 @RequiredArgsConstructor
+@Tag(name = "04. Vaccination Facility", description = "Quản lý cơ sở tiêm chủng (public GET, ADMIN/STAFF ghi)")
 public class VaccinationFacilityController {
 
     private final VaccinationFacilityService facilityService;

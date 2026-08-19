@@ -33,7 +33,7 @@ CREATE TABLE `accounts` (
   `password_hash` varchar(255) NOT NULL,
   `phone` varchar(20) DEFAULT NULL,
   `role` enum('USER','MEDICAL_STAFF','ADMIN') NOT NULL,
-  `status` enum('ACTIVE','INACTIVE','LOCKED') DEFAULT 'ACTIVE',
+  `status` enum('ACTIVE','INACTIVE','SUSPENDED','DELETED') DEFAULT 'ACTIVE',
   `avatar_url` varchar(500) DEFAULT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -44,9 +44,9 @@ CREATE TABLE `accounts` (
 --
 
 INSERT INTO `accounts` (`account_id`, `email`, `password_hash`, `phone`, `role`, `status`, `avatar_url`, `created_at`, `updated_at`) VALUES
-(1, 'nguyen.an@email.com', '12345678', '0901234567', 'USER', 'ACTIVE', NULL, '2026-08-12 12:33:22', '2026-08-12 12:33:22'),
-(2, 'admin@vaxcare.vn', '12345678', '0909999888', 'ADMIN', 'ACTIVE', NULL, '2026-08-12 12:33:22', '2026-08-12 12:33:22'),
-(3, 'staff.phunhuan@vaxcare.vn', '12345678', '0908888777', 'MEDICAL_STAFF', 'ACTIVE', NULL, '2026-08-12 12:33:22', '2026-08-12 12:33:22');
+(1, 'nguyen.an@email.com', '$2b$10$k6nAptKd.nVOdFQM2F03b.kBfWNGeY4vP0IGOBma.kB.3KHVW/i.W', '0901234567', 'USER', 'ACTIVE', NULL, '2026-08-12 12:33:22', '2026-08-12 12:33:22'),
+(2, 'admin@vaxcare.vn', '$2b$10$XNA5Q5vRKvd8tWfhuuxhXOlv7cOROiIh4rYfViLGfgbosBLGGEVna', '0909999888', 'ADMIN', 'ACTIVE', NULL, '2026-08-12 12:33:22', '2026-08-12 12:33:22'),
+(3, 'staff.phunhuan@vaxcare.vn', '$2b$10$JLFQcutsf44dHnr50fG8Yew1Ng.cCW4RIDuxAe4fdniCQ7ox4QKzW', '0908888777', 'MEDICAL_STAFF', 'ACTIVE', NULL, '2026-08-12 12:33:22', '2026-08-12 12:33:22');
 
 -- --------------------------------------------------------
 

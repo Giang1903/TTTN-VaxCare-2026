@@ -36,4 +36,19 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
                              @Param("timeSlot") LocalTime timeSlot);
 
     List<Appointment> findByStatusAndAppointmentDateBefore(AppointmentStatus status, LocalDate date);
+
+    @Query("""
+            SELECT a FROM Appointment a
+            WHERE (:facilityId IS NULL OR a.facility.facilityId = :facilityId)
+              AND (:date IS NULL OR a.appointmentDate = :date)
+              AND (:status IS NULL OR a.status = :status)
+              AND (:keyword IS NULL
+                   OR LOWER(a.user.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                   OR a.user.account.phone LIKE CONCAT('%', :keyword, '%'))
+            ORDER BY a.appointmentDate ASC, a.timeSlot ASC
+            """)
+    List<Appointment> searchForStaff(@Param("facilityId") Long facilityId,
+                                      @Param("date") LocalDate date,
+                                      @Param("status") AppointmentStatus status,
+                                      @Param("keyword") String keyword);
 }

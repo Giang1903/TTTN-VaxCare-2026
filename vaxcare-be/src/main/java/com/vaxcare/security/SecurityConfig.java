@@ -27,6 +27,7 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService customUserDetailsService;
     private final JwtAuthenticationEntryPoint unauthorizedHandler;
+    private final JwtAccessDeniedHandler accessDeniedHandler;
     private final JwtTokenProvider tokenProvider;
 
     @Bean
@@ -57,7 +58,9 @@ public class SecurityConfig {
         http
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
-                .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(unauthorizedHandler)
+                        .accessDeniedHandler(accessDeniedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
@@ -65,6 +68,11 @@ public class SecurityConfig {
                         // Các route quản trị phải xét TRƯỚC route public GET để không bị permitAll "nuốt" mất
                         .requestMatchers(HttpMethod.GET, "/api/v1/facilities/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/facilities/**").permitAll()
+                        // Vắc xin & bảng giá: tra cứu (GET) là public, còn quản trị (POST/PUT/DELETE) yêu cầu đăng nhập + phân quyền qua @PreAuthorize
+                        .requestMatchers(HttpMethod.GET, "/api/v1/vaccine-categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/vaccines/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/price-lists").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/protocols/**").permitAll()
                         .anyRequest().authenticated()
                 );
         

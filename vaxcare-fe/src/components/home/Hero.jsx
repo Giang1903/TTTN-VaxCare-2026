@@ -67,7 +67,7 @@ export default function Hero() {
           >
           <h1>
             Chủ động tiêm chủng,<br />bảo vệ sức khỏe
-            <span className="accent">thông minh</span>
+            <span className="accent"> thông minh</span>
           </h1>
           <p className="lead">
             Đặt lịch tiêm chủng dễ dàng, quản lý hồ sơ tiêm chủng và nhận nhắc

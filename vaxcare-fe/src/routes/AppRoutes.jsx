@@ -33,16 +33,16 @@ import StaffReactionsPage from "../pages/staff/StaffReactionsPage";
 import StaffReportsPage from "../pages/staff/StaffReportsPage";
 
 // ===== ADMIN =====
-import AdminDashboard from "../pages/AdminDashboard";
-import AdminReports from "../pages/AdminReports";
-import AdminFacilities from "../pages/AdminFacilities";
-import AdminStaff from "../pages/AdminStaff";
-import AdminUsers from "../pages/AdminUsers";
-import AdminVaccines from "../pages/AdminVaccines";
-import AdminInventory from "../pages/AdminInventory";
-import AdminPricing from "../pages/AdminPricing";
-import AdminConfig from "../pages/AdminConfig";
-import AdminAudit from "../pages/AdminAudit";
+import AdminDashboard from "../pages/admin/AdminDashboard";
+import AdminReports from "../pages/admin/AdminReports";
+import AdminFacilities from "../pages/admin/AdminFacilities";
+import AdminStaff from "../pages/admin/AdminStaff";
+import AdminUsers from "../pages/admin/AdminUsers";
+import AdminVaccines from "../pages/admin/AdminVaccines";
+import AdminInventory from "../pages/admin/AdminInventory";
+import AdminPricing from "../pages/admin/AdminPricing";
+import AdminConfig from "../pages/admin/AdminConfig";
+import AdminAudit from "../pages/admin/AdminAudit";
 
 export default function AppRoutes() {
   return (

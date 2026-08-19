@@ -19,6 +19,7 @@ public class AppointmentResponse {
     private Long userId;
     private String userFullName;
     private Long facilityId;
+    private String userPhone;
     private String facilityName;
     private Long vaccineId;
     private String vaccineName;

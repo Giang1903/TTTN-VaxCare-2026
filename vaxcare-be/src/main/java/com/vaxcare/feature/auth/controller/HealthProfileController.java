@@ -5,6 +5,7 @@ import com.vaxcare.feature.auth.dto.HealthProfileRequest;
 import com.vaxcare.feature.auth.dto.HealthProfileResponse;
 import com.vaxcare.feature.auth.service.HealthProfileService;
 import com.vaxcare.security.UserPrincipal;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/health-profiles")
 @RequiredArgsConstructor
+@Tag(name = "03. Health Profile", description = "CRUD hồ sơ sức khỏe (người thân/trẻ em) của User")
 public class HealthProfileController {
 
     private final HealthProfileService healthProfileService;
