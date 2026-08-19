@@ -2,6 +2,7 @@ package com.vaxcare.config;
 
 import com.vaxcare.common.enums.AccountStatus;
 import com.vaxcare.common.enums.ActiveStatus;
+import com.vaxcare.common.enums.BatchStatus;
 import com.vaxcare.common.enums.Role;
 import com.vaxcare.feature.auth.entity.Account;
 import com.vaxcare.feature.auth.entity.Admin;
@@ -20,6 +21,10 @@ import com.vaxcare.feature.vaccine.repository.ProtocolDetailRepository;
 import com.vaxcare.feature.vaccine.repository.VaccinationProtocolRepository;
 import com.vaxcare.feature.vaccine.repository.VaccineCategoryRepository;
 import com.vaxcare.feature.vaccine.repository.VaccineRepository;
+import com.vaxcare.feature.inventory.entity.VaccineBatch;
+import com.vaxcare.feature.inventory.entity.VaccineInventory;
+import com.vaxcare.feature.inventory.repository.VaccineBatchRepository;
+import com.vaxcare.feature.inventory.repository.VaccineInventoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -42,6 +47,8 @@ public class DataSeeder implements CommandLineRunner {
     private final VaccinationProtocolRepository protocolRepository;
     private final ProtocolDetailRepository protocolDetailRepository;
     private final PriceListRepository priceListRepository;
+    private final VaccineInventoryRepository vaccineInventoryRepository;
+    private final VaccineBatchRepository vaccineBatchRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -49,6 +56,7 @@ public class DataSeeder implements CommandLineRunner {
         seedFacilities();
         seedAccounts();
         seedVaccineCatalog();
+        seedInventoryBatches();
     }
 
     private void seedFacilities() {
@@ -97,7 +105,7 @@ public class DataSeeder implements CommandLineRunner {
             return;
         }
 
-        VaccinationFacility facility = facilityRepository.findAll().stream().findFirst()
+        VaccinationFacility facility = facilityRepository.findFirstByOrderByFacilityIdAsc()
                 .orElseThrow(() -> new IllegalStateException("Cơ sở tiêm chủng mẫu chưa được khởi tạo"));
 
         Account adminAccount = Account.builder()
@@ -299,6 +307,82 @@ public class DataSeeder implements CommandLineRunner {
                 .facility(null) // giá chung áp dụng cho tất cả cơ sở
                 .price(price)
                 .effectiveDate(LocalDate.now())
+                .build());
+    }
+
+    /**
+     * Seed dữ liệu kho (VaccineInventory + VaccineBatch) cho từng cơ sở tiêm chủng.
+     * Cố tình dựng vài tình huống đặc biệt ở cơ sở đầu tiên để FE/QA có sẵn dữ liệu test:
+     * - Lô sắp hết hạn trong 20 ngày tới -> demo API /inventory/alerts/expiring-soon
+     * - Lô đã hết hạn nhưng còn đánh dấu AVAILABLE -> demo cơ chế auto-sync sang EXPIRED khi tra cứu
+     * - 1 vắc xin cố tình để tồn kho thấp hơn alertThreshold mặc định (50) -> demo /inventory/alerts/low-stock
+     */
+    private void seedInventoryBatches() {
+        if (vaccineInventoryRepository.count() > 0) {
+            return;
+        }
+
+        List<VaccinationFacility> facilities = facilityRepository.findAll();
+        List<Vaccine> vaccines = vaccineRepository.findAll();
+        if (facilities.isEmpty() || vaccines.isEmpty()) {
+            return; // seedFacilities()/seedVaccineCatalog() chưa có dữ liệu, bỏ qua an toàn
+        }
+
+        LocalDate today = LocalDate.now();
+
+        for (int f = 0; f < facilities.size(); f++) {
+            VaccinationFacility facility = facilities.get(f);
+            VaccineInventory inventory = vaccineInventoryRepository.save(
+                    VaccineInventory.builder().facility(facility).alertThreshold(50).build());
+
+            for (int v = 0; v < vaccines.size(); v++) {
+                Vaccine vaccine = vaccines.get(v);
+                String batchPrefix = "LOT-" + facility.getFacilityId() + "-" + vaccine.getVaccineId();
+
+                // Lô tiêu chuẩn: tồn kho dồi dào, còn hạn dài (18 tháng)
+                seedBatch(inventory, vaccine, batchPrefix + "-A",
+                        today.minusMonths(6), today.plusMonths(18), 100, 100,
+                        new BigDecimal("50000"), today.minusDays(30), BatchStatus.AVAILABLE);
+
+                // Chỉ tạo thêm tình huống đặc biệt ở CƠ SỞ ĐẦU TIÊN (facility[0]) để tránh seed dư thừa
+                if (f == 0) {
+                    if (v == 0) {
+                        // Vắc xin đầu tiên: thêm 1 lô sắp hết hạn trong 20 ngày -> test cảnh báo expiring-soon
+                        seedBatch(inventory, vaccine, batchPrefix + "-B",
+                                today.minusMonths(11), today.plusDays(20), 15, 15,
+                                new BigDecimal("50000"), today.minusDays(60), BatchStatus.AVAILABLE);
+                    } else if (v == 1) {
+                        // Vắc xin thứ 2: 1 lô ĐÃ hết hạn nhưng vẫn đang để AVAILABLE trong DB
+                        // -> lần đầu gọi API tồn kho/cảnh báo sẽ tự động chuyển sang EXPIRED (demo auto-sync)
+                        seedBatch(inventory, vaccine, batchPrefix + "-EXPIRED",
+                                today.minusMonths(14), today.minusDays(5), 30, 30,
+                                new BigDecimal("50000"), today.minusMonths(13), BatchStatus.AVAILABLE);
+                    } else if (v == 2) {
+                        // Vắc xin thứ 3: cố tình để tồn kho thấp (20 < alertThreshold mặc định 50)
+                        seedBatch(inventory, vaccine, batchPrefix + "-LOW",
+                                today.minusMonths(2), today.plusMonths(12), 20, 20,
+                                new BigDecimal("50000"), today.minusDays(10), BatchStatus.AVAILABLE);
+                    }
+                }
+            }
+        }
+    }
+
+    private void seedBatch(VaccineInventory inventory, Vaccine vaccine, String batchNumber,
+                            LocalDate manufactureDate, LocalDate expiryDate,
+                            int importedQuantity, int stockQuantity,
+                            BigDecimal importPrice, LocalDate importDate, BatchStatus status) {
+        vaccineBatchRepository.save(VaccineBatch.builder()
+                .inventory(inventory)
+                .vaccine(vaccine)
+                .batchNumber(batchNumber)
+                .manufactureDate(manufactureDate)
+                .expiryDate(expiryDate)
+                .importedQuantity(importedQuantity)
+                .stockQuantity(stockQuantity)
+                .importPrice(importPrice)
+                .importDate(importDate)
+                .status(status)
                 .build());
     }
 }
