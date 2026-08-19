@@ -7,7 +7,6 @@ import useScrollReveal from '../hooks/useScrollReveal';
 import useBubbleField from '../hooks/useBubbleField';
 import '../styles/dashboard.css';
 
-// Layout dùng cho các trang đã đăng nhập (không dùng Navbar/Footer public
 export default function DashboardLayout() {
   const mobileNav = useMobileNav();
   useBubbleField();
