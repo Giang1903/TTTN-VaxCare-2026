@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface VaccinationFacilityRepository extends JpaRepository<VaccinationFacility, Long> {
@@ -15,4 +16,6 @@ public interface VaccinationFacilityRepository extends JpaRepository<Vaccination
     boolean existsByFacilityNameIgnoreCase(String facilityName);
 
     boolean existsByFacilityNameIgnoreCaseAndFacilityIdNot(String facilityName, Long facilityId);
+
+    Optional<VaccinationFacility> findFirstByOrderByFacilityIdAsc();
 }
