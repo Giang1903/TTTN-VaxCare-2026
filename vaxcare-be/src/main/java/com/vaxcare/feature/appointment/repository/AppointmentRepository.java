@@ -38,15 +38,17 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<Appointment> findByStatusAndAppointmentDateBefore(AppointmentStatus status, LocalDate date);
 
     @Query("""
-        SELECT a FROM Appointment a
-        WHERE (:facilityId IS NULL OR a.facility.facilityId = :facilityId)
-          AND (:status IS NULL OR a.status = :status)
-          AND (:fromDate IS NULL OR a.appointmentDate >= :fromDate)
-          AND (:toDate IS NULL OR a.appointmentDate <= :toDate)
-        ORDER BY a.appointmentDate ASC, a.timeSlot ASC
-        """)
+            SELECT a FROM Appointment a
+            WHERE (:facilityId IS NULL OR a.facility.facilityId = :facilityId)
+              AND (:date IS NULL OR a.appointmentDate = :date)
+              AND (:status IS NULL OR a.status = :status)
+              AND (:keyword IS NULL
+                   OR LOWER(a.user.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                   OR a.user.account.phone LIKE CONCAT('%', :keyword, '%'))
+            ORDER BY a.appointmentDate ASC, a.timeSlot ASC
+            """)
     List<Appointment> searchForStaff(@Param("facilityId") Long facilityId,
+                                      @Param("date") LocalDate date,
                                       @Param("status") AppointmentStatus status,
-                                      @Param("fromDate") LocalDate fromDate,
-                                      @Param("toDate") LocalDate toDate);
+                                      @Param("keyword") String keyword);
 }
