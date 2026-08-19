@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import Topbar from '../components/layout/Topbar';
-import { useToast } from '../components/ui/Toast';
+import Topbar from "../../components/layout/Topbar";
+import { useToast } from "../../components/ui/Toast";
 
 export default function Dashboard() {
   const showToast = useToast();

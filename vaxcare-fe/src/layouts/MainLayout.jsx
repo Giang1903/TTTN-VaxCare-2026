@@ -4,7 +4,6 @@ import Footer from '../components/layout/Footer';
 import useScrollReveal from '../hooks/useScrollReveal';
 import useBubbleField from '../hooks/useBubbleField';
 
-// Layout dùng cho các trang public (trang chủ, vắc xin, cơ sở, giới thiệu, hỗ trợ...)
 export default function MainLayout() {
   useBubbleField();
   useScrollReveal();

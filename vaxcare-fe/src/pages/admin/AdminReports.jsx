@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import Topbar from '../components/layout/Topbar';
-import { Overlay, Modal } from '../components/ui/Modal';
-import { useToast } from '../components/ui/Toast';
+import Topbar from '../../components/layout/Topbar';
+import { Overlay, Modal } from '../../components/ui/Modal';
+import { useToast } from '../../components/ui/Toast';
 
 const WEEK_DATA = {
   7: { vals: [142, 168, 155, 198, 176, 124, 112], labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'], avg: '153.6', sub: '11/08 – 17/08/2026' },

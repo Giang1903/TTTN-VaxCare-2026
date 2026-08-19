@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import Topbar from '../components/layout/Topbar';
-import { useToast } from '../components/ui/Toast';
+import Topbar from "../../components/layout/Topbar";
+import { useToast } from "../../components/ui/Toast";
 
 const INITIAL = [
   { key: 'site_name', value: 'VaxCare', desc: 'Tên hệ thống hiển thị' },
