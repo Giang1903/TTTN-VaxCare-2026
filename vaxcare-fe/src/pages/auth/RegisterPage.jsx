@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useTilt from "../../hooks/useTilt";
+import { useAuth } from "../../context/AuthContext";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
   const visualTiltRef = useTilt();
+  const { register } = useAuth();
 
   const [form, setForm] = useState({
     fullName: "",
@@ -18,14 +20,16 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
     setForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
+
     if (form.password !== form.confirmPassword) {
       setError("Mật khẩu xác nhận không khớp.");
       return;
@@ -34,9 +38,31 @@ export default function RegisterPage() {
       setError("Bạn cần đồng ý với Điều khoản sử dụng để tiếp tục.");
       return;
     }
+    if (form.password.length < 6) {
+      setError("Mật khẩu phải có ít nhất 6 ký tự.");
+      return;
+    }
+
     setError("");
-    // TODO: gọi API đăng ký thực tế tại đây (src/services)
-    navigate("/login");
+    setLoading(true);
+
+    try {
+      await register({
+        email: form.email.trim(),
+        password: form.password,
+        fullName: form.fullName.trim(),
+        phone: form.phone.trim() || null,
+        address: form.address.trim() || null,
+      });
+
+      navigate("/login", {
+        state: { message: "Đăng ký thành công! Vui lòng đăng nhập." },
+      });
+    } catch (err) {
+      setError(err.message || "Đăng ký thất bại. Vui lòng thử lại.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -201,7 +227,7 @@ export default function RegisterPage() {
           Về trang chủ
         </Link>
 
-        <div className="form-wrap ">
+        <div className="form-wrap">
           <h1>Tạo tài khoản</h1>
           <p className="sub">
             Điền thông tin bên dưới để bắt đầu sử dụng VaxCare.
@@ -231,6 +257,7 @@ export default function RegisterPage() {
                   value={form.fullName}
                   onChange={handleChange}
                   required
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -259,6 +286,7 @@ export default function RegisterPage() {
                     value={form.email}
                     onChange={handleChange}
                     required
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -284,6 +312,7 @@ export default function RegisterPage() {
                     value={form.phone}
                     onChange={handleChange}
                     required
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -313,6 +342,7 @@ export default function RegisterPage() {
                   placeholder="Số nhà, đường, quận/huyện, tỉnh/thành"
                   value={form.address}
                   onChange={handleChange}
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -336,11 +366,12 @@ export default function RegisterPage() {
                   id="password"
                   name="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Tối thiểu 8 ký tự"
+                  placeholder="Tối thiểu 6 ký tự"
                   value={form.password}
                   onChange={handleChange}
                   required
-                  minLength={8}
+                  minLength={6}
+                  disabled={loading}
                 />
                 <button
                   type="button"
@@ -400,6 +431,7 @@ export default function RegisterPage() {
                   value={form.confirmPassword}
                   onChange={handleChange}
                   required
+                  disabled={loading}
                 />
                 <button
                   type="button"
@@ -438,7 +470,11 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {error && <p className="form-error">{error}</p>}
+            {error && (
+              <p className="form-error" style={{ color: "#e11d48", marginBottom: 12, fontSize: 14 }}>
+                {error}
+              </p>
+            )}
 
             <label className="terms-row">
               <input
@@ -446,6 +482,7 @@ export default function RegisterPage() {
                 name="agreeTerms"
                 checked={form.agreeTerms}
                 onChange={handleChange}
+                disabled={loading}
               />
               <span>
                 Tôi đồng ý với <a href="#terms">Điều khoản sử dụng</a> và{" "}
@@ -453,8 +490,8 @@ export default function RegisterPage() {
               </span>
             </label>
 
-            <button type="submit" className="btn btn-primary">
-              Đăng ký
+            <button type="submit" className="btn btn-primary" disabled={loading}>
+              {loading ? "Đang đăng ký..." : "Đăng ký"}
             </button>
           </form>
 

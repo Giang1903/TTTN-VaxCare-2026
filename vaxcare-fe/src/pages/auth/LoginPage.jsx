@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useTilt from "../../hooks/useTilt";
+import { useAuth } from "../../context/AuthContext";
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const visualTiltRef = useTilt();
+  const { login } = useAuth();
 
   const [form, setForm] = useState({
     email: "",
@@ -12,16 +14,30 @@ export default function LoginPage() {
     remember: false,
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
     setForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    // TODO: gọi API đăng nhập thực tế tại đây (src/services)
-    navigate("/");
+    setError("");
+    setLoading(true);
+
+    try {
+      const data = await login(form.email, form.password);
+
+      if (data.role === "ADMIN") navigate("/admin");
+      else if (data.role === "MEDICAL_STAFF") navigate("/staff");
+      else navigate("/dashboard");
+    } catch (err) {
+      setError(err.message || "Đăng nhập thất bại. Vui lòng thử lại.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -242,6 +258,7 @@ export default function LoginPage() {
                   value={form.email}
                   onChange={handleChange}
                   required
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -269,6 +286,7 @@ export default function LoginPage() {
                   value={form.password}
                   onChange={handleChange}
                   required
+                  disabled={loading}
                 />
                 <button
                   type="button"
@@ -312,14 +330,20 @@ export default function LoginPage() {
                   name="remember"
                   checked={form.remember}
                   onChange={handleChange}
+                  disabled={loading}
                 />
                 Ghi nhớ đăng nhập
               </label>
-              {/* <Link to="/forgot-password" className="link-teal">Quên mật khẩu?</Link> */}
             </div>
 
-            <button type="submit" className="btn btn-primary">
-              Đăng nhập
+            {error && (
+              <p className="form-error" style={{ color: "#e11d48", marginBottom: 12, fontSize: 14 }}>
+                {error}
+              </p>
+            )}
+
+            <button type="submit" className="btn btn-primary" disabled={loading}>
+              {loading ? "Đang đăng nhập..." : "Đăng nhập"}
             </button>
           </form>
 
