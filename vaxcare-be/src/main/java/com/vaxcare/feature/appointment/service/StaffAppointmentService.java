@@ -83,6 +83,34 @@ public class StaffAppointmentService {
         return appointmentService.mapToResponse(appointmentRepository.save(appointment));
     }
 
+    // ===================== CHECK-IN BẰNG QR CODE =====================
+
+    @Transactional
+    public AppointmentResponse checkin(String qrCode, Long currentAccountId) {
+        Account account = findAccountOrThrow(currentAccountId);
+        Appointment appointment = appointmentRepository.findByQrCode(qrCode)
+                .orElseThrow(() -> new BadRequestException("Mã QR không hợp lệ hoặc không tồn tại"));
+
+        checkFacilityScope(account, appointment);
+
+        if (appointment.getStatus() == AppointmentStatus.CHECKED_IN) {
+            throw new BadRequestException("Lịch hẹn này đã được check-in trước đó");
+        }
+        if (appointment.getStatus() != AppointmentStatus.CONFIRMED) {
+            throw new BadRequestException(
+                    "Chỉ có thể check-in lịch hẹn đang ở trạng thái CONFIRMED (hiện tại: " + appointment.getStatus() + ")");
+        }
+        if (!appointment.getAppointmentDate().isEqual(LocalDate.now())) {
+            throw new BadRequestException(
+                    "Lịch hẹn này không phải của hôm nay (ngày hẹn: " + appointment.getAppointmentDate() + ")");
+        }
+
+        appointment.setStatus(AppointmentStatus.CHECKED_IN);
+        assignStaffIfPossible(account, appointment);
+
+        return appointmentService.mapToResponse(appointmentRepository.save(appointment));
+    }
+
     // ===================== HELPERS =====================
 
     private Long resolveEffectiveFacilityId(Account account, Long requestedFacilityId) {

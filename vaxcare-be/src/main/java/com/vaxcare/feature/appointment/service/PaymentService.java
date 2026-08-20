@@ -16,6 +16,7 @@ import com.vaxcare.feature.appointment.repository.AppointmentRepository;
 import com.vaxcare.feature.appointment.repository.PaymentRepository;
 import com.vaxcare.feature.auth.entity.Account;
 import com.vaxcare.feature.auth.repository.AccountRepository;
+import com.vaxcare.utils.QRCodeUtil;
 import com.vaxcare.utils.VNPayUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -214,8 +215,13 @@ public class PaymentService {
             // Thanh toán thành công coi như xác nhận luôn lịch hẹn (nếu đang PENDING chờ staff duyệt)
             if (appointment.getStatus() == AppointmentStatus.PENDING) {
                 appointment.setStatus(AppointmentStatus.CONFIRMED);
-                appointmentRepository.save(appointment);
             }
+            // Sinh token QR check-in (nếu chưa có) - ảnh QR base64 sẽ được render on-the-fly qua
+            // GET /api/v1/appointments/{id}/qr-code, không lưu ảnh vào DB để tránh cột quá nặng.
+            if (appointment.getQrCode() == null) {
+                appointment.setQrCode(QRCodeUtil.generateToken());
+            }
+            appointmentRepository.save(appointment);
 
             return new CallbackResult(true, "00", "Thanh toán thành công", appointment.getAppointmentId());
         } else {

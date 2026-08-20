@@ -21,7 +21,7 @@ import java.util.List;
 @RequestMapping("/api/v1/staff/appointments")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('MEDICAL_STAFF', 'ADMIN')")
-@Tag(name = "13. Staff - Appointment Management", description = "Staff/Admin xem, lọc, xác nhận, hủy lịch hẹn")
+@Tag(name = "14. Staff - Appointment Management", description = "Staff/Admin xem, lọc, xác nhận, hủy lịch hẹn")
 public class StaffAppointmentController {
 
     private final StaffAppointmentService staffAppointmentService;

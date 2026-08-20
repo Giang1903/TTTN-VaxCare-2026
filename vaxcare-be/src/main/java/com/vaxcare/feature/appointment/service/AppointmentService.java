@@ -9,6 +9,7 @@ import com.vaxcare.feature.appointment.dto.AppointmentRequest;
 import com.vaxcare.feature.appointment.dto.AppointmentResponse;
 import com.vaxcare.feature.appointment.dto.AppointmentSlotResponse;
 import com.vaxcare.feature.appointment.dto.CancelAppointmentRequest;
+import com.vaxcare.feature.appointment.dto.QrCodeResponse;
 import com.vaxcare.feature.appointment.entity.Appointment;
 import com.vaxcare.feature.appointment.repository.AppointmentRepository;
 import com.vaxcare.feature.auth.entity.Account;
@@ -20,6 +21,7 @@ import com.vaxcare.feature.vaccine.entity.PriceList;
 import com.vaxcare.feature.vaccine.entity.Vaccine;
 import com.vaxcare.feature.vaccine.repository.PriceListRepository;
 import com.vaxcare.feature.vaccine.repository.VaccineRepository;
+import com.vaxcare.utils.QRCodeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -106,6 +108,23 @@ public class AppointmentService {
         Appointment appointment = findAppointmentOrThrow(appointmentId);
         checkOwnership(appointment, currentUserId);
         return mapToResponse(appointment);
+    }
+
+    @Transactional(readOnly = true)
+    public QrCodeResponse getQrCode(Long appointmentId, Long currentUserId) {
+        Appointment appointment = findAppointmentOrThrow(appointmentId);
+        checkOwnership(appointment, currentUserId);
+
+        if (appointment.getQrCode() == null) {
+            throw new BadRequestException(
+                    "Lịch hẹn này chưa có mã QR. Mã QR chỉ được sinh ra sau khi thanh toán thành công");
+        }
+
+        return QrCodeResponse.builder()
+                .appointmentId(appointment.getAppointmentId())
+                .qrCodeToken(appointment.getQrCode())
+                .qrCodeImageBase64(QRCodeUtil.generateQRCodeBase64(appointment.getQrCode()))
+                .build();
     }
 
     @Transactional
@@ -288,9 +307,6 @@ public class AppointmentService {
         return prices.stream().findFirst().map(PriceList::getPrice).orElse(null);
     }
 
-    /**
-     * Mở public để StaffAppointmentService tái sử dụng cùng logic mapping, tránh lặp code.
-     */
     public AppointmentResponse mapToResponse(Appointment appointment) {
         return AppointmentResponse.builder()
                 .appointmentId(appointment.getAppointmentId())
