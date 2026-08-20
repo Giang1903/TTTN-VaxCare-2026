@@ -96,7 +96,7 @@ public class AppointmentService {
     @Transactional(readOnly = true)
     public List<AppointmentResponse> getMyAppointments(Long currentUserId) {
         User user = resolveUser(currentUserId);
-        return appointmentRepository.findByUser_UserIdOrderByAppointmentDateDesc(user.getUserId()).stream()
+        return appointmentRepository.findByUserIdWithDetails(user.getUserId()).stream()
                 .map(this::mapToResponse)
                 .toList();
     }

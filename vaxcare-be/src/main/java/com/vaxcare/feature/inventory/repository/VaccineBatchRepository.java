@@ -20,7 +20,10 @@ public interface VaccineBatchRepository extends JpaRepository<VaccineBatch, Long
 
     @Query("""
         SELECT b FROM VaccineBatch b
-        WHERE b.inventory.facility.facilityId = :facilityId
+        JOIN FETCH b.vaccine
+        JOIN FETCH b.inventory inv
+        JOIN FETCH inv.facility
+        WHERE inv.facility.facilityId = :facilityId
           AND (:vaccineId IS NULL OR b.vaccine.vaccineId = :vaccineId)
           AND (:status IS NULL OR b.status = :status)
         ORDER BY b.expiryDate ASC
@@ -31,7 +34,10 @@ public interface VaccineBatchRepository extends JpaRepository<VaccineBatch, Long
 
     @Query("""
         SELECT b FROM VaccineBatch b
-        WHERE b.inventory.facility.facilityId = :facilityId
+        JOIN FETCH b.vaccine
+        JOIN FETCH b.inventory inv
+        JOIN FETCH inv.facility
+        WHERE inv.facility.facilityId = :facilityId
           AND b.status = 'AVAILABLE'
           AND b.stockQuantity > 0
           AND b.expiryDate BETWEEN :today AND :untilDate
