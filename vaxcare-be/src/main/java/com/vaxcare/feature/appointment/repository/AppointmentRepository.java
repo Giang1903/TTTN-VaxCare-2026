@@ -17,6 +17,18 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     List<Appointment> findByUser_UserIdOrderByAppointmentDateDesc(Long userId);
 
+    @Query("""
+        SELECT a FROM Appointment a
+        JOIN FETCH a.user u
+        JOIN FETCH u.account
+        JOIN FETCH a.facility
+        JOIN FETCH a.vaccine
+        LEFT JOIN FETCH a.staff
+        WHERE u.userId = :userId
+        ORDER BY a.appointmentDate DESC, a.timeSlot DESC
+        """)
+    List<Appointment> findByUserIdWithDetails(@Param("userId") Long userId);
+
     List<Appointment> findByFacility_FacilityIdAndAppointmentDate(Long facilityId, LocalDate date);
 
     List<Appointment> findByFacility_FacilityIdAndAppointmentDateAndStatusIn(
@@ -39,12 +51,17 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     @Query("""
             SELECT a FROM Appointment a
+            JOIN FETCH a.user u
+            JOIN FETCH u.account acc
+            JOIN FETCH a.facility
+            JOIN FETCH a.vaccine
+            LEFT JOIN FETCH a.staff
             WHERE (:facilityId IS NULL OR a.facility.facilityId = :facilityId)
               AND (:date IS NULL OR a.appointmentDate = :date)
               AND (:status IS NULL OR a.status = :status)
               AND (:keyword IS NULL
-                   OR LOWER(a.user.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-                   OR a.user.account.phone LIKE CONCAT('%', :keyword, '%'))
+                   OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                   OR acc.phone LIKE CONCAT('%', :keyword, '%'))
             ORDER BY a.appointmentDate ASC, a.timeSlot ASC
             """)
     List<Appointment> searchForStaff(@Param("facilityId") Long facilityId,

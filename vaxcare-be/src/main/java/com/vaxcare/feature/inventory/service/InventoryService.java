@@ -91,13 +91,21 @@ public class InventoryService {
         VaccineInventory inventory = inventoryRepository.findByFacility_FacilityId(facilityId).orElse(null);
         int alertThreshold = inventory != null ? inventory.getAlertThreshold() : 50;
 
-        Map<Long, Vaccine> vaccineCache = new java.util.HashMap<>();
+        List<Object[]> rows = batchRepository.sumStockGroupByVaccine(facilityId);
 
-        return batchRepository.sumStockGroupByVaccine(facilityId).stream()
+        // Gom hết vaccineId cần tra rồi load 1 lần duy nhất (thay vì 1 query/vaccine trong vòng lặp)
+        List<Long> vaccineIds = rows.stream().map(row -> (Long) row[0]).toList();
+        Map<Long, Vaccine> vaccineCache = vaccineRepository.findAllById(vaccineIds).stream()
+                .collect(java.util.stream.Collectors.toMap(Vaccine::getVaccineId, v -> v));
+
+        return rows.stream()
                 .map(row -> {
                     Long vaccineId = (Long) row[0];
                     Long totalStock = (Long) row[1];
-                    Vaccine vaccine = vaccineCache.computeIfAbsent(vaccineId, this::findVaccineOrThrow);
+                    Vaccine vaccine = vaccineCache.get(vaccineId);
+                    if (vaccine == null) {
+                        throw new ResourceNotFoundException("Không tìm thấy vắc xin có ID: " + vaccineId);
+                    }
 
                     return StockSummaryResponse.builder()
                             .facilityId(facility.getFacilityId())
