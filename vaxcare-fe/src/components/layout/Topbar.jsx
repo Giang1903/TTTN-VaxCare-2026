@@ -1,4 +1,23 @@
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+
 export default function Topbar({ title, subtitle, searchPlaceholder, onSearch, showSearch = true }) {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const fullName = user?.fullName || 'Quản trị viên';
+  const initials = fullName
+    .split(' ')
+    .filter(Boolean)
+    .slice(-2)
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase();
+
+  function handleLogout() {
+    logout();
+    navigate('/login', { replace: true });
+  }
+
   return (
     <header className="topbar">
       <div className="tb-title">
@@ -29,12 +48,15 @@ export default function Topbar({ title, subtitle, searchPlaceholder, onSearch, s
         <span className="dot" />
       </button>
       <div className="tb-profile">
-        <div className="av">QT</div>
+        <div className="av">{initials || 'QT'}</div>
         <div>
-          <div className="n">Quản trị viên</div>
-          <div className="s">admin@vaxcare.vn</div>
+          <div className="n">{fullName}</div>
+          <div className="s">{user?.email || 'admin@vaxcare.vn'}</div>
         </div>
       </div>
+      <button type="button" className="btn btn-ghost btn-sm" onClick={handleLogout}>
+        Đăng xuất
+      </button>
     </header>
   );
 }

@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./ProtectedRoute";
 
 // ===== LAYOUTS =====
 import MainLayout from "../layouts/MainLayout";
@@ -58,35 +59,41 @@ export default function AppRoutes() {
       </Route>
 
       {/* USER SAU ĐĂNG NHẬP */}
-      <Route element={<DashboardLayout />}>
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/appointments" element={<AppointmentsPage />} />
-        <Route path="/record" element={<RecordPage />} />
-        <Route path="/booking" element={<BookingPage />} />
+      <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>
+        <Route element={<DashboardLayout />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/appointments" element={<AppointmentsPage />} />
+          <Route path="/record" element={<RecordPage />} />
+          <Route path="/booking" element={<BookingPage />} />
+        </Route>
       </Route>
 
       {/*STAFF*/}
-      <Route element={<StaffLayout />}>
-        <Route path="/staff" element={<StaffDashboardPage />} />
-        <Route path="/staff/appointments" element={<StaffAppointmentsPage />} />
-        <Route path="/staff/vaccination" element={<StaffVaccinationPage />} />
-        <Route path="/staff/inventory" element={<StaffInventoryPage />} />
-        <Route path="/staff/reactions" element={<StaffReactionsPage />} />
-        <Route path="/staff/reports" element={<StaffReportsPage />} />
+      <Route element={<ProtectedRoute allowedRoles={["MEDICAL_STAFF"]} />}>
+        <Route element={<StaffLayout />}>
+          <Route path="/staff" element={<StaffDashboardPage />} />
+          <Route path="/staff/appointments" element={<StaffAppointmentsPage />} />
+          <Route path="/staff/vaccination" element={<StaffVaccinationPage />} />
+          <Route path="/staff/inventory" element={<StaffInventoryPage />} />
+          <Route path="/staff/reactions" element={<StaffReactionsPage />} />
+          <Route path="/staff/reports" element={<StaffReportsPage />} />
+        </Route>
       </Route>
 
       {/*ADMIN*/}
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route index element={<AdminDashboard />} />
-        <Route path="reports" element={<AdminReports />} />
-        <Route path="facilities" element={<AdminFacilities />} />
-        <Route path="staff" element={<AdminStaff />} />
-        <Route path="users" element={<AdminUsers />} />
-        <Route path="vaccines" element={<AdminVaccines />} />
-        <Route path="inventory" element={<AdminInventory />} />
-        <Route path="pricing" element={<AdminPricing />} />
-        <Route path="config" element={<AdminConfig />} />
-        <Route path="audit" element={<AdminAudit />} />
+      <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="reports" element={<AdminReports />} />
+          <Route path="facilities" element={<AdminFacilities />} />
+          <Route path="staff" element={<AdminStaff />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="vaccines" element={<AdminVaccines />} />
+          <Route path="inventory" element={<AdminInventory />} />
+          <Route path="pricing" element={<AdminPricing />} />
+          <Route path="config" element={<AdminConfig />} />
+          <Route path="audit" element={<AdminAudit />} />
+        </Route>
       </Route>
 
       {/* AUTH*/}

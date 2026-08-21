@@ -1,3 +1,6 @@
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+
 export default function StaffTopbar({
   title,
   subtitle,
@@ -6,6 +9,22 @@ export default function StaffTopbar({
   onSearchChange,
   showSearch = true,
 }) {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const fullName = user?.fullName || 'Nhân viên y tế';
+  const initials = fullName
+    .split(' ')
+    .filter(Boolean)
+    .slice(-2)
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase();
+
+  function handleLogout() {
+    logout();
+    navigate('/login', { replace: true });
+  }
+
   return (
     <header className="staff-topbar">
       <div className="tb-title">
@@ -36,12 +55,15 @@ export default function StaffTopbar({
       </button>
 
       <div className="tb-profile">
-        <div className="av">TM</div>
+        <div className="av">{initials || 'NV'}</div>
         <div>
-          <div className="n">BS. Trần Minh</div>
+          <div className="n">{fullName}</div>
           <div className="s">Nhân viên y tế</div>
         </div>
       </div>
+      <button type="button" className="btn btn-ghost btn-sm" onClick={handleLogout}>
+        Đăng xuất
+      </button>
     </header>
   );
 }

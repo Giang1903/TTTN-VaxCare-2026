@@ -1,10 +1,17 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 // ============ NAVBAR (LOGGED IN) ============
-// Chuyển từ <header class="navbar"> dùng chung trong dashboard.html,
-// my-appointments.html, my-record.html, booking.html.
-export default function LoggedInNavbar({ onOpenMobileNav, userName = 'Nguyễn Văn A' }) {
+export default function LoggedInNavbar({ onOpenMobileNav }) {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const userName = user?.fullName || user?.email || 'Người dùng';
+
+  function handleLogout() {
+    logout();
+    navigate('/login', { replace: true });
+  }
 
   const links = [
     { to: '/dashboard', label: 'Tổng quan' },
@@ -50,6 +57,9 @@ export default function LoggedInNavbar({ onOpenMobileNav, userName = 'Nguyễn V
           <Link to="/booking" className="btn btn-primary btn-sm">Đặt lịch ngay</Link>
           <div className="user-menu" id="userMenu">
             <span className="user-name">{userName}</span>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={handleLogout}>
+              Đăng xuất
+            </button>
           </div>
           <button className="hamburger" style={{ display: 'none' }} aria-hidden="true" aria-label="Menu">
             <span></span><span></span><span></span>

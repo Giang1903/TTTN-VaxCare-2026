@@ -2007,6 +2007,15 @@ body > footer {
   font-size: 13px;
   margin-bottom: 14px;
 }
+.form-success {
+  color: #1f9d55;
+  background: rgba(31, 157, 85, 0.08);
+  border: 1px solid rgba(31, 157, 85, 0.25);
+  border-radius: var(--radius-sm, 8px);
+  padding: 10px 12px;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
 .form-panel .btn {
   width: 100%;
   border-radius: var(--radius-sm);
