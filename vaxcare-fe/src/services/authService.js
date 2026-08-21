@@ -1,23 +1,25 @@
-import { request } from "./api";
+import { apiClient } from "./apiClient";
 
-export const authService = {
-  register: (payload) =>
-    request("/api/v1/auth/register", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    }),
-
-  login: (payload) =>
-    request("/api/v1/auth/login", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    }),
-
-  me: () => request("/api/v1/auth/me"),
-
-  refresh: (refreshToken) =>
-    request("/api/v1/auth/refresh", {
-      method: "POST",
-      body: JSON.stringify({ refreshToken }),
-    }),
-};
+export function register({ fullName, email, phone, password, address, dateOfBirth, gender }) {
+  return apiClient.request("/auth/register", {
+    method: "POST",
+    auth: false,
+    body: { fullName, email, phone, password, address, dateOfBirth, gender },
+  });
+}
+export function login({ email, password }) {
+  return apiClient.request("/auth/login", {
+    method: "POST",
+    auth: false,
+    body: { email, password },
+  });
+}
+export function getCurrentUser() {
+  return apiClient.request("/auth/me", { method: "GET" });
+}
+export function updateProfile(data) {
+  return apiClient.request("/auth/profile", { method: "PUT", body: data });
+}
+export function logout() {
+  apiClient.clearTokens();
+}
