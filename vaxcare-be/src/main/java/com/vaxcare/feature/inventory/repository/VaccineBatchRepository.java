@@ -2,7 +2,9 @@ package com.vaxcare.feature.inventory.repository;
 
 import com.vaxcare.common.enums.BatchStatus;
 import com.vaxcare.feature.inventory.entity.VaccineBatch;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -81,4 +83,18 @@ public interface VaccineBatchRepository extends JpaRepository<VaccineBatch, Long
     @Modifying
     @Query("UPDATE VaccineBatch b SET b.status = 'EXPIRED' WHERE b.status = 'AVAILABLE' AND b.expiryDate < :today")
     int markExpiredBatches(@Param("today") LocalDate today);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        SELECT b FROM VaccineBatch b
+        WHERE b.inventory.facility.facilityId = :facilityId
+          AND b.vaccine.vaccineId = :vaccineId
+          AND b.status = 'AVAILABLE'
+          AND b.stockQuantity > 0
+          AND b.expiryDate >= :today
+        ORDER BY b.expiryDate ASC
+        """)
+    List<VaccineBatch> findAvailableBatchesForUpdate(@Param("facilityId") Long facilityId,
+                                                       @Param("vaccineId") Long vaccineId,
+                                                       @Param("today") LocalDate today);
 }

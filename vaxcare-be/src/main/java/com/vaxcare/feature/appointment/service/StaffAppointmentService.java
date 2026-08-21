@@ -12,6 +12,7 @@ import com.vaxcare.feature.appointment.repository.AppointmentRepository;
 import com.vaxcare.feature.auth.entity.Account;
 import com.vaxcare.feature.auth.entity.MedicalStaff;
 import com.vaxcare.feature.auth.repository.AccountRepository;
+import com.vaxcare.feature.inventory.service.InventoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,7 @@ public class StaffAppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final AccountRepository accountRepository;
     private final AppointmentService appointmentService;
+    private final InventoryService inventoryService;
 
     @Transactional(readOnly = true)
     public List<AppointmentResponse> searchAppointments(Long currentAccountId, Long facilityId,
@@ -106,6 +108,33 @@ public class StaffAppointmentService {
         }
 
         appointment.setStatus(AppointmentStatus.CHECKED_IN);
+        assignStaffIfPossible(account, appointment);
+
+        return appointmentService.mapToResponse(appointmentRepository.save(appointment));
+    }
+
+    // ===================== HOÀN TẤT TIÊM CHỦNG (TRỪ KHO TỰ ĐỘNG) =====================
+
+    @Transactional
+    public AppointmentResponse completeVaccination(Long appointmentId, Long currentAccountId) {
+        Account account = findAccountOrThrow(currentAccountId);
+        Appointment appointment = findAppointmentOrThrow(appointmentId);
+        checkFacilityScope(account, appointment);
+
+        if (appointment.getStatus() != AppointmentStatus.CHECKED_IN) {
+            throw new BadRequestException(
+                    "Chỉ có thể hoàn tất tiêm chủng cho lịch hẹn đang ở trạng thái CHECKED_IN (hiện tại: "
+                            + appointment.getStatus() + ")");
+        }
+
+        // Nếu không đủ tồn kho, deductStockForVaccination sẽ ném BadRequestException và
+        // @Transactional rollback toàn bộ -> appointment KHÔNG bị chuyển sang COMPLETED.
+        inventoryService.deductStockForVaccination(
+                appointment.getFacility().getFacilityId(),
+                appointment.getVaccine().getVaccineId(),
+                1);
+
+        appointment.setStatus(AppointmentStatus.COMPLETED);
         assignStaffIfPossible(account, appointment);
 
         return appointmentService.mapToResponse(appointmentRepository.save(appointment));

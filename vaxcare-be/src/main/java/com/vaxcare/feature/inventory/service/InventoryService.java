@@ -152,13 +152,43 @@ public class InventoryService {
         inventoryRepository.save(inventory);
     }
 
+    // ===================== TRỪ KHO TỰ ĐỘNG KHI HOÀN TẤT TIÊM CHỦNG =====================
+
+    @Transactional
+    public void deductStockForVaccination(Long facilityId, Long vaccineId, int quantity) {
+        if (quantity <= 0) {
+            throw new BadRequestException("Số lượng liều cần trừ kho phải lớn hơn 0");
+        }
+
+        // Khoá ghi (PESSIMISTIC_WRITE) trên các lô liên quan để tránh 2 giao dịch song song
+        // cùng đọc số tồn cũ rồi cùng ghi đè, dẫn tới trừ kho sai khi nhiều Staff thao tác cùng lúc.
+        List<VaccineBatch> batches = batchRepository.findAvailableBatchesForUpdate(facilityId, vaccineId, LocalDate.now());
+
+        int remaining = quantity;
+        for (VaccineBatch batch : batches) {
+            if (remaining <= 0) {
+                break;
+            }
+            int deductFromThisBatch = Math.min(batch.getStockQuantity(), remaining);
+            batch.setStockQuantity(batch.getStockQuantity() - deductFromThisBatch);
+            if (batch.getStockQuantity() <= 0) {
+                batch.setStatus(BatchStatus.DEPLETED);
+            }
+            remaining -= deductFromThisBatch;
+        }
+
+        if (remaining > 0) {
+            // Ném exception => @Transactional tự động rollback toàn bộ thay đổi ở các lô đã trừ dở
+            // dang, đồng thời rollback luôn cả việc cập nhật trạng thái lịch hẹn ở service gọi nó.
+            throw new BadRequestException(
+                    "Không đủ tồn kho vắc xin tại cơ sở để hoàn tất tiêm chủng (còn thiếu " + remaining + " liều)");
+        }
+
+        batchRepository.saveAll(batches);
+    }
+
     // ===================== HELPERS =====================
 
-    /**
-     * Tự động chuyển các lô đã quá hạn nhưng vẫn đang AVAILABLE sang EXPIRED, đồng thời chuyển
-     * các lô đã bán/dùng hết (stockQuantity <= 0) sang DEPLETED - đảm bảo số liệu tồn kho luôn
-     * phản ánh đúng thực tế mỗi khi tra cứu, do project chưa có Scheduler (task đó ở ngày 31/08).
-     */
     private void syncExpiredBatches() {
         batchRepository.markExpiredBatches(LocalDate.now());
     }

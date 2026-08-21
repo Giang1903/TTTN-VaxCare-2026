@@ -55,4 +55,13 @@ public class StaffAppointmentController {
         return ApiResponse.success("Hủy lịch hẹn thành công",
                 staffAppointmentService.cancelAppointment(id, userPrincipal.getId(), request));
     }
+
+    @Parameter(description = "Chuyển lịch hẹn (đang CHECKED_IN) sang COMPLETED và tự động trừ kho 1 liều vắc xin tương ứng")
+    @PatchMapping("/{id}/complete")
+    public ApiResponse<AppointmentResponse> completeVaccination(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return ApiResponse.success("Hoàn tất tiêm chủng thành công, đã cập nhật tồn kho",
+                staffAppointmentService.completeVaccination(id, userPrincipal.getId()));
+    }
 }
