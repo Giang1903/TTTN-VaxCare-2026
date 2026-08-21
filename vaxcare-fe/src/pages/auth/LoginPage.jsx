@@ -240,7 +240,13 @@ export default function LoginPage() {
 
           {location.state?.registered && (
             <p className="form-success">
-              Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.
+              Đăng ký thành công! Vui lòng kiểm tra email và bấm link kích hoạt
+              trước khi đăng nhập.
+            </p>
+          )}
+          {location.state?.verified && (
+            <p className="form-success">
+              Tài khoản đã kích hoạt. Bạn có thể đăng nhập ngay.
             </p>
           )}
 

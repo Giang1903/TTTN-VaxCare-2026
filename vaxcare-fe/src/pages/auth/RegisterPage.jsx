@@ -273,7 +273,7 @@ export default function RegisterPage() {
                     id="email"
                     name="email"
                     type="email"
-                    placeholder="ban@email.com"
+                    placeholder="ban@gmail.com"
                     value={form.email}
                     onChange={handleChange}
                     required

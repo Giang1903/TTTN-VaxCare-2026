@@ -44,6 +44,13 @@ public class Account {
     @Column(name = "avatar_url", length = 500)
     private String avatarUrl;
 
+    /** Token kích hoạt email (null sau khi đã verify) */
+    @Column(name = "verification_token", length = 64)
+    private String verificationToken;
+
+    @Column(name = "verification_token_expires_at")
+    private LocalDateTime verificationTokenExpiresAt;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -52,7 +59,6 @@ public class Account {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // Relationships (optional bi-directional)
     @OneToOne(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private User user;
 
