@@ -1,45 +1,60 @@
-import { Link } from 'react-router-dom';
-import { timeline } from '../../mockdata/record';
-
 // ============ VACCINATION TIMELINE ============
-export default function VaccinationTimeline({ onOpenShotDetail }) {
+export default function VaccinationTimeline({ items = [], loading, onOpenShotDetail }) {
   return (
-    <div>
-      <div className="section-title"><span className="dot-live"></span> Lịch sử tiêm chủng</div>
-      <p className="section-desc">Toàn bộ mũi tiêm đã ghi nhận trên hệ thống VaxCare.</p>
-      <div className="timeline-record">
-        {timeline.map((t) => (
-          <div className={`tl-rec-item${t.pending ? ' pending' : ''}`} key={t.title}>
-            <div className={`tl-rec-card${t.pending ? ' pending-card' : ''}`}>
-              <div>
-                <h4>{t.title} <span className={`tl-tag ${t.tag.type}`}>{t.tag.text}</span></h4>
-                <p>
-                  {t.lines.map((l, i) => (
-                    <span key={l}>
-                      {l}
-                      {i < t.lines.length - 1 && <br />}
-                    </span>
-                  ))}
-                </p>
-                <div className="tl-actions">
-                  {t.actions
-                    ? t.actions.map((a) => (
-                        <Link to={a.to} key={a.label}>{a.label}</Link>
-                      ))
-                    : (
-                      <button type="button" onClick={() => onOpenShotDetail(t.shot)}>
-                        Xem chi tiết mũi tiêm
-                      </button>
-                    )}
+    <div className="timeline-card">
+      <div className="timeline-head">
+        <h2>Lịch sử tiêm chủng</h2>
+      </div>
+      <div className="timeline-body">
+        {loading && (
+          <p style={{ fontSize: '13px', color: 'var(--gray-500)', padding: '12px 0' }}>
+            Đang tải lịch sử…
+          </p>
+        )}
+        {!loading && items.length === 0 && (
+          <p style={{ fontSize: '13px', color: 'var(--gray-500)', padding: '12px 0' }}>
+            Chưa có mũi tiêm nào trong hồ sơ.
+          </p>
+        )}
+        {!loading &&
+          items.map((item, idx) => (
+            <div className="timeline-item" key={`${item.title}-${item.date}-${idx}`}>
+              <div className="timeline-dot" data-type={item.tag?.type || 'done'} />
+              <div className="timeline-content">
+                <div className="timeline-top">
+                  <h4>{item.title}</h4>
+                  {item.tag && (
+                    <span className={`timeline-tag ${item.tag.type}`}>{item.tag.text}</span>
+                  )}
                 </div>
-              </div>
-              <div className="tl-rec-meta">
-                <span className="date">{t.date}</span>
-                {t.meta}
+                {item.lines?.map((l) => (
+                  <p key={l} className="timeline-line">
+                    {l}
+                  </p>
+                ))}
+                <div className="timeline-meta">
+                  <span>{item.date}</span>
+                  {item.meta && <span>· {item.meta}</span>}
+                </div>
+                {item.shot && (
+                  <button
+                    type="button"
+                    className="timeline-detail-btn"
+                    onClick={() => onOpenShotDetail?.(item.shot)}
+                  >
+                    Chi tiết mũi tiêm
+                  </button>
+                )}
+                {item.actions?.map((act) =>
+                  act.to ? (
+                    <a key={act.label} href={act.to} className="timeline-detail-btn">
+                      {act.label}
+                    </a>
+                  ) : null,
+                )}
               </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
     </div>
   );
