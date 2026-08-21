@@ -1,46 +1,34 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { searchVaccines } from '../../services/vaccineService';
+import { formatCurrency } from '../../utils/format';
 
-const RELATED = [
-  {
-    image: 'https://images.unsplash.com/photo-1632053001990-fbaa9c96c3fa?q=80&w=500&auto=format&fit=crop',
-    alt: 'Vắc xin 6 trong 1',
-    name: 'Vắc xin 6 trong 1',
-    manufacturer: 'Sanofi',
-    disease: 'Bạch hầu, ho gà...',
-    doses: '3 liều, cách 4 tuần',
-    price: '1.050.000₫',
-  },
-  {
-    image: 'https://images.unsplash.com/photo-1605289982774-9a6fef564df8?q=80&w=500&auto=format&fit=crop',
-    alt: 'Vắc xin HPV',
-    name: 'Vắc xin HPV',
-    manufacturer: 'MSD',
-    disease: 'Ung thư cổ tử cung',
-    doses: '2 liều, cách 6 tháng',
-    price: '1.790.000₫',
-  },
-  {
-    image: 'https://images.unsplash.com/photo-1584982751601-97dcc096659c?q=80&w=500&auto=format&fit=crop',
-    alt: 'Vắc xin Phế cầu',
-    name: 'Vắc xin Phế cầu',
-    manufacturer: 'Pfizer',
-    disease: 'Viêm phổi, viêm màng não',
-    doses: '4 liều theo phác đồ',
-    price: '1.150.000₫',
-  },
-  {
-    image: 'https://images.unsplash.com/photo-1584362917165-526a968579e8?q=80&w=500&auto=format&fit=crop',
-    alt: 'Vắc xin Viêm gan B',
-    name: 'Vắc xin Viêm gan B',
-    manufacturer: 'LG Chem',
-    disease: 'Viêm gan siêu vi B',
-    doses: '3 liều, cách 1 tháng',
-    price: '280.000₫',
-  },
-];
+// ============ RELATED VACCINES (cùng danh mục) ============
+export default function RelatedVaccines({ categoryId, excludeId }) {
+  const [related, setRelated] = useState([]);
 
-// ============ RELATED VACCINES ============
-export default function RelatedVaccines() {
+  useEffect(() => {
+    if (!categoryId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setRelated([]);
+      return;
+    }
+    let cancelled = false;
+    searchVaccines({ categoryId })
+      .then((data) => {
+        if (cancelled) return;
+        setRelated((data || []).filter((v) => v.vaccineId !== excludeId).slice(0, 4));
+      })
+      .catch(() => {
+        if (!cancelled) setRelated([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [categoryId, excludeId]);
+
+  if (related.length === 0) return null;
+
   return (
     <section className="related-vaccines">
       <div className="wrap">
@@ -49,28 +37,29 @@ export default function RelatedVaccines() {
             <span className="dot"></span>Có thể bạn quan tâm
           </span>
           <h2>Vắc xin liên quan</h2>
-          <p>Các vắc xin khác thường được tiêm kèm hoặc trong cùng giai đoạn.</p>
+          <p>Các vắc xin khác trong cùng danh mục.</p>
         </div>
         <div className="vaccine-grid">
-          {RELATED.map((v) => (
-            <div className="card vaccine-card" key={v.name}>
+          {related.map((v) => (
+            <div className="card vaccine-card" key={v.vaccineId}>
               <div className="vaccine-photo">
-                <img src={v.image} alt={v.alt} />
+                <img src={v.imageUrl || '/assets/vaccine.jpg'} alt={v.vaccineName} />
               </div>
               <div className="vaccine-body">
-                <h4>{v.name}</h4>
-                <div className="manu">Nhà sản xuất: {v.manufacturer}</div>
+                <h4>{v.vaccineName}</h4>
+                <div className="manu">Nhà sản xuất: {v.manufacturer || 'Đang cập nhật'}</div>
                 <div className="vaccine-meta">
                   <div>
-                    <span>Phòng bệnh:</span> {v.disease}
+                    <span>Phòng bệnh:</span> {v.targetDisease || 'Đang cập nhật'}
                   </div>
                   <div>
-                    <span>Số liều:</span> {v.doses}
+                    <span>Số liều:</span> {v.requiredDoses} liều
+                    {v.doseIntervalDays ? `, cách ${v.doseIntervalDays} ngày` : ''}
                   </div>
                 </div>
                 <div className="vaccine-foot">
-                  <span className="vaccine-price">{v.price}</span>
-                  <Link to="/vaccines/1" className="btn-link">
+                  <span className="vaccine-price">{formatCurrency(v.currentPrice)}</span>
+                  <Link to={`/vaccines/${v.vaccineId}`} className="btn-link">
                     Xem chi tiết
                   </Link>
                 </div>

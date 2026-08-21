@@ -1,16 +1,25 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { formatCurrency } from '../../utils/format';
 
-const PHOTOS = [
-  'https://images.unsplash.com/photo-1584017911766-d451b3d0e843?q=80&w=900&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1632053001990-fbaa9c96c3fa?q=80&w=900&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1605289982774-9a6fef564df8?q=80&w=900&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1584982751601-97dcc096659c?q=80&w=900&auto=format&fit=crop',
-];
+function doseScheduleLabel(vaccine) {
+  const { requiredDoses, doseIntervalDays } = vaccine;
+  if (!requiredDoses || requiredDoses <= 1) return '1 liều duy nhất';
+  if (doseIntervalDays) return `${requiredDoses} liều, cách nhau ${doseIntervalDays} ngày`;
+  return `${requiredDoses} liều theo phác đồ`;
+}
 
-// ============ DETAIL TOP (gallery + info) ============
-export default function DetailTop() {
-  const [mainPhoto, setMainPhoto] = useState(PHOTOS[0]);
+// ============ DETAIL TOP (ảnh + thông tin) ============
+export default function DetailTop({ vaccine }) {
+  const {
+    vaccineName,
+    manufacturer,
+    targetDisease,
+    description,
+    imageUrl,
+    averageRating,
+    totalBookings,
+    currentPrice,
+  } = vaccine;
 
   return (
     <section className="detail-top">
@@ -18,26 +27,15 @@ export default function DetailTop() {
         <div className="detail-layout">
           <div className="detail-gallery">
             <div className="detail-main-photo">
-              <img src={mainPhoto} alt="Vắc xin Cúm mùa" />
-            </div>
-            <div className="detail-thumbs">
-              {PHOTOS.map((src, i) => (
-                <div
-                  key={src}
-                  className={'detail-thumb' + (mainPhoto === src ? ' active' : '')}
-                  onClick={() => setMainPhoto(src)}
-                >
-                  <img src={src.replace('w=900', 'w=200')} alt={`Ảnh ${i + 1}`} />
-                </div>
-              ))}
+              <img src={imageUrl || '/assets/vaccine.jpg'} alt={vaccineName} />
             </div>
           </div>
 
           <div className="detail-info">
             <div className="manu-row">
-              <span className="manu-name">Nhà sản xuất: GSK — Bỉ</span>
+              <span className="manu-name">Nhà sản xuất: {manufacturer || 'Đang cập nhật'}</span>
             </div>
-            <h1>Vắc xin Cúm mùa (Influvac Tetra)</h1>
+            <h1>{vaccineName}</h1>
             <div className="detail-rate">
               <span className="stars">
                 {Array.from({ length: 5 }).map((_, i) => (
@@ -46,11 +44,10 @@ export default function DetailTop() {
                   </svg>
                 ))}
               </span>
-              4.9 (1.240 đánh giá) · Đã tiêm 8.500+ liều tại VaxCare
+              {Number(averageRating || 0).toFixed(1)} · Đã đặt lịch {totalBookings || 0}+ lần tại VaxCare
             </div>
             <p className="detail-desc">
-              Vắc xin cúm tứ giá thế hệ mới, phòng ngừa 4 chủng virus cúm mùa phổ biến (2 chủng A, 2 chủng B). Phù
-              hợp tiêm nhắc lại hằng năm cho cả trẻ em từ 6 tháng tuổi và người lớn.
+              {description || 'Thông tin mô tả chi tiết đang được cập nhật.'}
             </p>
 
             <div className="detail-meta-grid">
@@ -62,7 +59,7 @@ export default function DetailTop() {
                 </span>
                 <div>
                   <div className="dmi-label">Phòng bệnh</div>
-                  <div className="dmi-value">Cúm mùa A/B</div>
+                  <div className="dmi-value">{targetDisease || 'Đang cập nhật'}</div>
                 </div>
               </div>
               <div className="detail-meta-item">
@@ -74,7 +71,18 @@ export default function DetailTop() {
                 </span>
                 <div>
                   <div className="dmi-label">Số liều</div>
-                  <div className="dmi-value">1 liều / năm</div>
+                  <div className="dmi-value">{doseScheduleLabel(vaccine)}</div>
+                </div>
+              </div>
+              <div className="detail-meta-item">
+                <span className="dmi-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2l3 6.5 7 1-5.2 4.9L18 21l-6-3.4L6 21l1.2-6.6L2 9.5l7-1L12 2Z" />
+                  </svg>
+                </span>
+                <div>
+                  <div className="dmi-label">Đánh giá trung bình</div>
+                  <div className="dmi-value">{Number(averageRating || 0).toFixed(1)} / 5</div>
                 </div>
               </div>
               <div className="detail-meta-item">
@@ -86,20 +94,8 @@ export default function DetailTop() {
                   </svg>
                 </span>
                 <div>
-                  <div className="dmi-label">Đối tượng</div>
-                  <div className="dmi-value">Từ 6 tháng tuổi trở lên</div>
-                </div>
-              </div>
-              <div className="detail-meta-item">
-                <span className="dmi-icon">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 10c0 6-9 12-9 12S3 16 3 10a9 9 0 0 1 18 0Z" />
-                    <circle cx="12" cy="10" r="3" />
-                  </svg>
-                </span>
-                <div>
-                  <div className="dmi-label">Xuất xứ</div>
-                  <div className="dmi-value">Bỉ (GSK)</div>
+                  <div className="dmi-label">Lượt đặt lịch</div>
+                  <div className="dmi-value">{totalBookings || 0}</div>
                 </div>
               </div>
             </div>
@@ -108,11 +104,11 @@ export default function DetailTop() {
               <div>
                 <div className="dp-label">Giá mỗi liều</div>
                 <div className="dp-value">
-                  320.000₫ <span>/ liều</span>
+                  {formatCurrency(currentPrice)} {currentPrice != null && <span>/ liều</span>}
                 </div>
               </div>
               <div className="detail-cta-row">
-                <Link to="/login" className="btn btn-primary">
+                <Link to="/booking" className="btn btn-primary">
                   Đặt lịch tiêm ngay
                 </Link>
                 <Link to="/support" className="btn btn-ghost">
@@ -132,7 +128,7 @@ export default function DetailTop() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round">
                   <path d="M20 6 9 17l-5-5" />
                 </svg>
-                Có mặt tại 120+ cơ sở
+                Đồng bộ hồ sơ tại mọi cơ sở VaxCare
               </li>
               <li>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round">

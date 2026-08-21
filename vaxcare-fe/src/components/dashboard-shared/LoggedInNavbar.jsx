@@ -1,17 +1,32 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 // ============ NAVBAR (LOGGED IN) ============
-// Chuyển từ <header class="navbar"> dùng chung trong dashboard.html,
-// my-appointments.html, my-record.html, booking.html.
-export default function LoggedInNavbar({ onOpenMobileNav, userName = 'Nguyễn Văn A' }) {
+export default function LoggedInNavbar({ onOpenMobileNav }) {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const userName = user?.fullName || user?.email || 'Người dùng';
+
+  function handleLogout() {
+    logout();
+    navigate('/login', { replace: true });
+  }
 
   const links = [
-    { to: '/dashboard', label: 'Tổng quan' },
-    { to: '/appointments', label: 'Lịch tiêm' },
-    { to: '/record', label: 'Hồ sơ' },
-    { to: '/vaccines', label: 'Vắc xin' },
-    { to: '/facilities', label: 'Cơ sở' },
+    { to: '/dashboard', label: 'Tổng quan', match: (p) => p === '/dashboard' },
+    { to: '/appointments', label: 'Lịch tiêm', match: (p) => p === '/appointments' },
+    { to: '/record', label: 'Hồ sơ', match: (p) => p === '/record' },
+    {
+      to: '/vaccines',
+      label: 'Vắc xin',
+      match: (p) => p === '/vaccines' || p.startsWith('/vaccines/'),
+    },
+    {
+      to: '/facilities',
+      label: 'Cơ sở',
+      match: (p) => p === '/facilities' || p.startsWith('/facilities/'),
+    },
   ];
 
   return (
@@ -25,7 +40,15 @@ export default function LoggedInNavbar({ onOpenMobileNav, userName = 'Nguyễn V
             aria-label="Mở menu"
             onClick={onOpenMobileNav}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+            >
               <path d="M4 7h16M4 12h16M4 17h16" />
             </svg>
           </button>
@@ -40,19 +63,31 @@ export default function LoggedInNavbar({ onOpenMobileNav, userName = 'Nguyễn V
 
         <nav className="nav-menu">
           {links.map((l) => (
-            <Link key={l.to} to={l.to} className={pathname === l.to ? 'active' : undefined}>
+            <Link key={l.to} to={l.to} className={l.match(pathname) ? 'active' : undefined}>
               {l.label}
             </Link>
           ))}
         </nav>
 
         <div className="nav-actions">
-          <Link to="/booking" className="btn btn-primary btn-sm">Đặt lịch ngay</Link>
+          <Link to="/booking" className="btn btn-primary btn-sm">
+            Đặt lịch ngay
+          </Link>
           <div className="user-menu" id="userMenu">
             <span className="user-name">{userName}</span>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={handleLogout}>
+              Đăng xuất
+            </button>
           </div>
-          <button className="hamburger" style={{ display: 'none' }} aria-hidden="true" aria-label="Menu">
-            <span></span><span></span><span></span>
+          <button
+            className="hamburger"
+            style={{ display: 'none' }}
+            aria-hidden="true"
+            aria-label="Menu"
+          >
+            <span></span>
+            <span></span>
+            <span></span>
           </button>
         </div>
       </div>

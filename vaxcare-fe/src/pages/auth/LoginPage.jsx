@@ -1,10 +1,19 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import useTilt from "../../hooks/useTilt";
+import { useAuth } from "../../context/AuthContext";
+
+const HOME_BY_ROLE = {
+  USER: "/dashboard",
+  MEDICAL_STAFF: "/staff",
+  ADMIN: "/admin",
+};
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const visualTiltRef = useTilt();
+  const { login } = useAuth();
 
   const [form, setForm] = useState({
     email: "",
@@ -12,16 +21,27 @@ export default function LoginPage() {
     remember: false,
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
     setForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    // TODO: gọi API đăng nhập thực tế tại đây (src/services)
-    navigate("/");
+    setError("");
+    setSubmitting(true);
+    try {
+      const data = await login({ email: form.email, password: form.password });
+      const redirectTo = location.state?.from?.pathname || HOME_BY_ROLE[data.role] || "/";
+      navigate(redirectTo, { replace: true });
+    } catch (err) {
+      setError(err.message || "Đăng nhập thất bại, vui lòng thử lại.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -218,6 +238,12 @@ export default function LoginPage() {
             Nhập thông tin tài khoản để tiếp tục sử dụng VaxCare.
           </p>
 
+          {location.state?.registered && (
+            <p className="form-success">
+              Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.
+            </p>
+          )}
+
           <form onSubmit={handleSubmit}>
             <div className="form-field">
               <label htmlFor="email">Email</label>
@@ -318,8 +344,10 @@ export default function LoginPage() {
               {/* <Link to="/forgot-password" className="link-teal">Quên mật khẩu?</Link> */}
             </div>
 
-            <button type="submit" className="btn btn-primary">
-              Đăng nhập
+            {error && <p className="form-error">{error}</p>}
+
+            <button type="submit" className="btn btn-primary" disabled={submitting}>
+              {submitting ? "Đang đăng nhập..." : "Đăng nhập"}
             </button>
           </form>
 

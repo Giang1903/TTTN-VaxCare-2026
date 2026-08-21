@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useTilt from "../../hooks/useTilt";
+import { useAuth } from "../../context/AuthContext";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
   const visualTiltRef = useTilt();
+  const { register } = useAuth();
 
   const [form, setForm] = useState({
     fullName: "",
@@ -18,13 +20,14 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
     setForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     if (form.password !== form.confirmPassword) {
       setError("Mật khẩu xác nhận không khớp.");
@@ -35,8 +38,23 @@ export default function RegisterPage() {
       return;
     }
     setError("");
-    // TODO: gọi API đăng ký thực tế tại đây (src/services)
-    navigate("/login");
+    setSubmitting(true);
+    try {
+      await register({
+        fullName: form.fullName,
+        email: form.email,
+        phone: form.phone,
+        address: form.address,
+        password: form.password,
+      });
+      navigate("/login", { state: { registered: true } });
+    } catch (err) {
+      // Lỗi validate của BE trả về theo từng field (vd. { email: "Email đã được sử dụng!" })
+      const fieldMessage = err.fieldErrors && Object.values(err.fieldErrors)[0];
+      setError(fieldMessage || err.message || "Đăng ký thất bại, vui lòng thử lại.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -453,8 +471,8 @@ export default function RegisterPage() {
               </span>
             </label>
 
-            <button type="submit" className="btn btn-primary">
-              Đăng ký
+            <button type="submit" className="btn btn-primary" disabled={submitting}>
+              {submitting ? "Đang đăng ký..." : "Đăng ký"}
             </button>
           </form>
 

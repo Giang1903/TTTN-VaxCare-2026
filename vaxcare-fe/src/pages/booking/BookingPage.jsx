@@ -6,6 +6,7 @@ import StepFacility from '../../components/booking/StepFacility';
 import StepDateTime from '../../components/booking/StepDateTime';
 import StepConfirm from '../../components/booking/StepConfirm';
 import BookingSummary from '../../components/booking/BookingSummary';
+import { bookAppointment } from '../../services/appointmentService';
 
 export default function BookingPage() {
   const [step, setStep] = useState(1);
@@ -16,6 +17,8 @@ export default function BookingPage() {
   const [agree, setAgree] = useState(false);
   const [success, setSuccess] = useState(false);
   const [bookingCode, setBookingCode] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   function goStep(n) {
     setStep(n);
@@ -28,6 +31,8 @@ export default function BookingPage() {
 
   function handleSelectFacility(f) {
     setFacility(f);
+    setDate(null);
+    setSlot(null);
   }
 
   function handleSelectDate(d) {
@@ -39,14 +44,33 @@ export default function BookingPage() {
     setSlot(t);
   }
 
-  function handleConfirm() {
-    const code =
-      'VX-2026-' +
-      (date ? date.label.replace(/\//g, '').slice(0, 4) : '0000') +
-      '-' +
-      (slot ? slot.replace(':', '') : '0000');
-    setBookingCode(code);
-    setSuccess(true);
+  async function handleConfirm() {
+    if (!vaccine?.id || !facility?.id || !date?.iso || !slot) {
+      setSubmitError('Thiếu thông tin đặt lịch. Vui lòng quay lại kiểm tra.');
+      return;
+    }
+    setSubmitError('');
+    setSubmitting(true);
+    try {
+      // API nhận LocalTime — gửi "HH:mm:ss"
+      const timeSlot = slot.length === 5 ? `${slot}:00` : slot;
+      const result = await bookAppointment({
+        facilityId: facility.id,
+        vaccineId: vaccine.id,
+        appointmentDate: date.iso,
+        timeSlot,
+      });
+      const code =
+        result?.qrCode ||
+        (result?.appointmentId != null ? `VX-${result.appointmentId}` : null) ||
+        `VX-${date.iso.replace(/-/g, '')}-${slot.replace(':', '')}`;
+      setBookingCode(code);
+      setSuccess(true);
+    } catch (err) {
+      setSubmitError(err.message || 'Đặt lịch thất bại, vui lòng thử lại.');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -80,6 +104,7 @@ export default function BookingPage() {
             />
             <StepDateTime
               active={step === 3}
+              facilityId={facility?.id}
               facilityName={facility?.name}
               date={date}
               slot={slot}
@@ -94,15 +119,24 @@ export default function BookingPage() {
               onAgreeChange={setAgree}
               onBack={() => {
                 setSuccess(false);
+                setSubmitError('');
                 goStep(3);
               }}
               onConfirm={handleConfirm}
               success={success}
               bookingCode={bookingCode}
+              submitting={submitting}
+              submitError={submitError}
             />
           </div>
 
-          <BookingSummary vaccine={vaccine} facility={facility} date={date} slot={slot} step={step} />
+          <BookingSummary
+            vaccine={vaccine}
+            facility={facility}
+            date={date}
+            slot={slot}
+            step={step}
+          />
         </div>
       </div>
     </>
