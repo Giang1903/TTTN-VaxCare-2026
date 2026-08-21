@@ -5,6 +5,7 @@ import com.vaxcare.feature.appointment.dto.AppointmentRequest;
 import com.vaxcare.feature.appointment.dto.AppointmentResponse;
 import com.vaxcare.feature.appointment.dto.AppointmentSlotResponse;
 import com.vaxcare.feature.appointment.dto.CancelAppointmentRequest;
+import com.vaxcare.feature.appointment.dto.QrCodeResponse;
 import com.vaxcare.feature.appointment.service.AppointmentService;
 import com.vaxcare.security.UserPrincipal;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -47,6 +48,14 @@ public class AppointmentController {
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
         return ApiResponse.success("Lấy chi tiết lịch hẹn thành công",
                 appointmentService.getAppointmentById(id, userPrincipal.getId()));
+    }
+
+    @GetMapping("/{id}/qr-code")
+    public ApiResponse<QrCodeResponse> getQrCode(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return ApiResponse.success("Lấy mã QR lịch hẹn thành công",
+                appointmentService.getQrCode(id, userPrincipal.getId()));
     }
 
     @PostMapping

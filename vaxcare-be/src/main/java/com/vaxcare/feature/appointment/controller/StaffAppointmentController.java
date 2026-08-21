@@ -21,7 +21,7 @@ import java.util.List;
 @RequestMapping("/api/v1/staff/appointments")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('MEDICAL_STAFF', 'ADMIN')")
-@Tag(name = "13. Staff - Appointment Management", description = "Staff/Admin xem, lọc, xác nhận, hủy lịch hẹn")
+@Tag(name = "14. Staff - Appointment Management", description = "Staff/Admin xem, lọc, xác nhận, hủy lịch hẹn")
 public class StaffAppointmentController {
 
     private final StaffAppointmentService staffAppointmentService;
@@ -54,5 +54,14 @@ public class StaffAppointmentController {
             @RequestBody CancelAppointmentRequest request) {
         return ApiResponse.success("Hủy lịch hẹn thành công",
                 staffAppointmentService.cancelAppointment(id, userPrincipal.getId(), request));
+    }
+
+    @Parameter(description = "Chuyển lịch hẹn (đang CHECKED_IN) sang COMPLETED và tự động trừ kho 1 liều vắc xin tương ứng")
+    @PatchMapping("/{id}/complete")
+    public ApiResponse<AppointmentResponse> completeVaccination(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return ApiResponse.success("Hoàn tất tiêm chủng thành công, đã cập nhật tồn kho",
+                staffAppointmentService.completeVaccination(id, userPrincipal.getId()));
     }
 }
