@@ -10,16 +10,22 @@ import com.vaxcare.feature.auth.entity.HealthProfile;
 import com.vaxcare.feature.auth.entity.User;
 import com.vaxcare.feature.auth.repository.AccountRepository;
 import com.vaxcare.feature.auth.repository.UserRepository;
+import com.vaxcare.feature.notification.service.EmailService;
 import com.vaxcare.security.JwtTokenProvider;
 import com.vaxcare.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +36,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
+    private final EmailService emailService;
 
     @Transactional
     public AccountResponse register(RegisterRequest request) {
@@ -38,12 +45,15 @@ public class AuthService {
         }
 
         // Create Account
+        String token = UUID.randomUUID().toString().replace("-", "");
         Account account = Account.builder()
                 .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .phone(request.getPhone())
                 .role(Role.USER)
-                .status(AccountStatus.ACTIVE)
+                .status(AccountStatus.INACTIVE)
+                .verificationToken(token)
+                .verificationTokenExpiresAt(LocalDateTime.now().plusHours(24))
                 .build();
 
         // Create User
@@ -66,6 +76,12 @@ public class AuthService {
 
         Account savedAccount = accountRepository.save(account);
 
+        emailService.sendVerificationEmail(
+                savedAccount.getEmail(),
+                savedAccount.getUser().getFullName(),
+                token
+        );
+
         return AccountResponse.builder()
                 .accountId(savedAccount.getAccountId())
                 .email(savedAccount.getEmail())
@@ -78,13 +94,88 @@ public class AuthService {
                 .build();
     }
 
+    /**
+     * Kích hoạt tài khoản bằng token trong email.
+     */
+    @Transactional
+    public void verifyEmail(String token) {
+        if (token == null || token.isBlank()) {
+            throw new BadRequestException("Token xác nhận không hợp lệ.");
+        }
+        Account account = accountRepository.findByVerificationToken(token)
+                .orElseThrow(() -> new BadRequestException("Link xác nhận không hợp lệ hoặc đã được sử dụng."));
+
+        if (account.getStatus() == AccountStatus.ACTIVE) {
+            // Đã kích hoạt rồi — idempotent
+            account.setVerificationToken(null);
+            account.setVerificationTokenExpiresAt(null);
+            accountRepository.save(account);
+            return;
+        }
+
+        if (account.getVerificationTokenExpiresAt() != null
+                && account.getVerificationTokenExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Link xác nhận đã hết hạn. Vui lòng yêu cầu gửi lại email.");
+        }
+
+        account.setStatus(AccountStatus.ACTIVE);
+        account.setVerificationToken(null);
+        account.setVerificationTokenExpiresAt(null);
+        accountRepository.save(account);
+    }
+
+    /**
+     * Gửi lại email xác nhận nếu tài khoản còn INACTIVE.
+     */
+    @Transactional
+    public void resendVerification(String email) {
+        if (email == null || email.isBlank()) {
+            throw new BadRequestException("Email không được để trống.");
+        }
+        Account account = accountRepository.findByEmail(email.trim().toLowerCase())
+                .or(() -> accountRepository.findByEmail(email.trim()))
+                .orElse(null);
+
+        // Không lộ thông tin email có tồn tại hay không
+        if (account == null || account.getStatus() == AccountStatus.ACTIVE) {
+            return;
+        }
+
+        String token = UUID.randomUUID().toString().replace("-", "");
+        account.setVerificationToken(token);
+        account.setVerificationTokenExpiresAt(LocalDateTime.now().plusHours(24));
+        accountRepository.save(account);
+
+        String fullName = account.getUser() != null ? account.getUser().getFullName() : null;
+        emailService.sendVerificationEmail(account.getEmail(), fullName, token);
+    }
+
     public AuthResponse login(LoginRequest request) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
+        // Báo rõ nếu chưa kích hoạt email
+        accountRepository.findByEmail(request.getEmail()).ifPresent(acc -> {
+            if (acc.getStatus() == AccountStatus.INACTIVE) {
+                throw new BadRequestException(
+                        "Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email và bấm link xác nhận.");
+            }
+            if (acc.getStatus() == AccountStatus.SUSPENDED) {
+                throw new BadRequestException("Tài khoản đã bị khóa. Vui lòng liên hệ hỗ trợ.");
+            }
+        });
+
+        Authentication authentication;
+        try {
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+        } catch (DisabledException e) {
+            throw new BadRequestException(
+                    "Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email và bấm link xác nhận.");
+        } catch (AuthenticationException e) {
+            throw new BadRequestException("Email hoặc mật khẩu không đúng.");
+        }
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 

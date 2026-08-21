@@ -10,6 +10,7 @@ import AdminLayout from "../components/layout/AdminLayout";
 // ===== AUTH =====
 import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
+import VerifyEmailPage from "../pages/auth/VerifyEmailPage";
 
 // ===== PUBLIC =====
 import HomePage from "../pages/home/HomePage";
@@ -99,6 +100,7 @@ export default function AppRoutes() {
       {/* AUTH*/}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
     </Routes>
   );
 }

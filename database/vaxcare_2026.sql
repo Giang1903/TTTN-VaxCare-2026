@@ -672,6 +672,11 @@ CREATE TABLE `waitlists` (
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+ALTER TABLE accounts
+  ADD COLUMN verification_token VARCHAR(64) NULL,
+  ADD COLUMN verification_token_expires_at DATETIME NULL;
+
+CREATE INDEX idx_accounts_verification_token ON accounts (verification_token);
 --
 -- Chỉ mục cho các bảng đã đổ
 --

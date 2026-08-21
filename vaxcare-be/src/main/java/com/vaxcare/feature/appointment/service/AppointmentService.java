@@ -21,7 +21,7 @@ import com.vaxcare.feature.vaccine.entity.PriceList;
 import com.vaxcare.feature.vaccine.entity.Vaccine;
 import com.vaxcare.feature.vaccine.repository.PriceListRepository;
 import com.vaxcare.feature.vaccine.repository.VaccineRepository;
-import com.vaxcare.utils.QRCodeUtil;
+import com.vaxcare.feature.notification.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,6 +49,7 @@ public class AppointmentService {
     private final VaccinationFacilityRepository facilityRepository;
     private final VaccineRepository vaccineRepository;
     private final PriceListRepository priceListRepository;
+    private final EmailService emailService;
 
     // ===================== KHUNG GIỜ TRỐNG =====================
 
@@ -151,6 +152,9 @@ public class AppointmentService {
         validateSlotWithinWorkingHours(facility, request.getAppointmentDate(), request.getTimeSlot());
         ensureSlotHasCapacity(facility, request.getAppointmentDate(), request.getTimeSlot(), null);
 
+        // Mã QR / mã lịch đơn giản để check-in và gửi email
+        String qrCode = "VX-" + java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();
+
         Appointment appointment = Appointment.builder()
                 .user(user)
                 .facility(facility)
@@ -159,10 +163,32 @@ public class AppointmentService {
                 .appointmentDate(request.getAppointmentDate())
                 .timeSlot(request.getTimeSlot())
                 .status(AppointmentStatus.PENDING)
+                .qrCode(qrCode)
                 .note(request.getNote())
                 .build();
 
-        return mapToResponse(appointmentRepository.save(appointment));
+        Appointment saved = appointmentRepository.save(appointment);
+
+        // Gửi email xác nhận — không làm fail đặt lịch nếu mail lỗi
+        try {
+            String email = user.getAccount() != null ? user.getAccount().getEmail() : null;
+            emailService.sendAppointmentConfirmationEmail(
+                    email,
+                    user.getFullName(),
+                    saved.getAppointmentId(),
+                    vaccine.getVaccineName(),
+                    facility.getFacilityName(),
+                    facility.getAddress(),
+                    saved.getAppointmentDate(),
+                    saved.getTimeSlot(),
+                    saved.getPrice(),
+                    saved.getQrCode()
+            );
+        } catch (Exception ignored) {
+            // đã log trong EmailService
+        }
+
+        return mapToResponse(saved);
     }
 
     @Transactional

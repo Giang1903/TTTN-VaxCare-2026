@@ -4,8 +4,12 @@ import com.vaxcare.common.dto.ApiResponse;
 import com.vaxcare.feature.auth.dto.*;
 import com.vaxcare.feature.auth.service.AuthService;
 import com.vaxcare.security.UserPrincipal;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -13,21 +17,42 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
-@Tag(name = "01. Authentication", description = "Đăng ký, đăng nhập, làm mới token, thông tin tài khoản hiện tại")
+@Tag(name = "01. Authentication", description = "Đăng ký, đăng nhập, xác nhận email, làm mới token, thông tin tài khoản")
 public class AuthController {
 
     private final AuthService authService;
 
     @PostMapping("/register")
+    @Operation(summary = "Đăng ký tài khoản USER — gửi email kích hoạt")
     public ApiResponse<AccountResponse> register(@Valid @RequestBody RegisterRequest request) {
         AccountResponse response = authService.register(request);
-        return ApiResponse.success("Đăng ký tài khoản thành công", response);
+        return ApiResponse.success(
+                "Đăng ký thành công. Vui lòng kiểm tra email để kích hoạt tài khoản.",
+                response
+        );
     }
 
     @PostMapping("/login")
     public ApiResponse<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = authService.login(request);
         return ApiResponse.success("Đăng nhập thành công", response);
+    }
+
+    @GetMapping("/verify")
+    @Operation(summary = "Kích hoạt tài khoản bằng token trong email")
+    public ApiResponse<Void> verifyEmail(@RequestParam("token") String token) {
+        authService.verifyEmail(token);
+        return ApiResponse.success("Kích hoạt tài khoản thành công. Bạn có thể đăng nhập.", null);
+    }
+
+    @PostMapping("/resend-verification")
+    @Operation(summary = "Gửi lại email xác nhận tài khoản")
+    public ApiResponse<Void> resendVerification(@Valid @RequestBody ResendVerificationRequest request) {
+        authService.resendVerification(request.getEmail());
+        return ApiResponse.success(
+                "Nếu email tồn tại và chưa kích hoạt, hệ thống đã gửi lại link xác nhận.",
+                null
+        );
     }
 
     @PostMapping("/refresh")
@@ -48,5 +73,12 @@ public class AuthController {
             @Valid @RequestBody UpdateProfileRequest request) {
         UserProfileResponse response = authService.updateProfile(userPrincipal.getId(), request);
         return ApiResponse.success("Cập nhật thông tin thành công", response);
+    }
+
+    @Data
+    public static class ResendVerificationRequest {
+        @NotBlank(message = "Email không được để trống")
+        @Email(message = "Email không hợp lệ")
+        private String email;
     }
 }
