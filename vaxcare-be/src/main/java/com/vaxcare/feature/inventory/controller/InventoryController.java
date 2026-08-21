@@ -20,7 +20,7 @@ import java.util.List;
 @RequestMapping("/api/v1/inventory")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('MEDICAL_STAFF', 'ADMIN')")
-@Tag(name = "14. Inventory", description = "Quản lý kho vắc xin: nhập lô, xem tồn kho, cảnh báo (STAFF/ADMIN)")
+@Tag(name = "16. Inventory", description = "Quản lý kho vắc xin: nhập lô, xem tồn kho, cảnh báo (STAFF/ADMIN)")
 public class InventoryController {
 
     private final InventoryService inventoryService;
