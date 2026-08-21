@@ -1,6 +1,31 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-// ============ VACCINE PREVIEW ============
+import { searchVaccines } from '../../services/vaccineService';
+import { formatCurrency } from '../../utils/format';
+
+// ============ VACCINE PREVIEW (trang chủ) ============
 export default function VaccinePreview() {
+  const [vaccines, setVaccines] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    searchVaccines()
+      .then((data) => {
+        if (cancelled) return;
+        setVaccines((data || []).slice(0, 4));
+      })
+      .catch(() => {
+        if (!cancelled) setVaccines([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <section className="vaccine-preview">
       <div className="wrap">
@@ -32,94 +57,34 @@ export default function VaccinePreview() {
               <path d="M5 12h14M13 6l6 6-6 6" /></svg
           ></Link>
         </div>
-        <div className="filter-row">
-          <span className="filter-pill active">Tất cả</span>
-          <span className="filter-pill">Trẻ em</span>
-          <span className="filter-pill">Người lớn</span>
-          <span className="filter-pill">Cúm</span>
-          <span className="filter-pill">Khác</span>
-        </div>
+
+        {!loading && vaccines.length === 0 && (
+          <p style={{ marginTop: 24 }}>Chưa có dữ liệu vắc xin.</p>
+        )}
+
         <div className="vaccine-grid">
-          <div className="card vaccine-card">
-            <div className="vaccine-photo">
-              <img
-                src="https://images.unsplash.com/photo-1584017911766-d451b3d0e843?q=80&w=500&auto=format&fit=crop"
-                alt="Vắc xin"
-              />
-            </div>
-            <div className="vaccine-body">
-              <h4>Vắc xin Cúm mùa</h4>
-              <div className="manu">Nhà sản xuất: GSK</div>
-              <div className="vaccine-meta">
-                <div><span>Phòng bệnh:</span> Cúm mùa A/B</div>
-                <div><span>Số liều:</span> 1 liều / năm</div>
+          {vaccines.map((v) => (
+            <div className="card vaccine-card" key={v.vaccineId}>
+              <div className="vaccine-photo">
+                <img src={v.imageUrl || '/assets/vaccine.jpg'} alt={v.vaccineName} />
               </div>
-              <div className="vaccine-foot">
-                <span className="vaccine-price">320.000₫</span
-                ><a href="vaccine-detail.html" className="btn-link">Xem chi tiết</a>
-              </div>
-            </div>
-          </div>
-          <div className="card vaccine-card">
-            <div className="vaccine-photo">
-              <img
-                src="https://images.unsplash.com/photo-1632053001990-fbaa9c96c3fa?q=80&w=500&auto=format&fit=crop"
-                alt="Vắc xin"
-              />
-            </div>
-            <div className="vaccine-body">
-              <h4>Vắc xin 6 trong 1</h4>
-              <div className="manu">Nhà sản xuất: Sanofi</div>
-              <div className="vaccine-meta">
-                <div><span>Phòng bệnh:</span> Bạch hầu, ho gà...</div>
-                <div><span>Số liều:</span> 3 liều, cách 4 tuần</div>
-              </div>
-              <div className="vaccine-foot">
-                <span className="vaccine-price">1.050.000₫</span
-                ><a href="vaccine-detail.html" className="btn-link">Xem chi tiết</a>
+              <div className="vaccine-body">
+                <h4>{v.vaccineName}</h4>
+                <div className="manu">Nhà sản xuất: {v.manufacturer || 'Đang cập nhật'}</div>
+                <div className="vaccine-meta">
+                  <div><span>Phòng bệnh:</span> {v.targetDisease || 'Đang cập nhật'}</div>
+                  <div>
+                    <span>Số liều:</span> {v.requiredDoses} liều
+                    {v.doseIntervalDays ? `, cách ${v.doseIntervalDays} ngày` : ''}
+                  </div>
+                </div>
+                <div className="vaccine-foot">
+                  <span className="vaccine-price">{formatCurrency(v.currentPrice)}</span>
+                  <Link to={`/vaccines/${v.vaccineId}`} className="btn-link">Xem chi tiết</Link>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="card vaccine-card">
-            <div className="vaccine-photo">
-              <img
-                src="https://images.unsplash.com/photo-1605289982774-9a6fef564df8?q=80&w=500&auto=format&fit=crop"
-                alt="Vắc xin"
-              />
-            </div>
-            <div className="vaccine-body">
-              <h4>Vắc xin HPV</h4>
-              <div className="manu">Nhà sản xuất: MSD</div>
-              <div className="vaccine-meta">
-                <div><span>Phòng bệnh:</span> Ung thư cổ tử cung</div>
-                <div><span>Số liều:</span> 2 liều, cách 6 tháng</div>
-              </div>
-              <div className="vaccine-foot">
-                <span className="vaccine-price">1.790.000₫</span
-                ><a href="vaccine-detail.html" className="btn-link">Xem chi tiết</a>
-              </div>
-            </div>
-          </div>
-          <div className="card vaccine-card">
-            <div className="vaccine-photo">
-              <img
-                src="https://images.unsplash.com/photo-1584362917165-526a968579e8?q=80&w=500&auto=format&fit=crop"
-                alt="Vắc xin"
-              />
-            </div>
-            <div className="vaccine-body">
-              <h4>Vắc xin Viêm gan B</h4>
-              <div className="manu">Nhà sản xuất: LG Chem</div>
-              <div className="vaccine-meta">
-                <div><span>Phòng bệnh:</span> Viêm gan siêu vi B</div>
-                <div><span>Số liều:</span> 3 liều, cách 1 tháng</div>
-              </div>
-              <div className="vaccine-foot">
-                <span className="vaccine-price">280.000₫</span
-                ><a href="vaccine-detail.html" className="btn-link">Xem chi tiết</a>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </section>

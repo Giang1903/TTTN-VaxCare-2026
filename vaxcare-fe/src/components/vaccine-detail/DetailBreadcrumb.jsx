@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 
 // ============ DETAIL BREADCRUMB ============
-export default function DetailBreadcrumb() {
+export default function DetailBreadcrumb({ vaccineName }) {
   return (
     <section
       style={{
@@ -19,7 +19,7 @@ export default function DetailBreadcrumb() {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
             <path d="M9 6l6 6-6 6" />
           </svg>
-          <span className="current">Vắc xin Cúm mùa</span>
+          <span className="current">{vaccineName}</span>
         </div>
       </div>
     </section>
