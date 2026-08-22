@@ -20,15 +20,13 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class PriceListService {
 
     private final PriceListRepository priceListRepository;
     private final VaccineRepository vaccineRepository;
     private final VaccinationFacilityRepository facilityRepository;
 
-    /**
-     * Lấy giá đang hiệu lực của một vắc xin (public), ưu tiên giá riêng theo cơ sở nếu có.
-     */
     @Transactional(readOnly = true)
     public List<PriceListResponse> getCurrentPrices(Long vaccineId, Long facilityId) {
         return priceListRepository.findActivePrices(vaccineId, facilityId, LocalDate.now()).stream()
@@ -36,9 +34,6 @@ public class PriceListService {
                 .toList();
     }
 
-    /**
-     * Lịch sử toàn bộ bảng giá của 1 vắc xin (dành cho Admin/Staff quản lý).
-     */
     @Transactional(readOnly = true)
     public List<PriceListResponse> getPriceHistory(Long vaccineId) {
         findVaccineOrThrow(vaccineId);

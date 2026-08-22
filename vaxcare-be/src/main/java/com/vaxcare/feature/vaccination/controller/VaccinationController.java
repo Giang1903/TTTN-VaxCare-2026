@@ -4,12 +4,17 @@ import com.vaxcare.common.dto.ApiResponse;
 import com.vaxcare.feature.vaccination.dto.RecordVaccinationRequest;
 import com.vaxcare.feature.vaccination.dto.VaccinationDetailResponse;
 import com.vaxcare.feature.vaccination.dto.VaccinationHistoryResponse;
+import com.vaxcare.feature.vaccination.service.CertificateService;
 import com.vaxcare.feature.vaccination.service.VaccinationService;
 import com.vaxcare.security.UserPrincipal;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 public class VaccinationController {
 
     private final VaccinationService vaccinationService;
+    private final CertificateService certificateService;
 
     @Parameter(description = "Staff ghi nhận kết quả 1 mũi tiêm cho lịch hẹn đang CHECKED_IN: tự tính dose_number, " +
             "tự trừ kho theo FEFO, tự chuyển lịch hẹn sang COMPLETED và ghi vào lịch sử tiêm chủng của User")
@@ -47,5 +53,21 @@ public class VaccinationController {
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
         return ApiResponse.success("Lấy lịch sử tiêm chủng thành công",
                 vaccinationService.getHistoryByUserId(id, userPrincipal.getId()));
+    }
+
+    @Parameter(description = "Xuất file PDF chứng nhận tiêm chủng có mã QR xác thực, cho mũi tiêm đã hoàn thành SUCCESS. " +
+            "User chỉ xuất được của chính mình; Staff/Admin xuất được cho bất kỳ ai (in tại quầy)")
+    @GetMapping("/{detailId}/certificate")
+    public ResponseEntity<byte[]> downloadCertificate(
+            @PathVariable Long detailId,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        byte[] pdf = certificateService.generateCertificatePdf(detailId, userPrincipal.getId());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDisposition(
+                ContentDisposition.inline().filename("chung-nhan-tiem-chung-" + detailId + ".pdf").build());
+
+        return ResponseEntity.ok().headers(headers).body(pdf);
     }
 }

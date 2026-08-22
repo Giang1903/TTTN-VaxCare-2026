@@ -21,6 +21,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class VaccineService {
 
     private final VaccineRepository vaccineRepository;
