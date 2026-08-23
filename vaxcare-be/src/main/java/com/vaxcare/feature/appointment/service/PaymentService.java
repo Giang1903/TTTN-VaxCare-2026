@@ -16,6 +16,9 @@ import com.vaxcare.feature.appointment.repository.AppointmentRepository;
 import com.vaxcare.feature.appointment.repository.PaymentRepository;
 import com.vaxcare.feature.auth.entity.Account;
 import com.vaxcare.feature.auth.repository.AccountRepository;
+import com.vaxcare.common.enums.NotificationType;
+import com.vaxcare.feature.notification.service.EmailService;
+import com.vaxcare.feature.notification.service.NotificationService;
 import com.vaxcare.utils.QRCodeUtil;
 import com.vaxcare.utils.VNPayUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -47,6 +50,8 @@ public class PaymentService {
     private final AccountRepository accountRepository;
     private final VNPayConfig vnPayConfig;
     private final ObjectMapper objectMapper;
+    private final EmailService emailService;
+    private final NotificationService notificationService;
 
     // ===================== TẠO URL THANH TOÁN =====================
 
@@ -80,7 +85,6 @@ public class PaymentService {
                     .status(PaymentStatus.PENDING)
                     .build();
         } else {
-            // Cho phép tạo lại URL nếu lần trước FAILED hoặc user thoát giữa chừng (vẫn PENDING)
             payment.setAmount(appointment.getPrice());
             payment.setStatus(PaymentStatus.PENDING);
         }
@@ -99,7 +103,6 @@ public class PaymentService {
     private String buildPaymentUrl(Payment payment, String txnRef, HttpServletRequest httpRequest) {
         LocalDateTime now = LocalDateTime.now(ZoneId.of(vnPayConfig.getTimezone()));
 
-        // Số tiền phải nhân 100 theo quy định của VNPay (không có phần thập phân)
         long amount = payment.getAmount().multiply(BigDecimal.valueOf(100)).longValue();
 
         Map<String, String> params = new HashMap<>();
@@ -183,7 +186,6 @@ public class PaymentService {
             return new CallbackResult(false, "01", "Không tìm thấy giao dịch", null);
         }
 
-        // Idempotent: nếu đã xử lý SUCCESS trước đó (do return + IPN cùng gọi vào), không xử lý lại
         if (payment.getStatus() == PaymentStatus.SUCCESS) {
             return new CallbackResult(true, "02", "Giao dịch đã được xác nhận trước đó",
                     payment.getAppointment().getAppointmentId());
@@ -212,22 +214,48 @@ public class PaymentService {
             payment.setPaymentTime(LocalDateTime.now(ZoneId.of(vnPayConfig.getTimezone())));
             paymentRepository.save(payment);
 
-            // Thanh toán thành công coi như xác nhận luôn lịch hẹn (nếu đang PENDING chờ staff duyệt)
             if (appointment.getStatus() == AppointmentStatus.PENDING) {
                 appointment.setStatus(AppointmentStatus.CONFIRMED);
             }
-            // Sinh token QR check-in (nếu chưa có) - ảnh QR base64 sẽ được render on-the-fly qua
-            // GET /api/v1/appointments/{id}/qr-code, không lưu ảnh vào DB để tránh cột quá nặng.
+
             if (appointment.getQrCode() == null) {
                 appointment.setQrCode(QRCodeUtil.generateToken());
             }
             appointmentRepository.save(appointment);
+
+            sendPaymentSuccessNotifications(payment, appointment);
 
             return new CallbackResult(true, "00", "Thanh toán thành công", appointment.getAppointmentId());
         } else {
             payment.setStatus(PaymentStatus.FAILED);
             paymentRepository.save(payment);
             return new CallbackResult(false, "00", "Thanh toán thất bại hoặc bị hủy", appointment.getAppointmentId());
+        }
+    }
+
+    private void sendPaymentSuccessNotifications(Payment payment, Appointment appointment) {
+        try {
+            Account account = appointment.getUser().getAccount();
+
+            emailService.sendPaymentConfirmationEmail(
+                    account.getEmail(),
+                    appointment.getUser().getFullName(),
+                    appointment.getAppointmentId(),
+                    appointment.getVaccine().getVaccineName(),
+                    payment.getAmount(),
+                    payment.getTransactionId());
+
+            notificationService.create(
+                    account,
+                    "Thanh toán thành công",
+                    "Bạn đã thanh toán thành công " + payment.getAmount() + "đ cho lịch hẹn #"
+                            + appointment.getAppointmentId() + " (" + appointment.getVaccine().getVaccineName() + ").",
+                    NotificationType.APPOINTMENT,
+                    appointment.getAppointmentId());
+        } catch (Exception e) {
+            // Gửi email/notification thất bại không được làm rollback giao dịch thanh toán đã thành công
+            log.error("Không thể gửi email/thông báo xác nhận thanh toán cho appointment #{}",
+                    appointment.getAppointmentId(), e);
         }
     }
 

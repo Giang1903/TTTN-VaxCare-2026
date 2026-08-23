@@ -10,20 +10,11 @@ import java.security.SecureRandom;
 import java.util.Map;
 import java.util.TreeMap;
 
-/**
- * Helper thuần túy cho tích hợp VNPay: ký HMAC-SHA512, build query string đã sort theo alphabet
- * (bắt buộc theo chuẩn checksum của VNPay), sinh mã giao dịch (vnp_TxnRef) và lấy IP người dùng.
- * Tham khảo tài liệu: https://sandbox.vnpayment.vn/apis/docs/thanh-toan-pay/pay.html
- */
 public final class VNPayUtil {
 
     private VNPayUtil() {
     }
 
-    /**
-     * Ký HMAC-SHA512 dữ liệu bằng secret key, dùng để tạo vnp_SecureHash khi tạo URL thanh toán
-     * và để verify chữ ký khi nhận callback (return/IPN) từ VNPay.
-     */
     public static String hmacSHA512(String key, String data) {
         try {
             Mac hmac512 = Mac.getInstance("HmacSHA512");
@@ -40,10 +31,6 @@ public final class VNPayUtil {
         }
     }
 
-    /**
-     * Build "hashData" (chuỗi field=value nối bằng '&', KHÔNG encode key, value được URL-encode)
-     * từ params đã sort theo key alphabet - đây là chuỗi thực sự được đưa vào hmacSHA512 để ký.
-     */
     public static String buildHashData(Map<String, String> params) {
         TreeMap<String, String> sorted = new TreeMap<>(params);
         StringBuilder sb = new StringBuilder();
@@ -63,14 +50,12 @@ public final class VNPayUtil {
         return sb.toString();
     }
 
-    /** Sinh mã giao dịch (vnp_TxnRef) duy nhất: timestamp + random 6 số, VNPay yêu cầu unique trong ngày. */
     public static String generateTxnRef() {
         long timestamp = System.currentTimeMillis();
         int random = new SecureRandom().nextInt(900000) + 100000;
         return timestamp + "" + random;
     }
 
-    /** Lấy IP thực của client, có xét header X-Forwarded-For khi chạy sau proxy/load balancer. */
     public static String getClientIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
         if (ip == null || ip.isBlank() || "unknown".equalsIgnoreCase(ip)) {
