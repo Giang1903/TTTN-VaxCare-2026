@@ -44,9 +44,6 @@ public class EmailService {
         send(toEmail, "[VaxCare] Xác nhận tài khoản của bạn", body, "verification " + link);
     }
 
-    /**
-     * Email xác nhận sau khi đặt lịch tiêm thành công.
-     */
     public void sendAppointmentConfirmationEmail(
             String toEmail,
             String fullName,
@@ -87,6 +84,59 @@ public class EmailService {
                         + "— Đội ngũ VaxCare";
 
         send(toEmail, "[VaxCare] Xác nhận đặt lịch tiêm – " + code, body, "appointment " + code);
+    }
+
+    public void sendPaymentConfirmationEmail(
+            String toEmail,
+            String fullName,
+            Long appointmentId,
+            String vaccineName,
+            BigDecimal amount,
+            String transactionId
+    ) {
+        String amountStr = amount != null
+                ? String.format("%,.0f", amount).replace(',', '.') + "₫"
+                : "—";
+
+        String body =
+                "Xin chào " + safe(fullName) + ",\n\n"
+                        + "VaxCare xác nhận đã nhận được thanh toán của bạn.\n\n"
+                        + "===== THÔNG TIN THANH TOÁN =====\n"
+                        + "Mã lịch hẹn: #" + appointmentId + "\n"
+                        + "Vắc xin: " + safe(vaccineName) + "\n"
+                        + "Số tiền: " + amountStr + "\n"
+                        + "Mã giao dịch VNPay: " + safe(transactionId) + "\n"
+                        + "Trạng thái: Thanh toán thành công\n\n"
+                        + "Lịch hẹn của bạn đã được xác nhận. Vui lòng mang theo mã QR khi đến tiêm.\n\n"
+                        + "— Đội ngũ VaxCare";
+
+        send(toEmail, "[VaxCare] Thanh toán thành công – Lịch hẹn #" + appointmentId, body,
+                "payment appointment#" + appointmentId);
+    }
+
+    public void sendNextDoseReminderEmail(
+            String toEmail,
+            String fullName,
+            String vaccineName,
+            int nextDoseNumber,
+            LocalDate nextDoseDate
+    ) {
+        String dateStr = nextDoseDate != null ? nextDoseDate.format(DATE_FMT) : "—";
+        String bookingLink = frontendUrl + "/appointments/new";
+
+        String body =
+                "Xin chào " + safe(fullName) + ",\n\n"
+                        + "Đã đến lúc bạn tiêm mũi tiếp theo trong phác đồ vắc xin " + safe(vaccineName) + ".\n\n"
+                        + "===== THÔNG TIN NHẮC LỊCH =====\n"
+                        + "Vắc xin: " + safe(vaccineName) + "\n"
+                        + "Mũi số: " + nextDoseNumber + "\n"
+                        + "Ngày dự kiến: " + dateStr + "\n\n"
+                        + "Vui lòng đặt lịch sớm để đảm bảo hiệu quả phòng bệnh tối ưu:\n"
+                        + bookingLink + "\n\n"
+                        + "— Đội ngũ VaxCare";
+
+        send(toEmail, "[VaxCare] Nhắc lịch tiêm – " + safe(vaccineName) + " mũi " + nextDoseNumber, body,
+                "reminder " + safe(vaccineName) + " dose" + nextDoseNumber);
     }
 
     private void send(String toEmail, String subject, String body, String fallbackHint) {

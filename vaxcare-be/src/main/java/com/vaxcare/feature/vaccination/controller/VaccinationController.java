@@ -57,7 +57,7 @@ public class VaccinationController {
 
     @Parameter(description = "Xuất file PDF chứng nhận tiêm chủng có mã QR xác thực, cho mũi tiêm đã hoàn thành SUCCESS. " +
             "User chỉ xuất được của chính mình; Staff/Admin xuất được cho bất kỳ ai (in tại quầy)")
-    @GetMapping("/{detailId}/certificate")
+    @GetMapping(value = "/{detailId}/certificate", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> downloadCertificate(
             @PathVariable Long detailId,
             @AuthenticationPrincipal UserPrincipal userPrincipal) {

@@ -28,4 +28,20 @@ public interface VaccinationDetailRepository extends JpaRepository<VaccinationDe
         ORDER BY d.injectionDate DESC, d.createdAt DESC
         """)
     List<VaccinationDetail> findAllByHistoryIdWithDetails(@Param("historyId") Long historyId);
+    @Query("""
+        SELECT d FROM VaccinationDetail d
+        JOIN FETCH d.vaccine v
+        JOIN FETCH d.history h
+        JOIN FETCH h.user u
+        JOIN FETCH u.account
+        WHERE d.result = com.vaxcare.common.enums.VaccinationResult.SUCCESS
+          AND d.detailId = (
+              SELECT MAX(d2.detailId) FROM VaccinationDetail d2
+              WHERE d2.history = d.history
+                AND d2.vaccine = v
+                AND d2.result = com.vaxcare.common.enums.VaccinationResult.SUCCESS
+          )
+        """)
+    List<VaccinationDetail> findLatestSuccessDetailPerUserAndVaccine();
+
 }

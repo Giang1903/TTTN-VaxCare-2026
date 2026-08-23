@@ -14,6 +14,7 @@ import com.vaxcare.feature.auth.entity.User;
 import com.vaxcare.feature.auth.repository.AccountRepository;
 import com.vaxcare.feature.inventory.entity.VaccineBatch;
 import com.vaxcare.feature.inventory.service.InventoryService;
+import com.vaxcare.feature.notification.service.VaccinationReminderService;
 import com.vaxcare.feature.vaccination.dto.RecordVaccinationRequest;
 import com.vaxcare.feature.vaccination.dto.VaccinationDetailResponse;
 import com.vaxcare.feature.vaccination.dto.VaccinationHistoryResponse;
@@ -45,6 +46,7 @@ public class VaccinationService {
     private final VaccinationHistoryRepository historyRepository;
     private final VaccinationDetailRepository detailRepository;
     private final InventoryService inventoryService;
+    private final VaccinationReminderService reminderService;
 
     // ===================== GHI NHẬN KẾT QUẢ TIÊM (STAFF) =====================
 
@@ -98,6 +100,11 @@ public class VaccinationService {
                 .build();
 
         detail = detailRepository.save(detail);
+
+        if (STOCK_DEDUCTING_RESULTS.contains(result)) {
+            // Chỉ tính/nhắc mũi tiếp theo khi mũi này thực sự được tiêm (SUCCESS/PARTIAL)
+            reminderService.createNextDoseNotificationIfApplicable(detail);
+        }
 
         appointment.setStatus(AppointmentStatus.COMPLETED);
         assignStaffIfPossible(account, appointment);
