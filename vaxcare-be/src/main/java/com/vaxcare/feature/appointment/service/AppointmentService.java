@@ -26,6 +26,7 @@ import com.vaxcare.utils.QRCodeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.vaxcare.utils.QRCodeUtil;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

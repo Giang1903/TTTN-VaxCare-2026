@@ -1,50 +1,66 @@
-import { useState } from 'react';
+/* eslint-disable no-unused-vars */
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Topbar from '../../components/layout/Topbar';
 import { Overlay, Modal } from '../../components/ui/Modal';
 import { useToast } from '../../components/ui/Toast';
-
-const WEEK_DATA = {
-  7: { vals: [142, 168, 155, 198, 176, 124, 112], labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'], avg: '153.6', sub: '11/08 – 17/08/2026' },
-  30: { vals: [138, 155, 148, 172, 160, 118, 105], labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'], avg: '142.3', sub: 'TB theo thứ trong 30 ngày' },
-  90: { vals: [125, 140, 132, 158, 145, 110, 98], labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'], avg: '129.7', sub: 'TB theo thứ trong 90 ngày' },
-};
-const KPI = {
-  7: { appt: '1,075', done: '912', rate: '85%', rev: '412tr', rx: '9' },
-  30: { appt: '2,486', done: '2,112', rate: '85%', rev: '1.28tỷ', rx: '28' },
-  90: { appt: '6,840', done: '5,720', rate: '84%', rev: '3.4tỷ', rx: '72' },
-};
-
-const FAC_ROWS = [
-  { fac: 'Nowzone', appt: 412, done: 358, rev: 218, rx: 4 },
-  { fac: 'Phú Nhuận', appt: 386, done: 328, rev: 192, rx: 6 },
-  { fac: 'Oriental Plaza', appt: 298, done: 251, rev: 165, rx: 3 },
-  { fac: 'Thủ Đức', appt: 245, done: 208, rev: 128, rx: 2 },
-  { fac: 'Co.opmart QT', appt: 232, done: 195, rev: 118, rx: 3 },
-  { fac: 'Tân Định', appt: 198, done: 162, rev: 98, rx: 2 },
-];
+import * as adminService from '../../services/adminService';
 
 export default function Reports() {
   const showToast = useToast();
   const [range, setRange] = useState('30');
   const [detail, setDetail] = useState(null);
-  const [dateFrom, setDateFrom] = useState('2026-07-19');
-  const [dateTo, setDateTo] = useState('2026-08-18');
+  const today = new Date().toISOString().slice(0, 10);
+  const defaultFrom = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 29);
+    return d.toISOString().slice(0, 10);
+  })();
+  const [dateFrom, setDateFrom] = useState(defaultFrom);
+  const [dateTo, setDateTo] = useState(today);
   const [fac, setFac] = useState('all');
+  const [facilities, setFacilities] = useState([]);
+  const [report, setReport] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const d = WEEK_DATA[range] || WEEK_DATA[30];
-  const k = KPI[range] || KPI[30];
-  const max = Math.max(...d.vals);
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [facs, rep] = await Promise.all([
+        adminService.getFacilitiesAdmin().catch(() => []),
+        adminService.getReport({
+          fromDate: dateFrom,
+          toDate: dateTo,
+          facilityId: fac === 'all' ? undefined : Number(fac),
+        }),
+      ]);
+      setFacilities((facs || []).map(adminService.mapFacilityToUi));
+      setReport(rep);
+    } catch (err) {
+      showToast(err.message || 'Không tải được báo cáo', 'error');
+      setReport(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [showToast, dateFrom, dateTo, fac]);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { load(); }, [load]);
+
+  const k = report?.kpi || {};
+  const series = report?.dailySeries || report?.weekSeries || [];
+  const max = Math.max(1, ...series.map((d) => d.count || 0));
+  const ranking = report?.vaccineRanking || [];
 
   const applyRange = (r) => {
     setRange(r);
-    const to = new Date('2026-08-18');
-    const from = new Date(to);
-    from.setDate(from.getDate() - (Number(r) - 1));
+    const to = new Date();
+    const from = new Date();
+    from.setDate(to.getDate() - (Number(r) - 1));
     const fmt = (x) => x.toISOString().slice(0, 10);
     setDateFrom(fmt(from));
     setDateTo(fmt(to));
-    showToast('Đã áp dụng khoảng ' + r + ' ngày', 'ok');
   };
+
 
   return (
     <>
@@ -56,12 +72,11 @@ export default function Reports() {
           <label>Đến</label>
           <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
           <label>Cơ sở</label>
-          <select value={fac} onChange={(e) => { setFac(e.target.value); showToast('Đã lọc theo cơ sở', 'ok'); }}>
+          <select value={fac} onChange={(e) => setFac(e.target.value)}>
             <option value="all">Tất cả cơ sở</option>
-            <option value="1">Phú Nhuận</option>
-            <option value="3">Nowzone</option>
-            <option value="7">Oriental Plaza</option>
-            <option value="2">Thủ Đức</option>
+            {facilities.map((f) => (
+              <option key={f.id} value={f.id}>{f.name}</option>
+            ))}
           </select>
           <div className="seg-tabs" style={{ marginLeft: 8 }}>
             {[
@@ -93,11 +108,11 @@ export default function Reports() {
         </div>
 
         <section className="kpi-row-5">
-          <div className="kpi c1"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg></span></div><div className="num">{k.appt}</div><div className="lbl">Lịch hẹn</div></div>
-          <div className="kpi c2"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6 9 17l-5-5" /></svg></span></div><div className="num">{k.done}</div><div className="lbl">Hoàn thành</div></div>
-          <div className="kpi c3"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12h4l2 5 4-14 2 9h6" /></svg></span></div><div className="num">{k.rate}</div><div className="lbl">Tỷ lệ hoàn thành</div></div>
-          <div className="kpi c4"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg></span></div><div className="num">{k.rev}</div><div className="lbl">Doanh thu (₫)</div></div>
-          <div className="kpi c1"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 21s-7.5-4.6-10-9.3C.6 8 2.4 4.5 6 4c2.1-.3 4 .8 6 3" /></svg></span></div><div className="num">{k.rx}</div><div className="lbl">Phản ứng theo dõi</div></div>
+          <div className="kpi c1"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg></span></div><div className="num">{k.appointments ?? 0}</div><div className="lbl">Lịch hẹn</div></div>
+          <div className="kpi c2"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6 9 17l-5-5" /></svg></span></div><div className="num">{k.completed ?? 0}</div><div className="lbl">Hoàn thành</div></div>
+          <div className="kpi c3"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12h4l2 5 4-14 2 9h6" /></svg></span></div><div className="num">{(k.completionRate ?? 0) + '%'}</div><div className="lbl">Tỷ lệ hoàn thành</div></div>
+          <div className="kpi c4"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg></span></div><div className="num">{'—'}</div><div className="lbl">Doanh thu (₫)</div></div>
+          <div className="kpi c1"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 21s-7.5-4.6-10-9.3C.6 8 2.4 4.5 6 4c2.1-.3 4 .8 6 3" /></svg></span></div><div className="num">{report?.openReactions ?? 0}</div><div className="lbl">Phản ứng theo dõi</div></div>
         </section>
 
         <div className="grid-2">
@@ -105,30 +120,27 @@ export default function Reports() {
             <div className="panel-head">
               <div>
                 <h3>Lượt tiêm theo ngày</h3>
-                <div className="sub">{d.sub} · toàn mạng</div>
+                <div className="sub">{dateFrom} → {dateTo}</div>
               </div>
             </div>
             <div className="week-chart">
-              {d.vals.map((v, i) => {
-                const h = Math.round((v / max) * 100);
-                const today = i === d.vals.length - 1 ? ' today' : '';
-                return (
-                  <div className="wc-col" key={i}>
-                    <div className="wc-val">{v}</div>
-                    <div className="wc-bar-wrap">
-                      <div className={`wc-bar${today}`} style={{ height: `${h}%` }} />
+              {(series.length ? series : []).map((pt, i) => {
+                  const h = Math.round(((pt.count || 0) / max) * 100) || 4;
+                  return (
+                    <div key={pt.date || i} className="wc-col">
+                      <div className="wc-val">{pt.count}</div>
+                      <div className="wc-bar-wrap"><div className="wc-bar" style={{ height: `${h}%` }} /></div>
+                      <div className="wc-label">{pt.label}</div>
                     </div>
-                    <div className="wc-label">{d.labels[i]}</div>
-                  </div>
-                );
-              })}
+                  );
+                })}
             </div>
             <div className="insight">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4" />
               </svg>
               <span>
-                Trung bình <strong>{d.avg} mũi/ngày</strong>. Thứ Năm thường cao điểm nhất trong tuần.
+                Tổng <strong>{k.appointments ?? 0}</strong> lịch trong kỳ · hoàn thành <strong>{k.completed ?? 0}</strong> ({(k.completionRate ?? 0)}%).
               </span>
             </div>
           </div>
@@ -250,24 +262,21 @@ export default function Reports() {
                 </tr>
               </thead>
               <tbody>
-                {FAC_ROWS.map((r) => {
-                  const rate = Math.round((r.done / r.appt) * 100);
-                  return (
-                    <tr key={r.fac} style={{ cursor: 'pointer' }} onClick={() => setDetail(r)}>
-                      <td className="fname">VaxCare {r.fac}</td>
-                      <td className="mono">{r.appt}</td>
-                      <td className="mono">{r.done}</td>
-                      <td><span className={`tag ${rate >= 84 ? 'ok' : 'warn'}`}>{rate}%</span></td>
-                      <td className="mono">{r.rev}tr</td>
-                      <td className="mono">{r.rx}</td>
+                {ranking.map((r) => (
+                    <tr key={r.rank}>
+                      <td className="fname">{r.vaccineName}</td>
+                      <td className="mono">{r.shots}</td>
+                      <td className="mono">{r.rank}</td>
+                      <td><span className={`tag ${r.tag === 'info' ? 'ok' : r.tag || 'neutral'}`}>{r.pct}%</span></td>
+                      <td className="mono">—</td>
+                      <td className="mono">—</td>
                       <td>
                         <div className="row-actions">
-                          <button className="row-btn outline" type="button" onClick={(e) => { e.stopPropagation(); setDetail(r); }}>Chi tiết</button>
+                          <button className="row-btn outline" type="button" onClick={() => setDetail(r)}>Chi tiết</button>
                         </div>
                       </td>
                     </tr>
-                  );
-                })}
+                  ))}
               </tbody>
             </table>
           </div>

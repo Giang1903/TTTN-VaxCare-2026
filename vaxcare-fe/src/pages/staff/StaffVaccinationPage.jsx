@@ -1,99 +1,21 @@
-import { useEffect, useMemo, useState } from 'react';
+/* eslint-disable no-unused-vars */
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import StaffTopbar from '../../components/staff/StaffTopbar';
 import useStaffToast from '../../hooks/useStaffToast';
-
-const QUEUE = {
-  3: {
-    id: 3,
-    time: '09:15',
-    name: 'Phạm Gia Huy',
-    initials: 'PH',
-    age: '8 tháng · Nam',
-    phone: 'Phụ huynh: 0987654321',
-    vaccine: 'DTaP',
-    dose: '3/5',
-    doseNum: 3,
-    qr: 'VXC-20260817-003',
-    checkedInAt: '09:08',
-    batches: [
-      { id: 6, number: 'DTAP-2026-01', expiry: '01/09/2027', importDate: '10/01/2026', stock: 240, expiring: true },
-      { id: 7, number: 'DTAP-2026-02', expiry: '01/10/2027', importDate: '01/02/2026', stock: 190 },
-    ],
-    history: [
-      { date: '12/06/2026', title: 'DTaP · Mũi 2/5', detail: 'Lô DTAP-2025-08 · Thành công · Không phản ứng' },
-      { date: '15/04/2026', title: 'DTaP · Mũi 1/5', detail: 'Lô DTAP-2025-08 · Thành công · Sưng nhẹ tại chỗ' },
-      { date: '10/02/2026', title: 'Viêm gan B · Mũi 3/3', detail: 'Lô HBV-2025-A2 · Thành công' },
-    ],
-    protocolNote:
-      'Mũi 3 — cách mũi 2 tối thiểu 60 ngày. Tiêm bắp (IM). Quan sát tối thiểu 30 phút.',
-  },
-  4: {
-    id: 4,
-    time: '09:45',
-    name: 'Trần Văn Khoa',
-    initials: 'TV',
-    age: '15 tuổi · Nam',
-    phone: '0933111222',
-    vaccine: 'IPV',
-    dose: '2/4',
-    doseNum: 2,
-    qr: 'VXC-20260817-004',
-    checkedInAt: '09:40',
-    batches: [
-      { id: 8, number: 'IPV-2026-X1', expiry: '15/08/2027', importDate: '25/01/2026', stock: 260 },
-      { id: 9, number: 'IPV-2026-X2', expiry: '20/09/2027', importDate: '12/02/2026', stock: 210 },
-    ],
-    history: [{ date: '20/05/2026', title: 'IPV · Mũi 1/4', detail: 'Lô IPV-2025-B1 · Thành công' }],
-    protocolNote: 'Mũi 2 — cách mũi 1 tối thiểu 60 ngày. Tiêm bắp hoặc dưới da.',
-  },
-  11: {
-    id: 11,
-    time: '10:00',
-    name: 'Ngô Bảo Châu',
-    initials: 'NC',
-    age: '6 tháng · Nữ',
-    phone: 'Phụ huynh: 0966777888',
-    vaccine: 'Hib',
-    dose: '2/3',
-    doseNum: 2,
-    qr: 'VXC-20260817-011',
-    checkedInAt: '09:55',
-    batches: [
-      { id: 10, number: 'HIB-2026-01', expiry: '20/09/2027', importDate: '18/01/2026', stock: 230 },
-      { id: 11, number: 'HIB-2026-02', expiry: '15/10/2027', importDate: '08/02/2026', stock: 180 },
-    ],
-    history: [{ date: '05/06/2026', title: 'Hib · Mũi 1/3', detail: 'Lô HIB-2025-03 · Thành công' }],
-    protocolNote: 'Mũi 2 — cách mũi 1 khoảng 60 ngày. Tiêm bắp.',
-  },
-  12: {
-    id: 12,
-    time: '10:15',
-    name: 'Lý Thị Hoa',
-    initials: 'LH',
-    age: '4 tuổi · Nữ',
-    phone: 'Phụ huynh: 0911999888',
-    vaccine: 'MMR',
-    dose: '2/2',
-    doseNum: 2,
-    qr: 'VXC-20260817-012',
-    checkedInAt: '10:10',
-    batches: [
-      { id: 12, number: 'MMR-2026-01', expiry: '10/10/2027', importDate: '22/01/2026', stock: 320 },
-      { id: 13, number: 'MMR-2026-02', expiry: '05/11/2027', importDate: '08/02/2026', stock: 270 },
-    ],
-    history: [
-      { date: '18/03/2026', title: 'MMR · Mũi 1/2', detail: 'Lô MMR-2025-11 · Thành công · Không phản ứng' },
-    ],
-    protocolNote: 'Mũi 2 — cách mũi 1 tối thiểu 28 ngày. Tiêm dưới da hoặc bắp.',
-  },
-};
+import { useAuth } from '../../context/AuthContext';
+import * as staffService from '../../services/staffService';
 
 export default function StaffVaccinationPage() {
   const [searchParams] = useSearchParams();
   const { toast, showToast } = useStaffToast();
-  const [currentId, setCurrentId] = useState(3);
-  const [selectedBatchId, setSelectedBatchId] = useState(6);
+  const { user } = useAuth();
+  const facilityId = user?.facilityId;
+
+  const [queue, setQueue] = useState([]);
+  const [currentId, setCurrentId] = useState(null);
+  const [selectedBatchId, setSelectedBatchId] = useState(null);
+  const [batches, setBatches] = useState([]);
   const [doneIds, setDoneIds] = useState(new Set());
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
@@ -101,85 +23,171 @@ export default function StaffVaccinationPage() {
   const [reaction, setReaction] = useState('NONE');
   const [staffNote, setStaffNote] = useState('');
   const [q, setQ] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  const loadQueue = useCallback(async () => {
+    setLoading(true);
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const list = await staffService.searchAppointments({ date: today, status: 'CHECKED_IN' });
+      const mapped = (list || []).map((a) => {
+        const ui = staffService.mapAppointmentToUi(a);
+        return {
+          id: ui.id,
+          time: ui.time,
+          name: ui.name,
+          initials: ui.initials,
+          age: ui.age || '',
+          phone: ui.phone,
+          vaccine: ui.vaccine,
+          vaccineId: a.vaccineId,
+          dose: ui.dose || '',
+          doseNum: undefined,
+          qr: ui.qr,
+          checkedInAt: ui.time,
+          batches: [],
+          history: [],
+          protocolNote: a.note || '',
+          userId: a.userId,
+          _raw: a,
+        };
+      });
+      setQueue(mapped);
+      const qid = searchParams.get('id');
+      let pick = mapped[0]?.id ?? null;
+      if (qid) {
+        const found = mapped.find((p) => String(p.id) === String(qid));
+        if (found) pick = found.id;
+      }
+      setCurrentId(pick);
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || 'Không tải hàng chờ tiêm', 'warn');
+      setQueue([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [searchParams, showToast]);
 
   useEffect(() => {
-    const qid = searchParams.get('id');
-    if (qid && QUEUE[qid]) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCurrentId(Number(qid));
-      setSelectedBatchId(QUEUE[qid].batches[0]?.id);
-      setShowSuccess(false);
-    }
-  }, [searchParams]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadQueue();
+  }, [loadQueue]);
 
-  const patient = QUEUE[currentId];
-  const certCode = `VXC-CERT-20260817-${String(currentId).padStart(3, '0')}`;
+  // Load batches for current patient's vaccine when facility known
+  useEffect(() => {
+    const patient = queue.find((p) => p.id === currentId);
+    if (!patient || !facilityId || !patient.vaccineId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setBatches([]);
+      setSelectedBatchId(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const list = await staffService.getBatches(facilityId, { vaccineId: patient.vaccineId });
+        if (cancelled) return;
+        const mapped = (list || []).map((b) => ({
+          id: b.batchId || b.id,
+          number: b.batchNumber || b.lotNumber || '',
+          expiry: b.expiryDate ? String(b.expiryDate).split('-').reverse().join('/') : '',
+          importDate: b.importDate ? String(b.importDate).split('-').reverse().join('/') : '',
+          stock: b.remainingQuantity ?? b.quantity ?? 0,
+          expiring: false,
+        }));
+        setBatches(mapped);
+        setSelectedBatchId(mapped[0]?.id ?? null);
+      } catch (err) {
+        console.error(err);
+        setBatches([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentId, facilityId, queue]);
+
+  const patientRaw = queue.find((p) => p.id === currentId) || null;
+  const patient = patientRaw
+    ? { ...patientRaw, batches: batches, history: patientRaw.history || [] }
+    : {
+        id: '',
+        time: '',
+        name: '—',
+        initials: '??',
+        age: '',
+        phone: '',
+        vaccine: '',
+        dose: '',
+        doseNum: '',
+        qr: '',
+        checkedInAt: '',
+        batches: [],
+        history: [],
+        protocolNote: 'Chọn bệnh nhân trong hàng chờ để ghi nhận tiêm.',
+      };
+  const hasPatient = !!patientRaw;
+  const certCode = patient
+    ? `VXC-CERT-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(patient.id).padStart(3, '0')}`
+    : '';
 
   const queueList = useMemo(() => {
-    return Object.values(QUEUE).filter(
-      (p) => !q || `${p.name} ${p.vaccine} ${p.time}`.toLowerCase().includes(q.toLowerCase())
+    if (!q) return queue;
+    const qq = q.toLowerCase();
+    return queue.filter(
+      (p) =>
+        `${p.name} ${p.vaccine} ${p.qr} ${p.phone}`.toLowerCase().includes(qq)
     );
-  }, [q]);
+  }, [queue, q]);
 
   const selectPatient = (id) => {
     setCurrentId(id);
-    setSelectedBatchId(QUEUE[id].batches[0]?.id);
-    setShowSuccess(false);
-    setStaffNote('');
-    setReaction('NONE');
     setResult('SUCCESS');
+    setReaction('NONE');
+    setStaffNote('');
+    setShowSuccess(false);
   };
 
-  const handleSubmit = () => {
-    if (!selectedBatchId) {
-      showToast('Vui lòng chọn lô vắc xin.', 'warn');
-      return;
+  const handleSubmit = async () => {
+    if (!patient) return;
+    try {
+      await staffService.recordVaccination({
+        appointmentId: patient.id,
+        result,
+        note: staffNote || undefined,
+      });
+      setDoneIds((prev) => new Set(prev).add(patient.id));
+      setSuccessMsg(`Đã ghi nhận tiêm ${patient.vaccine} cho ${patient.name}`);
+      setShowSuccess(true);
+      showToast(`Đã ghi nhận tiêm cho ${patient.name}`, 'ok');
+      // refresh queue (remove completed)
+      setQueue((list) => list.filter((p) => p.id !== patient.id));
+    } catch (err) {
+      showToast(err.message || 'Ghi nhận tiêm thất bại', 'warn');
     }
-    setDoneIds((prev) => new Set(prev).add(currentId));
-    setShowSuccess(true);
-    setSuccessMsg(
-      `Đã ghi nhận ${patient.vaccine} mũi ${patient.dose} cho ${patient.name}. Tồn kho lô đã trừ 1 liều. Chứng nhận: ${certCode}` +
-        (reaction !== 'NONE' ? ' · Đã tạo bản ghi theo dõi sau tiêm.' : '')
-    );
-    showToast('Ghi nhận tiêm thành công!', 'ok');
   };
 
   const printCert = () => {
     const w = window.open('', '_blank', 'width=640,height=720');
-    if (!w) {
-      showToast('Trình duyệt chặn popup. Cho phép để in chứng nhận.', 'warn');
-      return;
-    }
-    w.document.write(`<!doctype html><html lang="vi"><head><meta charset="utf-8"><title>Chứng nhận tiêm chủng</title>
-      <style>body{font-family:system-ui,sans-serif;padding:40px;color:#0e1f1c;max-width:560px;margin:0 auto}
-      h1{font-size:20px;margin:0 0 4px}.sub{color:#6b7b79;font-size:13px;margin-bottom:24px}
-      .box{border:2px solid #24408c;border-radius:12px;padding:24px;margin-bottom:20px}
-      .row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eef2f2;font-size:14px}
-      .row:last-child{border-bottom:none}.lbl{color:#6b7b79}.val{font-weight:700}
-      .code{font-family:ui-monospace,monospace;font-size:15px;background:#f2f7ff;padding:10px 14px;border-radius:8px;text-align:center;margin-top:16px}
-      .foot{font-size:12px;color:#6b7b79;margin-top:28px;text-align:center}@media print{button{display:none}}</style></head>
-      <body><h1>VaxCare — Chứng nhận tiêm chủng</h1>
-      <div class="sub">VaxCare Phú Nhuận · 198 Hoàng Văn Thụ, TP.HCM</div>
-      <div class="box">
-        <div class="row"><span class="lbl">Họ tên</span><span class="val">${patient.name}</span></div>
-        <div class="row"><span class="lbl">Vắc xin</span><span class="val">${patient.vaccine} · Mũi ${patient.dose}</span></div>
-        <div class="row"><span class="lbl">Ngày tiêm</span><span class="val">17/08/2026</span></div>
-        <div class="row"><span class="lbl">Cơ sở</span><span class="val">VaxCare Phú Nhuận</span></div>
-        <div class="row"><span class="lbl">Nhân viên</span><span class="val">BS. Trần Minh · STF-PN-001</span></div>
-        <div class="code">Mã CN: ${certCode}</div>
-      </div>
-      <div class="foot">Tài liệu demo giao diện VaxCare<br/>
-      <button onclick="window.print()" style="margin-top:16px;padding:10px 20px;border-radius:999px;border:none;background:#5b8ae0;color:#fff;font-weight:700;cursor:pointer">In chứng nhận</button></div>
-      </body></html>`);
+    if (!w || !patient) return;
+    w.document.write(`<html><head><title>Chứng nhận</title></head><body>
+      <h2>Chứng nhận tiêm chủng</h2>
+      <p>Mã: ${certCode}</p>
+      <p>Bệnh nhân: ${patient.name}</p>
+      <p>Vắc xin: ${patient.vaccine}</p>
+      <p>Ngày: ${new Date().toLocaleDateString('vi-VN')}</p>
+    </body></html>`);
     w.document.close();
-    showToast('Đã mở chứng nhận — bấm In trong cửa sổ mới', 'ok');
+    w.print();
   };
 
   const nextPatient = () => {
     const next = queueList.find((p) => !doneIds.has(p.id) && p.id !== currentId);
     if (next) selectPatient(next.id);
-    else showToast('Không còn ca nào trong hàng chờ.', 'warn');
+    else showToast('Không còn bệnh nhân trong hàng chờ', 'ok');
   };
+
 
   return (
     <>
@@ -363,7 +371,7 @@ export default function StaffVaccinationPage() {
                     <button type="button" className="btn ghost" onClick={() => showToast('Đã lưu nháp phiếu ghi nhận', 'ok')}>
                       Lưu nháp
                     </button>
-                    <button type="button" className="btn primary" onClick={handleSubmit}>
+                    <button type="button" className="btn primary" onClick={handleSubmit} disabled={!hasPatient}>
                       Xác nhận đã tiêm
                     </button>
                   </div>

@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StaffTopbar from '../../components/staff/StaffTopbar';
 import useStaffToast from '../../hooks/useStaffToast';
+import * as staffService from '../../services/staffService';
 
 const STATUS_LABEL = {
   pending: 'Chờ xác nhận',
@@ -11,171 +12,6 @@ const STATUS_LABEL = {
   cancelled: 'Đã hủy',
   noshow: 'Vắng mặt',
 };
-
-const INITIAL = [
-  {
-    id: 1,
-    time: '08:00',
-    slotNote: 'Đã xong',
-    name: 'Nguyễn An',
-    initials: 'NA',
-    age: '28 tuổi · Nam',
-    phone: '0901234567',
-    vaccine: 'Viêm gan B',
-    dose: 'Mũi 2/3',
-    price: '250.000₫',
-    qr: 'VXC-20260817-001',
-    status: 'completed',
-    ai: true,
-    note: 'Đã tiêm thành công, không phản ứng bất thường.',
-  },
-  {
-    id: 2,
-    time: '08:30',
-    slotNote: 'Đã xong',
-    name: 'Lê Thị Thu',
-    initials: 'LT',
-    age: '3 tuổi · Nữ',
-    phone: 'Phụ huynh: 0912345678',
-    vaccine: 'MMR',
-    dose: 'Mũi 1/2',
-    price: '350.000₫',
-    qr: 'VXC-20260817-002',
-    status: 'completed',
-    ai: false,
-    note: '',
-  },
-  {
-    id: 3,
-    time: '09:15',
-    slotNote: 'Đang chờ tiêm',
-    name: 'Phạm Gia Huy',
-    initials: 'PH',
-    age: '8 tháng · Nam',
-    phone: 'Phụ huynh: 0987654321',
-    vaccine: 'DTaP',
-    dose: 'Mũi 3/5',
-    price: '520.000₫',
-    qr: 'VXC-20260817-003',
-    status: 'checkedin',
-    ai: false,
-    note: 'Đã check-in lúc 09:08. Chờ gọi vào phòng tiêm.',
-    highlight: true,
-  },
-  {
-    id: 4,
-    time: '09:45',
-    slotNote: 'Đang chờ tiêm',
-    name: 'Trần Văn Khoa',
-    initials: 'TV',
-    age: '15 tuổi · Nam',
-    phone: '0933111222',
-    vaccine: 'IPV',
-    dose: 'Mũi 2/4',
-    price: '390.000₫',
-    qr: 'VXC-20260817-004',
-    status: 'checkedin',
-    ai: false,
-    note: '',
-    highlight: true,
-  },
-  {
-    id: 5,
-    time: '10:30',
-    slotNote: 'Sắp tới',
-    name: 'Hoàng Ngọc Mai',
-    initials: 'HN',
-    age: '16 tuổi · Nữ',
-    phone: '0909888777',
-    vaccine: 'HPV',
-    dose: 'Mũi 1/2',
-    price: '1.790.000₫',
-    qr: 'VXC-20260817-005',
-    status: 'confirmed',
-    ai: true,
-    note: 'AI gợi ý theo độ tuổi và lịch tiêm quốc gia.',
-  },
-  {
-    id: 6,
-    time: '11:00',
-    slotNote: 'Chờ duyệt',
-    name: 'Vũ Đình Đạt',
-    initials: 'VD',
-    age: '2 tuổi · Nam',
-    phone: 'Phụ huynh: 0911222333',
-    vaccine: 'Phế cầu',
-    dose: 'Mũi 2/2',
-    price: '1.150.000₫',
-    qr: 'VXC-20260817-006',
-    status: 'pending',
-    ai: false,
-    note: 'Đặt online, chờ nhân viên xác nhận.',
-  },
-  {
-    id: 7,
-    time: '13:30',
-    slotNote: 'Chờ duyệt',
-    name: 'Đỗ Lan Anh',
-    initials: 'ĐL',
-    age: '5 tuổi · Nữ',
-    phone: 'Phụ huynh: 0977444555',
-    vaccine: 'Thủy đậu',
-    dose: 'Mũi 1/2',
-    price: '850.000₫',
-    qr: 'VXC-20260817-007',
-    status: 'pending',
-    ai: false,
-    note: '',
-  },
-  {
-    id: 8,
-    time: '14:00',
-    slotNote: 'Đã xác nhận',
-    name: 'Nguyễn Minh Quân',
-    initials: 'NM',
-    age: '42 tuổi · Nam',
-    phone: '0905555666',
-    vaccine: 'Cúm mùa',
-    dose: 'Mũi 1/1',
-    price: '450.000₫',
-    qr: 'VXC-20260817-008',
-    status: 'confirmed',
-    ai: false,
-    note: '',
-  },
-  {
-    id: 9,
-    time: '14:45',
-    slotNote: 'Chờ duyệt',
-    name: 'Huỳnh Thị Bình',
-    initials: 'HT',
-    age: '55 tuổi · Nữ',
-    phone: '0922333444',
-    vaccine: 'Zona (Shingrix)',
-    dose: 'Mũi 1/2',
-    price: '3.200.000₫',
-    qr: 'VXC-20260817-009',
-    status: 'pending',
-    ai: false,
-    note: 'Người cao tuổi – ưu tiên slot chiều.',
-  },
-  {
-    id: 10,
-    time: '15:30',
-    slotNote: 'Đã hủy',
-    name: 'Phan Thành Đạt',
-    initials: 'PT',
-    age: '31 tuổi · Nam',
-    phone: '0944555666',
-    vaccine: 'COVID-19',
-    dose: 'Mũi 2/2',
-    price: '550.000₫',
-    qr: 'VXC-20260817-010',
-    status: 'cancelled',
-    ai: false,
-    note: 'Lý do hủy: bận công việc đột xuất.',
-  },
-];
 
 function countsOf(list) {
   return {
@@ -244,15 +80,38 @@ function RowActions({ status, onAction }) {
 }
 
 export default function StaffAppointmentsPage() {
+  // eslint-disable-next-line no-unused-vars
   const navigate = useNavigate();
   const { toast, showToast } = useStaffToast();
-  const [appts, setAppts] = useState(INITIAL);
+  const [appts, setAppts] = useState([]);
+  // eslint-disable-next-line no-unused-vars
+  const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('all');
   const [q, setQ] = useState('');
-  const [date, setDate] = useState('2026-08-17');
+  const today = new Date().toISOString().slice(0, 10);
+  const [date, setDate] = useState(today);
   const [drawer, setDrawer] = useState({ open: false, mode: 'view', apptId: null });
   const [manualQr, setManualQr] = useState('');
   const [noteDraft, setNoteDraft] = useState('');
+
+  const loadAppointments = useCallback(async () => {
+    setLoading(true);
+    try {
+      const list = await staffService.searchAppointments({ date });
+      setAppts((list || []).map(staffService.mapAppointmentToUi));
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || 'Không tải được danh sách lịch hẹn', 'warn');
+      setAppts([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [date, showToast]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadAppointments();
+  }, [loadAppointments]);
 
   const counts = useMemo(() => countsOf(appts), [appts]);
 
@@ -269,7 +128,7 @@ export default function StaffAppointmentsPage() {
     });
   }, [appts, tab, q]);
 
-  const updateStatus = (id, status) => {
+  const updateLocal = (id, status) => {
     setAppts((list) =>
       list.map((a) =>
         a.id === id
@@ -307,57 +166,71 @@ export default function StaffAppointmentsPage() {
 
   const closeDrawer = () => setDrawer({ open: false, mode: 'view', apptId: null });
 
-  const handleAction = (appt, action) => {
+  const handleAction = async (appt, action) => {
     if (action === 'view') {
       openView(appt);
       return;
     }
-    if (action === 'confirm') {
-      updateStatus(appt.id, 'confirmed');
-      showToast(`Đã xác nhận lịch của ${appt.name}`, 'ok');
-      return;
-    }
-    if (action === 'checkin') {
-      updateStatus(appt.id, 'checkedin');
-      showToast(`Check-in thành công: ${appt.name}`, 'ok');
-      return;
-    }
-    if (action === 'cancel') {
-      updateStatus(appt.id, 'cancelled');
-      showToast(`Đã từ chối / hủy lịch của ${appt.name}`, 'warn');
-      return;
-    }
-    if (action === 'vaccinate') {
-      showToast('Chuyển sang trang Ghi nhận tiêm chủng…', 'ok');
-      setTimeout(() => navigate(`/staff/vaccination?id=${appt.id}`), 400);
+    try {
+      if (action === 'confirm') {
+        await staffService.confirmAppointment(appt.id);
+        updateLocal(appt.id, 'confirmed');
+        showToast(`Đã xác nhận lịch của ${appt.name}`, 'ok');
+        return;
+      }
+      if (action === 'checkin') {
+        if (appt.qr) {
+          await staffService.checkin(appt.qr);
+        }
+        updateLocal(appt.id, 'checkedin');
+        showToast(`Check-in thành công: ${appt.name}`, 'ok');
+        return;
+      }
+      if (action === 'cancel') {
+        await staffService.cancelAppointment(appt.id, 'Từ chối bởi nhân viên');
+        updateLocal(appt.id, 'cancelled');
+        showToast(`Đã từ chối / hủy lịch của ${appt.name}`, 'warn');
+        return;
+      }
+      if (action === 'vaccinate') {
+        await staffService.completeVaccination(appt.id);
+        updateLocal(appt.id, 'completed');
+        showToast(`Đã ghi nhận tiêm cho ${appt.name}`, 'ok');
+        return;
+      }
+    } catch (err) {
+      showToast(err.message || 'Thao tác thất bại', 'warn');
     }
   };
 
-  const doScan = () => {
-    const code = manualQr.trim().toUpperCase();
-    const found = appts.find((a) => a.qr === code);
-    if (!found) {
-      showToast('Không tìm thấy lịch hẹn với mã QR này.', 'warn');
+  const handleManualCheckin = async () => {
+    const code = (manualQr || '').trim();
+    if (!code) {
+      showToast('Vui lòng nhập mã QR.', 'warn');
       return;
     }
-    if (found.status === 'confirmed') {
-      updateStatus(found.id, 'checkedin');
-      showToast(`Đã check-in: ${found.name}`, 'ok');
-      setNoteDraft(found.note || '');
-      setDrawer({ open: true, mode: 'view', apptId: found.id });
-    } else if (found.status === 'checkedin') {
-      showToast(`${found.name} đã check-in rồi.`, 'warn');
-      setNoteDraft(found.note || '');
-      setDrawer({ open: true, mode: 'view', apptId: found.id });
-    } else {
-      showToast(
-        `Trạng thái hiện tại không cho phép check-in (${STATUS_LABEL[found.status]}).`,
-        'warn'
-      );
-      setNoteDraft(found.note || '');
-      setDrawer({ open: true, mode: 'view', apptId: found.id });
+    try {
+      const res = await staffService.checkin(code);
+      const mapped = staffService.mapAppointmentToUi(res);
+      setAppts((list) => {
+        const idx = list.findIndex((a) => a.id === mapped.id);
+        if (idx >= 0) {
+          const next = [...list];
+          next[idx] = { ...mapped, highlight: true };
+          return next;
+        }
+        return [mapped, ...list];
+      });
+      showToast(`Đã check-in: ${mapped.name}`, 'ok');
+      setNoteDraft(mapped.note || '');
+      setDrawer({ open: true, mode: 'view', apptId: mapped.id });
+    } catch (err) {
+      showToast(err.message || 'Check-in thất bại', 'warn');
     }
   };
+
+  const doScan = handleManualCheckin;
+
 
   const drawerAppt = drawer.apptId ? appts.find((a) => a.id === drawer.apptId) : null;
 

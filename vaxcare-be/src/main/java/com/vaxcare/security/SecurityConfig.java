@@ -64,6 +64,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers("/api/v1/payments/vnpay-return", "/api/v1/payments/vnpay-ipn").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**","/v3/api-docs", "/swagger-ui.html").permitAll()
                         // Các route quản trị phải xét TRƯỚC route public GET để không bị permitAll "nuốt" mất
                         .requestMatchers(HttpMethod.GET, "/api/v1/facilities/admin/**").hasRole("ADMIN")

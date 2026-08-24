@@ -12,7 +12,8 @@ import com.vaxcare.feature.appointment.repository.AppointmentRepository;
 import com.vaxcare.feature.auth.entity.Account;
 import com.vaxcare.feature.auth.entity.MedicalStaff;
 import com.vaxcare.feature.auth.repository.AccountRepository;
-import com.vaxcare.feature.inventory.service.InventoryService;
+import com.vaxcare.feature.vaccination.dto.RecordVaccinationRequest;
+import com.vaxcare.feature.vaccination.service.VaccinationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +33,7 @@ public class StaffAppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final AccountRepository accountRepository;
     private final AppointmentService appointmentService;
-    private final InventoryService inventoryService;
+    private final VaccinationService vaccinationService;
 
     @Transactional(readOnly = true)
     public List<AppointmentResponse> searchAppointments(Long currentAccountId, Long facilityId,
@@ -115,29 +116,21 @@ public class StaffAppointmentService {
 
     // ===================== HOÀN TẤT TIÊM CHỦNG (TRỪ KHO TỰ ĐỘNG) =====================
 
+    /**
+     * Endpoint "hoàn tất nhanh" (không cần Staff nhập chi tiết dose_number/kết quả/ghi chú).
+     * Từ 29/08: ủy quyền toàn bộ nghiệp vụ (trừ kho FEFO, tạo VaccinationHistory/VaccinationDetail,
+     * sinh certificate_code, chuyển appointment sang COMPLETED) cho VaccinationService, tránh trùng lặp
+     * logic với POST /api/v1/vaccinations/record - vốn cho phép nhập chi tiết đầy đủ hơn.
+     */
     @Transactional
     public AppointmentResponse completeVaccination(Long appointmentId, Long currentAccountId) {
-        Account account = findAccountOrThrow(currentAccountId);
-        Appointment appointment = findAppointmentOrThrow(appointmentId);
-        checkFacilityScope(account, appointment);
+        vaccinationService.recordVaccination(
+                RecordVaccinationRequest.builder()
+                        .appointmentId(appointmentId)
+                        .build(),
+                currentAccountId);
 
-        if (appointment.getStatus() != AppointmentStatus.CHECKED_IN) {
-            throw new BadRequestException(
-                    "Chỉ có thể hoàn tất tiêm chủng cho lịch hẹn đang ở trạng thái CHECKED_IN (hiện tại: "
-                            + appointment.getStatus() + ")");
-        }
-
-        // Nếu không đủ tồn kho, deductStockForVaccination sẽ ném BadRequestException và
-        // @Transactional rollback toàn bộ -> appointment KHÔNG bị chuyển sang COMPLETED.
-        inventoryService.deductStockForVaccination(
-                appointment.getFacility().getFacilityId(),
-                appointment.getVaccine().getVaccineId(),
-                1);
-
-        appointment.setStatus(AppointmentStatus.COMPLETED);
-        assignStaffIfPossible(account, appointment);
-
-        return appointmentService.mapToResponse(appointmentRepository.save(appointment));
+        return appointmentService.mapToResponse(findAppointmentOrThrow(appointmentId));
     }
 
     // ===================== HELPERS =====================

@@ -32,12 +32,18 @@ export function AuthProvider({ children }) {
   async function login({ email, password }) {
     const data = await authService.login({ email, password });
     apiClient.setTokens(data);
-    setUser({
-      userId: data.accountId,
-      email: data.email,
-      fullName: data.fullName,
-      role: data.role,
-    });
+    // Load full profile (includes facilityId for MEDICAL_STAFF)
+    try {
+      const profile = await authService.getCurrentUser();
+      setUser(profile);
+    } catch {
+      setUser({
+        userId: data.accountId,
+        email: data.email,
+        fullName: data.fullName,
+        role: data.role,
+      });
+    }
     return data;
   }
 

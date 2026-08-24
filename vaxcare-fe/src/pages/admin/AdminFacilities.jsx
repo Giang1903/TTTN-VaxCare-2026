@@ -1,26 +1,30 @@
-import { useMemo, useState } from 'react';
+/* eslint-disable no-unused-vars */
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Topbar from '../../components/layout/Topbar';
 import { Overlay, Modal } from '../../components/ui/Modal';
 import { useToast } from '../../components/ui/Toast';
-
-const INITIAL = [
-  { id: 1, name: 'VaxCare Phú Nhuận', addr: '198 Hoàng Văn Thụ, P.Đức Nhuận, TP.HCM', phone: '028-3845-1122', open: '07:30', close: '17:00', cap: 15, status: 'ACTIVE', staff: 6, apptToday: 24 },
-  { id: 2, name: 'VaxCare Thủ Đức - Bình Chiểu', addr: '2A Đường Bình Chiểu, P.Tam Bình, TP.HCM', phone: '028-3722-8899', open: '08:00', close: '17:30', cap: 12, status: 'ACTIVE', staff: 4, apptToday: 18 },
-  { id: 3, name: 'VaxCare Nowzone', addr: 'Tầng 2, TTTM NOWZONE, 235 Nguyễn Văn Cừ, P.Cầu Ông Lãnh, TP.HCM', phone: '028-3838-5678', open: '08:00', close: '20:00', cap: 18, status: 'ACTIVE', staff: 7, apptToday: 31 },
-  { id: 4, name: 'VaxCare Củ Chi - Bình Mỹ', addr: '1239 Tỉnh Lộ 8, ấp Thạnh An 2, X.Bình Mỹ, TP.HCM', phone: '028-3892-3344', open: '07:30', close: '16:30', cap: 10, status: 'ACTIVE', staff: 3, apptToday: 8 },
-  { id: 5, name: 'VaxCare Trung Mỹ Tây', addr: 'Số 8 Nguyễn Thị Trên, P. Trung Mỹ Tây, TP.HCM', phone: '028-3715-7788', open: '07:30', close: '17:00', cap: 12, status: 'ACTIVE', staff: 4, apptToday: 14 },
-  { id: 6, name: 'VaxCare Co.opmart Quang Trung', addr: 'Lầu 2, TTTM Co.opmart Quang Trung, 304A Quang Trung, P.Thông Tây Hội, TP.HCM', phone: '028-3894-5566', open: '08:00', close: '20:00', cap: 15, status: 'ACTIVE', staff: 5, apptToday: 19 },
-  { id: 7, name: 'VaxCare Oriental Plaza', addr: 'Tầng 1, Toà nhà Oriental Plaza, 685 Âu Cơ, P.Tân Phú, TP.HCM', phone: '028-3962-1122', open: '08:00', close: '19:00', cap: 14, status: 'ACTIVE', staff: 5, apptToday: 21 },
-  { id: 8, name: 'VaxCare Hóc Môn - Đông Thạnh', addr: '338 Tô Ký, X.Đông Thạnh, TP.HCM', phone: '028-3718-9900', open: '07:30', close: '16:30', cap: 10, status: 'ACTIVE', staff: 3, apptToday: 9 },
-  { id: 9, name: 'VaxCare Hiệp Bình', addr: 'Số 566 Quốc Lộ 13, khu phố 6, P.Hiệp Bình, TP.HCM', phone: '028-3721-4455', open: '07:30', close: '17:00', cap: 12, status: 'ACTIVE', staff: 3, apptToday: 12 },
-  { id: 10, name: 'VaxCare Tân Định', addr: '290 Hai Bà Trưng, P.Tân Định, TP.HCM', phone: '028-3820-7788', open: '07:30', close: '17:30', cap: 15, status: 'ACTIVE', staff: 4, apptToday: 16 },
-  { id: 11, name: 'VaxCare An Lạc', addr: '539A-539B Kinh Dương Vương, khu phố 58, P.An Lạc, TP.HCM', phone: '028-3875-2233', open: '08:00', close: '17:00', cap: 12, status: 'ACTIVE', staff: 3, apptToday: 11 },
-  { id: 12, name: 'VaxCare Phú Thuận', addr: '1189 Huỳnh Tấn Phát, P.Phú Thuận, TP.HCM', phone: '028-3873-6677', open: '07:30', close: '17:00', cap: 11, status: 'ACTIVE', staff: 3, apptToday: 7 },
-];
+import * as adminService from '../../services/adminService';
 
 export default function Facilities() {
   const showToast = useToast();
-  const [list, setList] = useState(INITIAL);
+  const [list, setList] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await adminService.getFacilitiesAdmin();
+      setList((data || []).map(adminService.mapFacilityToUi));
+    } catch (err) {
+      showToast(err.message || 'Không tải được danh sách cơ sở', 'error');
+      setList([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [showToast]);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { load(); }, [load]);
   const [filter, setFilter] = useState('all');
   const [q, setQ] = useState('');
   const [detail, setDetail] = useState(null);
@@ -48,29 +52,48 @@ export default function Facilities() {
     setFormOpen(true);
   };
 
-  const save = () => {
-    if (!form.name.trim()) {
-      showToast('Vui lòng nhập tên cơ sở', 'warn');
+  const save = async () => {
+    if (!form.name?.trim()) {
+      showToast('Vui lòng nhập tên cơ sở', 'error');
       return;
     }
-    if (editId) {
-      setList((prev) => prev.map((x) => (x.id === editId ? { ...x, ...form, cap: Number(form.cap) || 12 } : x)));
-      showToast('Đã cập nhật ' + form.name, 'ok');
-    } else {
-      setList((prev) => [...prev, { id: prev.length + 1, staff: 0, apptToday: 0, ...form, cap: Number(form.cap) || 12 }]);
-      showToast('Đã thêm cơ sở ' + form.name, 'ok');
+    const body = {
+      facilityName: form.name.trim(),
+      address: form.addr || undefined,
+      phone: form.phone || undefined,
+      capacityPerSlot: Number(form.cap) || 12,
+      openingTime: form.open ? (form.open.length === 5 ? form.open + ':00' : form.open) : undefined,
+      closingTime: form.close ? (form.close.length === 5 ? form.close + ':00' : form.close) : undefined,
+      status: form.status || 'ACTIVE',
+    };
+    try {
+      if (editId) {
+        await adminService.updateFacility(editId, body);
+        showToast('Đã cập nhật ' + form.name, 'ok');
+      } else {
+        await adminService.createFacility(body);
+        showToast('Đã thêm cơ sở ' + form.name, 'ok');
+      }
+      setFormOpen(false);
+      await load();
+    } catch (err) {
+      showToast(err.message || 'Lưu thất bại', 'error');
     }
-    setFormOpen(false);
   };
 
-  const toggle = (f) => {
-    setList((prev) =>
-      prev.map((x) =>
-        x.id === f.id ? { ...x, status: x.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE' } : x
-      )
-    );
-    const next = f.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-    showToast(next === 'ACTIVE' ? 'Đã kích hoạt ' + f.name : 'Đã ngừng ' + f.name, 'ok');
+  const toggle = async (f) => {
+    try {
+      if (String(f.status).toUpperCase() === 'ACTIVE') {
+        await adminService.deactivateFacility(f.id);
+        showToast('Đã vô hiệu hóa ' + f.name, 'ok');
+      } else {
+        await adminService.reactivateFacility(f.id);
+        showToast('Đã kích hoạt lại ' + f.name, 'ok');
+      }
+      await load();
+    } catch (err) {
+      showToast(err.message || 'Thao tác thất bại', 'error');
+    }
   };
 
   return (

@@ -1,9 +1,42 @@
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Topbar from "../../components/layout/Topbar";
 import { useToast } from "../../components/ui/Toast";
+import * as adminService from '../../services/adminService';
 
 export default function Dashboard() {
   const showToast = useToast();
+  const [kpi, setKpi] = useState({ appointments: 0, completed: 0, cancelled: 0, pending: 0, completionRate: 0 });
+  const [facilities, setFacilities] = useState([]);
+  const [usersCount, setUsersCount] = useState(0);
+  const [staffCount, setStaffCount] = useState(0);
+
+  const load = useCallback(async () => {
+    try {
+      const [report, facs, users, staff] = await Promise.all([
+        adminService.getReport({ days: 7 }),
+        adminService.getFacilitiesAdmin().catch(() => []),
+        adminService.listUsers().catch(() => []),
+        adminService.listStaff().catch(() => []),
+      ]);
+      const k = report?.kpi || {};
+      setKpi({
+        appointments: k.appointments ?? 0,
+        completed: k.completed ?? 0,
+        cancelled: k.cancelled ?? 0,
+        pending: k.pending ?? 0,
+        completionRate: k.completionRate ?? 0,
+      });
+      setFacilities((facs || []).map(adminService.mapFacilityToUi));
+      setUsersCount((users || []).length);
+      setStaffCount((staff || []).length);
+    } catch (err) {
+      showToast(err.message || 'Không tải được dashboard', 'error');
+    }
+  }, [showToast]);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { load(); }, [load]);
 
   return (
     <>
@@ -32,12 +65,12 @@ export default function Dashboard() {
 
         <section className="kpi-row" style={{ gridTemplateColumns: 'repeat(6, 1fr)' }}>
           {[
-            { c: 'c1', num: '12', label: 'Cơ sở đang hoạt động', trend: 'ACTIVE', trendCls: 'flat', icon: 'M3 21h18M5 21V7l7-4 7 4v14' },
-            { c: 'c2', num: '48', label: 'Nhân viên y tế', trend: '+3', trendCls: 'up', icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z' },
-            { c: 'c3', num: '1.24k', label: 'Người dùng đăng ký', trend: '+86', trendCls: 'up', icon: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z' },
-            { c: 'c4', num: '186', label: 'Lịch hẹn toàn mạng', trend: 'Hôm nay', trendCls: 'up', icon: 'M3 4h18v18H3zM16 2v4M8 2v4M3 10h18' },
-            { c: 'c5', num: '42.8tr', label: 'Doanh thu hôm nay (₫)', trend: '+9%', trendCls: 'up', icon: 'M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6' },
-            { c: 'c6', num: '5', label: 'Cảnh báo kho / HSD', trend: 'Cảnh báo', trendCls: 'warn', icon: 'M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0ZM12 9v4M12 17h.01' },
+            { c: 'c1', num: String(facilities.filter((f) => f.status === 'ACTIVE').length), label: 'Cơ sở đang hoạt động', trend: 'ACTIVE', trendCls: 'flat', icon: 'M3 21h18M5 21V7l7-4 7 4v14' },
+            { c: 'c2', num: String(staffCount), label: 'Nhân viên y tế', trend: 'LIVE', trendCls: 'up', icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z' },
+            { c: 'c3', num: String(usersCount), label: 'Người dùng đăng ký', trend: 'LIVE', trendCls: 'up', icon: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z' },
+            { c: 'c4', num: String(kpi.appointments), label: 'Lịch hẹn (7 ngày)', trend: 'LIVE', trendCls: 'up', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z' },
+            { c: 'c5', num: String(kpi.completed), label: 'Hoàn thành (7 ngày)', trend: `${kpi.completionRate}%`, trendCls: 'up', icon: 'M20 6 9 17l-5-5' },
+            { c: 'c6', num: String(kpi.pending), label: 'Chờ xử lý', trend: 'Cần duyệt', trendCls: 'warn', icon: 'M12 8v4l3 3M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z' },
           ].map((k) => (
             <div className={`kpi-card ${k.c}`} key={k.label}>
               <div className="kpi-top">

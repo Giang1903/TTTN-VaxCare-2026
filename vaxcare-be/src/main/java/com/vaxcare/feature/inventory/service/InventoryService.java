@@ -93,7 +93,6 @@ public class InventoryService {
 
         List<Object[]> rows = batchRepository.sumStockGroupByVaccine(facilityId);
 
-        // Gom hết vaccineId cần tra rồi load 1 lần duy nhất (thay vì 1 query/vaccine trong vòng lặp)
         List<Long> vaccineIds = rows.stream().map(row -> (Long) row[0]).toList();
         Map<Long, Vaccine> vaccineCache = vaccineRepository.findAllById(vaccineIds).stream()
                 .collect(java.util.stream.Collectors.toMap(Vaccine::getVaccineId, v -> v));
@@ -155,14 +154,17 @@ public class InventoryService {
     // ===================== TRỪ KHO TỰ ĐỘNG KHI HOÀN TẤT TIÊM CHỦNG =====================
 
     @Transactional
-    public void deductStockForVaccination(Long facilityId, Long vaccineId, int quantity) {
+    public VaccineBatch deductStockForVaccination(Long facilityId, Long vaccineId, int quantity) {
         if (quantity <= 0) {
             throw new BadRequestException("Số lượng liều cần trừ kho phải lớn hơn 0");
         }
 
-        // Khoá ghi (PESSIMISTIC_WRITE) trên các lô liên quan để tránh 2 giao dịch song song
-        // cùng đọc số tồn cũ rồi cùng ghi đè, dẫn tới trừ kho sai khi nhiều Staff thao tác cùng lúc.
         List<VaccineBatch> batches = batchRepository.findAvailableBatchesForUpdate(facilityId, vaccineId, LocalDate.now());
+
+        if (batches.isEmpty()) {
+            throw new BadRequestException("Không có lô vắc xin nào khả dụng tại cơ sở để hoàn tất tiêm chủng");
+        }
+        VaccineBatch primaryBatch = batches.get(0); // lô hết hạn sớm nhất, chắc chắn được trừ trước
 
         int remaining = quantity;
         for (VaccineBatch batch : batches) {
@@ -178,13 +180,12 @@ public class InventoryService {
         }
 
         if (remaining > 0) {
-            // Ném exception => @Transactional tự động rollback toàn bộ thay đổi ở các lô đã trừ dở
-            // dang, đồng thời rollback luôn cả việc cập nhật trạng thái lịch hẹn ở service gọi nó.
             throw new BadRequestException(
                     "Không đủ tồn kho vắc xin tại cơ sở để hoàn tất tiêm chủng (còn thiếu " + remaining + " liều)");
         }
 
         batchRepository.saveAll(batches);
+        return primaryBatch;
     }
 
     // ===================== HELPERS =====================
@@ -215,8 +216,6 @@ public class InventoryService {
     }
 
     private VaccineBatchResponse mapBatchToResponse(VaccineBatch batch) {
-        // Nếu batch vừa bị đánh dấu DEPLETED do stockQuantity = 0 (cập nhật ở logic trừ kho ngày 28/08),
-        // status ở đây vẫn phản ánh đúng vì chỉ đọc lại từ DB sau khi đã syncExpiredBatches().
         return VaccineBatchResponse.builder()
                 .batchId(batch.getBatchId())
                 .inventoryId(batch.getInventory().getInventoryId())

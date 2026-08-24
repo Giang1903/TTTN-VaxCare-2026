@@ -21,18 +21,21 @@ public final class QRCodeUtil {
 
     private QRCodeUtil() {
     }
-
-    /** Sinh token duy nhất dùng làm nội dung QR + lưu vào cột appointments.qr_code. */
+    
     public static String generateToken() {
         return "VAXCARE-" + UUID.randomUUID().toString().replace("-", "").toUpperCase();
     }
 
-    /** Sinh ảnh QR PNG từ nội dung, trả về chuỗi Base64 kèm tiền tố data URI để FE render trực tiếp bằng thẻ <img>. */
     public static String generateQRCodeBase64(String content) {
         return generateQRCodeBase64(content, DEFAULT_SIZE);
     }
 
     public static String generateQRCodeBase64(String content, int size) {
+        String base64 = Base64.getEncoder().encodeToString(generateQRCodePng(content, size));
+        return "data:image/png;base64," + base64;
+    }
+
+    public static byte[] generateQRCodePng(String content, int size) {
         try {
             Map<EncodeHintType, Object> hints = new EnumMap<>(EncodeHintType.class);
             hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.M);
@@ -43,9 +46,7 @@ public final class QRCodeUtil {
 
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             MatrixToImageWriter.writeToStream(matrix, "PNG", outputStream);
-
-            String base64 = Base64.getEncoder().encodeToString(outputStream.toByteArray());
-            return "data:image/png;base64," + base64;
+            return outputStream.toByteArray();
         } catch (WriterException | IOException e) {
             throw new IllegalStateException("Không thể sinh mã QR Code", e);
         }

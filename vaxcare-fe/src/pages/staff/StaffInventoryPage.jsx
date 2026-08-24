@@ -1,200 +1,85 @@
-import { useMemo, useState } from 'react';
+/* eslint-disable no-unused-vars */
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import * as staffService from '../../services/staffService';
+import { useAuth } from '../../context/AuthContext';
 import StaffTopbar from '../../components/staff/StaffTopbar';
 import useStaffToast from '../../hooks/useStaffToast';
 
-const BATCHES = {
-  'BCG-2026-002': {
-    vax: 'BCG (Bacille Calmette–Guérin)',
-    stock: '210 liều',
-    mfg: '01/12/2025',
-    exp: '01/12/2027',
-    imp: '10/02/2026',
-    price: '180.000₫ / liều',
-    status: 'AVAILABLE',
-  },
-  'HPV-2026-G9A': {
-    vax: 'HPV (Gardasil 9)',
-    stock: '48 liều',
-    mfg: '01/07/2025',
-    exp: '01/07/2027',
-    imp: '08/01/2026',
-    price: '1.550.000₫ / liều',
-    status: 'AVAILABLE · Tồn thấp',
-  },
-  'HBV-2026-A1': {
-    vax: 'Viêm gan B',
-    stock: '420 liều',
-    mfg: '15/10/2025',
-    exp: '15/10/2027',
-    imp: '20/01/2026',
-    price: '280.000₫ / liều',
-    status: 'AVAILABLE',
-  },
-  'DTAP-2026-01': {
-    vax: 'DTaP',
-    stock: '240 liều',
-    mfg: '01/09/2025',
-    exp: '01/09/2027',
-    imp: '10/01/2026',
-    price: '420.000₫ / liều',
-    status: 'AVAILABLE',
-  },
-  'MMR-2026-01': {
-    vax: 'MMR',
-    stock: '320 liều',
-    mfg: '10/10/2025',
-    exp: '10/10/2027',
-    imp: '22/01/2026',
-    price: '280.000₫ / liều',
-    status: 'AVAILABLE',
-  },
-  'FLU-2026-A': {
-    vax: 'Cúm mùa (Influenza)',
-    stock: '580 liều',
-    mfg: '01/03/2026',
-    exp: '31/12/2026',
-    imp: '01/04/2026',
-    price: '380.000₫ / liều',
-    status: 'AVAILABLE · HSD mùa',
-  },
-  'PCV-2026-01': {
-    vax: 'Phế cầu (Pneumococcal)',
-    stock: '130 liều',
-    mfg: '01/08/2025',
-    exp: '01/08/2027',
-    imp: '05/01/2026',
-    price: '980.000₫ / liều',
-    status: 'AVAILABLE',
-  },
-  'VAR-2026-01': {
-    vax: 'Thủy đậu (Varicella)',
-    stock: '160 liều',
-    mfg: '15/09/2025',
-    exp: '15/09/2027',
-    imp: '12/01/2026',
-    price: '720.000₫ / liều',
-    status: 'AVAILABLE',
-  },
-};
-
-const ROWS = [
-  {
-    batch: 'BCG-2026-002',
-    name: 'BCG',
-    cat: 'Trẻ sơ sinh · Bệnh lao',
-    stock: 210,
-    fill: 42,
-    fillClass: 'danger',
-    exp: '01/12/2027',
-    tag: 'danger',
-    tagLabel: 'Ưu tiên dùng trước',
-    f: 'expiring low',
-    rowClass: 'danger-row',
-  },
-  {
-    batch: 'HPV-2026-G9A',
-    name: 'HPV (Gardasil 9)',
-    cat: 'Thanh thiếu niên · Ung thư CTC',
-    stock: 48,
-    fill: 28,
-    fillClass: 'warn',
-    exp: '01/07/2027',
-    tag: 'warn',
-    tagLabel: 'Tồn thấp',
-    f: 'low',
-    rowClass: 'alert-row',
-  },
-  {
-    batch: 'HBV-2026-A1',
-    name: 'Viêm gan B',
-    cat: 'Trẻ sơ sinh · HBV',
-    stock: 420,
-    fill: 70,
-    fillClass: 'ok',
-    exp: '15/10/2027',
-    tag: 'ok',
-    tagLabel: 'Đủ hàng',
-    f: 'ok',
-  },
-  {
-    batch: 'DTAP-2026-01',
-    name: 'DTaP',
-    cat: 'Trẻ em · Bạch hầu–Ho gà–Uốn ván',
-    stock: 240,
-    fill: 55,
-    fillClass: 'ok',
-    exp: '01/09/2027',
-    tag: 'ok',
-    tagLabel: 'Đủ hàng',
-    f: 'ok',
-  },
-  {
-    batch: 'MMR-2026-01',
-    name: 'MMR',
-    cat: 'Trẻ em · Sởi–Quai bị–Rubella',
-    stock: 320,
-    fill: 64,
-    fillClass: 'ok',
-    exp: '10/10/2027',
-    tag: 'ok',
-    tagLabel: 'Đủ hàng',
-    f: 'ok',
-  },
-  {
-    batch: 'FLU-2026-A',
-    name: 'Cúm mùa',
-    cat: 'Mùa vụ · Influenza',
-    stock: 580,
-    fill: 72,
-    fillClass: 'ok',
-    exp: '31/12/2026',
-    tag: 'info',
-    tagLabel: 'HSD mùa này',
-    f: 'ok',
-  },
-  {
-    batch: 'PCV-2026-01',
-    name: 'Phế cầu',
-    cat: 'Trẻ em · Pneumococcal',
-    stock: 130,
-    fill: 45,
-    fillClass: 'ok',
-    exp: '01/08/2027',
-    tag: 'ok',
-    tagLabel: 'Đủ hàng',
-    f: 'ok',
-  },
-  {
-    batch: 'VAR-2026-01',
-    name: 'Thủy đậu',
-    cat: 'Trẻ em · Varicella',
-    stock: 160,
-    fill: 40,
-    fillClass: 'ok',
-    exp: '15/09/2027',
-    tag: 'ok',
-    tagLabel: 'Đủ hàng',
-    f: 'ok',
-  },
-];
-
 export default function StaffInventoryPage() {
   const { toast, showToast } = useStaffToast();
+  const { user } = useAuth();
+  const facilityId = user?.facilityId;
   const [tab, setTab] = useState('all');
   const [q, setQ] = useState('');
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [detailBatch, setDetailBatch] = useState(null);
+  const [detail, setDetail] = useState(null);
+
+  const loadBatches = useCallback(async () => {
+    if (!facilityId) {
+      setRows([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const list = await staffService.getBatches(facilityId);
+      setRows((list || []).map(staffService.mapBatchToUi));
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || 'Không tải được tồn kho', 'warn');
+      setRows([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [showToast, facilityId]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadBatches();
+  }, [loadBatches]);
 
   const filtered = useMemo(() => {
-    return ROWS.filter((r) => {
-      if (tab !== 'all' && !r.f.includes(tab)) return false;
+    return rows.filter((r) => {
+      if (tab === 'low' || tab === 'expiring') {
+        if (!r.f.includes(tab) && !r.f.includes('danger') && !r.f.includes('warn')) return false;
+        if (tab === 'low' && !(r.fillClass === 'warn' || r.fillClass === 'danger')) return false;
+        if (tab === 'expiring' && r.tag !== 'danger' && r.tag !== 'warn') return false;
+      } else if (tab !== 'all' && r.f && !r.f.includes(tab)) {
+        return false;
+      }
       if (q && !`${r.name} ${r.batch} ${r.cat}`.toLowerCase().includes(q.toLowerCase())) return false;
       return true;
     });
-  }, [tab, q]);
+  }, [tab, q, rows]);
 
-  const openDetail = (batch) => setDetailBatch(batch);
-  const closeDetail = () => setDetailBatch(null);
-  const detail = detailBatch ? BATCHES[detailBatch] : null;
+  const openDetail = (batchCode) => {
+    setDetailBatch(batchCode);
+    const row = rows.find((r) => r.batch === batchCode);
+    if (row) {
+      setDetail({
+        vax: row.vax || row.name,
+        stock: row.stockLabel || `${row.stock} liều`,
+        mfg: row.mfg || '',
+        exp: row.exp || '',
+        imp: row.imp || '',
+        price: row.price || '',
+        status: row.status || 'AVAILABLE',
+      });
+    } else {
+      setDetail(null);
+    }
+  };
+  const closeDetail = () => {
+    setDetailBatch(null);
+    setDetail(null);
+  };
+
+  const kpiTotal = rows.length;
+  const kpiLow = rows.filter((r) => r.fillClass === 'warn' || r.fillClass === 'danger').length;
+  const kpiStock = rows.reduce((s, r) => s + (r.stock || 0), 0);
+
 
   return (
     <>
@@ -216,7 +101,7 @@ export default function StaffInventoryPage() {
                 </svg>
               </span>
             </div>
-            <div className="num">2.108</div>
+            <div className="num">{kpiStock.toLocaleString("vi-VN")}</div>
             <div className="lbl">Tổng liều tồn</div>
           </div>
           <div className="kpi c2">
@@ -228,7 +113,7 @@ export default function StaffInventoryPage() {
                 </svg>
               </span>
             </div>
-            <div className="num">1</div>
+            <div className="num">{kpiLow}</div>
             <div className="lbl">Tồn thấp</div>
           </div>
           <div className="kpi c3">
@@ -240,7 +125,7 @@ export default function StaffInventoryPage() {
                 </svg>
               </span>
             </div>
-            <div className="num">1</div>
+            <div className="num">{kpiLow}</div>
             <div className="lbl">Ưu tiên FEFO</div>
           </div>
           <div className="kpi c4">
@@ -251,8 +136,8 @@ export default function StaffInventoryPage() {
                 </svg>
               </span>
             </div>
-            <div className="num">8</div>
-            <div className="lbl">Loại vắc xin đang mở</div>
+            <div className="num">{kpiTotal}</div>
+            <div className="lbl">Số lô đang mở</div>
           </div>
         </section>
 
