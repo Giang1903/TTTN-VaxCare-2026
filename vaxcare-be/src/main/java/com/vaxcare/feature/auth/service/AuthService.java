@@ -238,7 +238,8 @@ public class AuthService {
                 .userId(account.getAccountId())
                 .email(account.getEmail())
                 .phone(account.getPhone())
-                .avatarUrl(account.getAvatarUrl());
+                .avatarUrl(account.getAvatarUrl())
+                .role(account.getRole());
 
         if (account.getRole() == Role.USER && account.getUser() != null) {
             User user = account.getUser();
@@ -258,7 +259,14 @@ public class AuthService {
         } else if (account.getRole() == Role.ADMIN && account.getAdmin() != null) {
             builder.fullName(account.getAdmin().getFullName());
         } else if (account.getRole() == Role.MEDICAL_STAFF && account.getMedicalStaff() != null) {
-            builder.fullName(account.getMedicalStaff().getFullName());
+            var staff = account.getMedicalStaff();
+            builder.fullName(staff.getFullName())
+                    .staffCode(staff.getStaffCode())
+                    .specialty(staff.getSpecialty());
+            if (staff.getFacility() != null) {
+                builder.facilityId(staff.getFacility().getFacilityId())
+                        .facilityName(staff.getFacility().getFacilityName());
+            }
         }
 
         return builder.build();

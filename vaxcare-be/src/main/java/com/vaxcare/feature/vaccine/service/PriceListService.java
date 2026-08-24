@@ -35,6 +35,13 @@ public class PriceListService {
     }
 
     @Transactional(readOnly = true)
+    public List<PriceListResponse> getAllForAdmin() {
+        return priceListRepository.findAllWithDetails().stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public List<PriceListResponse> getPriceHistory(Long vaccineId) {
         findVaccineOrThrow(vaccineId);
         return priceListRepository.findByVaccine_VaccineIdAndStatus(vaccineId, ActiveStatus.ACTIVE).stream()

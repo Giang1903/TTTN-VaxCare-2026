@@ -28,4 +28,12 @@ public interface PriceListRepository extends JpaRepository<PriceList, Long> {
     List<PriceList> findActivePrices(@Param("vaccineId") Long vaccineId,
                                      @Param("facilityId") Long facilityId,
                                      @Param("date") LocalDate date);
+
+    @Query("""
+        SELECT p FROM PriceList p
+        JOIN FETCH p.vaccine
+        LEFT JOIN FETCH p.facility
+        ORDER BY p.effectiveDate DESC
+        """)
+    List<PriceList> findAllWithDetails();
 }
