@@ -59,6 +59,25 @@ public interface VaccineBatchRepository extends JpaRepository<VaccineBatch, Long
     List<Object[]> sumStockGroupByVaccine(@Param("facilityId") Long facilityId);
 
     @Query("""
+        SELECT b.vaccine.vaccineId, b.vaccine.vaccineName, COALESCE(SUM(b.stockQuantity), 0)
+        FROM VaccineBatch b
+        WHERE b.inventory.facility.facilityId = :facilityId
+          AND b.status = 'AVAILABLE'
+        GROUP BY b.vaccine.vaccineId, b.vaccine.vaccineName
+        ORDER BY b.vaccine.vaccineName ASC
+        """)
+    List<Object[]> sumStockGroupByVaccineWithName(@Param("facilityId") Long facilityId);
+
+    @Query("""
+        SELECT b.vaccine.vaccineId, b.vaccine.vaccineName, COALESCE(SUM(b.stockQuantity), 0)
+        FROM VaccineBatch b
+        WHERE b.status = 'AVAILABLE'
+        GROUP BY b.vaccine.vaccineId, b.vaccine.vaccineName
+        ORDER BY b.vaccine.vaccineName ASC
+        """)
+    List<Object[]> sumStockGroupByVaccineSystemWide();
+
+    @Query("""
         SELECT b FROM VaccineBatch b
         WHERE b.inventory.facility.facilityId = :facilityId
           AND b.vaccine.vaccineId = :vaccineId

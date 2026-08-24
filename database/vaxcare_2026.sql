@@ -686,7 +686,8 @@ CREATE INDEX idx_accounts_verification_token ON accounts (verification_token);
 --
 ALTER TABLE `accounts`
   ADD PRIMARY KEY (`account_id`),
-  ADD UNIQUE KEY `email` (`email`);
+  ADD UNIQUE KEY `email` (`email`),
+  ADD KEY `idx_accounts_role_status` (`role`,`status`);
 
 --
 -- Chỉ mục cho bảng `admins`
@@ -807,7 +808,8 @@ ALTER TABLE `vaccination_details`
   ADD KEY `vaccine_id` (`vaccine_id`),
   ADD KEY `batch_id` (`batch_id`),
   ADD KEY `staff_id` (`staff_id`),
-  ADD KEY `idx_vaccination_details_history_date` (`history_id`,`injection_date` DESC);
+  ADD KEY `idx_vaccination_details_history_date` (`history_id`,`injection_date` DESC),
+  ADD KEY `idx_vaccination_details_result_date` (`result`,`injection_date`);
 
 --
 -- Chỉ mục cho bảng `vaccination_facilities`
