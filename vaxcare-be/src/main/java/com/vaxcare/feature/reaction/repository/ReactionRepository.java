@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -42,4 +43,35 @@ public interface ReactionRepository extends JpaRepository<PostVaccinationReactio
     List<PostVaccinationReaction> findAllForStaff(
             @Param("facilityId") Long facilityId,
             @Param("status") ReactionProcessingStatus status);
+
+    @Query("""
+        SELECT r.severity, COUNT(r)
+        FROM PostVaccinationReaction r
+        LEFT JOIN r.detail d
+        LEFT JOIN d.appointment a
+        LEFT JOIN a.facility f
+        WHERE (:facilityId IS NULL OR (a IS NOT NULL AND f.facilityId = :facilityId))
+          AND r.recordedTime >= :fromTime
+          AND r.recordedTime < :toTime
+        GROUP BY r.severity
+        """)
+    List<Object[]> countGroupBySeverity(
+            @Param("facilityId") Long facilityId,
+            @Param("fromTime") LocalDateTime fromTime,
+            @Param("toTime") LocalDateTime toTime);
+
+    @Query("""
+        SELECT COUNT(r)
+        FROM PostVaccinationReaction r
+        LEFT JOIN r.detail d
+        LEFT JOIN d.appointment a
+        LEFT JOIN a.facility f
+        WHERE (:facilityId IS NULL OR (a IS NOT NULL AND f.facilityId = :facilityId))
+          AND r.processingStatus IN (
+              com.vaxcare.common.enums.ReactionProcessingStatus.PENDING,
+              com.vaxcare.common.enums.ReactionProcessingStatus.REVIEWED,
+              com.vaxcare.common.enums.ReactionProcessingStatus.CONTACTED
+          )
+        """)
+    long countOpenForStaff(@Param("facilityId") Long facilityId);
 }

@@ -1,6 +1,8 @@
+
 package com.vaxcare.feature.auth.dto;
 
 import com.vaxcare.common.enums.Gender;
+import com.vaxcare.common.enums.Role;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -21,11 +23,18 @@ public class UserProfileResponse {
     private Gender gender;
     private String address;
     private String avatarUrl;
+    private Role role;
 
-    // Health profile
+    // Health profile (USER)
     private BigDecimal height;
     private BigDecimal weight;
     private String medicalHistory;
     private String allergies;
     private String healthNote;
+
+    // Medical staff fields
+    private Long facilityId;
+    private String facilityName;
+    private String staffCode;
+    private String specialty;
 }
