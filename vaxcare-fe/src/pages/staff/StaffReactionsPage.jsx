@@ -1,100 +1,8 @@
-import { useMemo, useState } from 'react';
+/* eslint-disable no-unused-vars */
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import * as staffService from '../../services/staffService';
 import StaffTopbar from '../../components/staff/StaffTopbar';
 import useStaffToast from '../../hooks/useStaffToast';
-
-const INITIAL = {
-  1: {
-    av: 'LT',
-    name: 'Lê Thị Thu',
-    meta: '3 tuổi · Nữ · Phụ huynh: 0912345678',
-    sev: 'moderate',
-    sevLabel: 'Trung bình',
-    proc: 'pending',
-    procLabel: 'Chờ xử lý',
-    vax: 'MMR · Mũi 1/2',
-    inj: '17/08/2026 08:30',
-    batch: 'MMR-2026-01',
-    report: '17/08/2026 18:20',
-    symptoms:
-      'Phát ban nhẹ quanh vị trí tiêm, sốt 38.2°C. Phụ huynh lo lắng, hỏi có cần đưa đi cấp cứu không.',
-    note: 'Khuyến nghị hạ sốt bằng paracetamol liều theo cân nặng, theo dõi phát ban. Hẹn gọi lại sau 12 giờ nếu sốt >39°C hoặc phát ban lan rộng.',
-    severity: 'MODERATE',
-    status: 'PENDING',
-    f: 'pending moderate',
-  },
-  2: {
-    av: 'NA',
-    name: 'Nguyễn An',
-    meta: '28 tuổi · Nam · 0901234567',
-    sev: 'mild',
-    sevLabel: 'Nhẹ',
-    proc: 'pending',
-    procLabel: 'Chờ xử lý',
-    vax: 'Viêm gan B · Mũi 2/3',
-    inj: '17/08/2026 08:00',
-    batch: 'HBV-2026-A1',
-    report: '17/08/2026 14:05',
-    symptoms: 'Sốt nhẹ 37.8°C, sưng đau tại chỗ tiêm.',
-    note: '',
-    severity: 'MILD',
-    status: 'PENDING',
-    f: 'pending mild',
-  },
-  3: {
-    av: 'PH',
-    name: 'Phạm Gia Huy',
-    meta: '8 tháng · Nam · Phụ huynh: 0987654321',
-    sev: 'mild',
-    sevLabel: 'Nhẹ',
-    proc: 'contacted',
-    procLabel: 'Đã liên hệ',
-    vax: 'DTaP · Mũi 3/5',
-    inj: '17/08/2026 09:15',
-    batch: 'DTAP-2026-01',
-    report: '17/08/2026 20:10',
-    symptoms: 'Khóc nhiều, quấy về đêm — đã tư vấn phụ huynh qua điện thoại.',
-    note: 'Đã gọi lúc 20:30. Hướng dẫn theo dõi nhiệt độ, bú bình thường. Gọi lại nếu bỏ bú / sốt cao.',
-    severity: 'MILD',
-    status: 'CONTACTED',
-    f: 'contacted mild',
-  },
-  4: {
-    av: 'TV',
-    name: 'Trần Văn Khoa',
-    meta: '15 tuổi · Nam · 0933111222',
-    sev: 'none',
-    sevLabel: 'Không có',
-    proc: 'resolved',
-    procLabel: 'Đã giải quyết',
-    vax: 'IPV · Mũi 2/4',
-    inj: '16/08/2026 09:45',
-    batch: 'IPV-2026-X1',
-    report: '17/08/2026 09:00',
-    symptoms: 'Không triệu chứng bất thường sau 24h.',
-    note: 'Tự báo qua app — đóng case.',
-    severity: 'NONE',
-    status: 'RESOLVED',
-    f: 'resolved none',
-  },
-  5: {
-    av: 'HN',
-    name: 'Hoàng Ngọc Mai',
-    meta: '16 tuổi · Nữ · 0909888777',
-    sev: 'mild',
-    sevLabel: 'Nhẹ',
-    proc: 'resolved',
-    procLabel: 'Đã giải quyết',
-    vax: 'HPV · Mũi 1/2',
-    inj: '15/08/2026 10:30',
-    batch: 'HPV-2026-G9A',
-    report: '16/08/2026 08:00',
-    symptoms: 'Đau cánh tay 1 ngày — tự khỏi.',
-    note: 'Đã xác nhận ổn định sau 48h.',
-    severity: 'MILD',
-    status: 'RESOLVED',
-    f: 'resolved mild',
-  },
-};
 
 const SEV_MAP = {
   NONE: ['none', 'Không có'],
@@ -111,13 +19,49 @@ const ST_MAP = {
 
 export default function StaffReactionsPage() {
   const { toast, showToast } = useStaffToast();
-  const [data, setData] = useState(INITIAL);
-  const [activeId, setActiveId] = useState('1');
+
+  const [data, setData] = useState({});
+  const [activeId, setActiveId] = useState(null);
   const [tab, setTab] = useState('all');
   const [q, setQ] = useState('');
-  const [severity, setSeverity] = useState(INITIAL[1].severity);
-  const [status, setStatus] = useState(INITIAL[1].status);
-  const [note, setNote] = useState(INITIAL[1].note);
+  const [severity, setSeverity] = useState('MILD');
+  const [status, setStatus] = useState('PENDING');
+  const [note, setNote] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  const loadList = useCallback(async () => {
+    setLoading(true);
+    try {
+      const list = await staffService.listReactions();
+      const mapped = {};
+      (list || []).forEach((r) => {
+        const item = staffService.mapReactionToUi(r);
+        mapped[String(item.id)] = item;
+      });
+      setData(mapped);
+      const keys = Object.keys(mapped);
+      if (keys.length) {
+        const first = mapped[keys[0]];
+        setActiveId(keys[0]);
+        setSeverity(first.severity || 'MILD');
+        setStatus(first.status || 'PENDING');
+        setNote(first.note || '');
+      } else {
+        setActiveId(null);
+      }
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || 'Không tải được phản ứng sau tiêm', 'warn');
+      setData({});
+    } finally {
+      setLoading(false);
+    }
+  }, [showToast]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadList();
+  }, [loadList]);
 
   const load = (id) => {
     const d = data[id];
@@ -128,23 +72,32 @@ export default function StaffReactionsPage() {
     setNote(d.note || '');
   };
 
-  const applyForm = (id, nextSeverity, nextStatus, nextNote) => {
-    const [sev, sevLabel] = SEV_MAP[nextSeverity] || ['mild', 'Nhẹ'];
-    const [proc, procLabel] = ST_MAP[nextStatus] || ['pending', 'Chờ xử lý'];
-    setData((prev) => ({
-      ...prev,
-      [id]: {
-        ...prev[id],
-        severity: nextSeverity,
-        status: nextStatus,
-        sev,
-        sevLabel,
-        proc,
-        procLabel,
-        note: nextNote,
-        f: `${proc} ${sev}`,
-      },
-    }));
+  const applyForm = async (id, nextSeverity, nextStatus, nextNote) => {
+    try {
+      await staffService.processReaction(id, {
+        processingStatus: nextStatus,
+        staffNote: nextNote || undefined,
+      });
+      const [sev, sevLabel] = SEV_MAP[nextSeverity] || ['mild', 'Nhẹ'];
+      const [proc, procLabel] = ST_MAP[nextStatus] || ['pending', 'Chờ xử lý'];
+      setData((prev) => ({
+        ...prev,
+        [id]: {
+          ...prev[id],
+          severity: nextSeverity,
+          status: nextStatus,
+          sev,
+          sevLabel,
+          proc,
+          procLabel,
+          note: nextNote,
+          f: `${proc} ${sev}`,
+        },
+      }));
+      showToast('Đã cập nhật xử lý phản ứng', 'ok');
+    } catch (err) {
+      showToast(err.message || 'Cập nhật thất bại', 'warn');
+    }
   };
 
   const filteredIds = useMemo(() => {
@@ -158,7 +111,13 @@ export default function StaffReactionsPage() {
     });
   }, [data, tab, q]);
 
-  const d = data[activeId];
+  const d = activeId ? data[activeId] : null;
+
+  const kpiPending = Object.values(data).filter((x) => x.proc === 'pending').length;
+  const kpiMod = Object.values(data).filter((x) => x.sev === 'moderate' || x.sev === 'severe').length;
+  const kpiContacted = Object.values(data).filter((x) => x.proc === 'contacted').length;
+  const kpiResolved = Object.values(data).filter((x) => x.proc === 'resolved').length;
+
 
   return (
     <>
@@ -181,7 +140,7 @@ export default function StaffReactionsPage() {
                 </svg>
               </span>
             </div>
-            <div className="num">2</div>
+            <div className="num">{kpiPending}</div>
             <div className="lbl">Chờ xử lý</div>
           </div>
           <div className="kpi c2">
@@ -193,7 +152,7 @@ export default function StaffReactionsPage() {
                 </svg>
               </span>
             </div>
-            <div className="num">1</div>
+            <div className="num">{kpiMod}</div>
             <div className="lbl">Mức trung bình / nặng</div>
           </div>
           <div className="kpi c3">
@@ -204,7 +163,7 @@ export default function StaffReactionsPage() {
                 </svg>
               </span>
             </div>
-            <div className="num">3</div>
+            <div className="num">{kpiContacted}</div>
             <div className="lbl">Đã liên hệ hôm nay</div>
           </div>
           <div className="kpi c4">
@@ -215,7 +174,7 @@ export default function StaffReactionsPage() {
                 </svg>
               </span>
             </div>
-            <div className="num">11</div>
+            <div className="num">{kpiResolved}</div>
             <div className="lbl">Đã giải quyết (7 ngày)</div>
           </div>
         </section>

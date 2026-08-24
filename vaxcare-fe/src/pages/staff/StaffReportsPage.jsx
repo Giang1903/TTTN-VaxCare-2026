@@ -1,40 +1,106 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import * as staffService from '../../services/staffService';
 import { Link } from 'react-router-dom';
 import StaffTopbar from '../../components/staff/StaffTopbar';
 import useStaffToast from '../../hooks/useStaffToast';
 
-const WEEK = [
-  { label: 'T2', val: 18, h: 55 },
-  { label: 'T3', val: 22, h: 68 },
-  { label: 'T4', val: 19, h: 58 },
-  { label: 'T5', val: 25, h: 78 },
-  { label: 'T6', val: 21, h: 65 },
-  { label: 'T7', val: 16, h: 50 },
-  { label: 'CN', val: 14, h: 43, today: true },
-];
-
-const MIX = [
-  { name: 'Cúm mùa', pct: 22, color: '#5b8ae0' },
-  { name: 'Viêm gan B', pct: 14, color: '#21b56e' },
-  { name: 'HPV', pct: 12, color: '#6366f1' },
-  { name: 'DTaP', pct: 11, color: '#e0a308' },
-  { name: 'Phế cầu', pct: 10, color: '#e0473a' },
-  { name: 'MMR', pct: 9, color: '#74b4ff' },
-  { name: 'Khác', pct: 22, color: '#8b9bab' },
-];
-
-const TOP = [
-  { rank: 1, name: 'Cúm mùa (Influenza)', shots: 91, pct: '22%', tag: 'info' },
-  { rank: 2, name: 'Viêm gan B', shots: 58, pct: '14%', tag: 'ok' },
-  { rank: 3, name: 'HPV', shots: 49, pct: '12%', tag: 'ok' },
-  { rank: 4, name: 'DTaP', shots: 45, pct: '11%', tag: '' },
-  { rank: 5, name: 'Phế cầu', shots: 41, pct: '10%', tag: '' },
-  { rank: 6, name: 'MMR', shots: 37, pct: '9%', tag: '' },
-];
-
 export default function StaffReportsPage() {
   const { toast, showToast } = useStaffToast();
   const [range, setRange] = useState('30');
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const defaultFrom = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 29);
+    return d.toISOString().slice(0, 10);
+  })();
+  const [fromDate, setFromDate] = useState(defaultFrom);
+  const [toDate, setToDate] = useState(todayStr);
+  const [customMode, setCustomMode] = useState(false);
+  const [kpi, setKpi] = useState({
+    appointments: 0,
+    completed: 0,
+    cancelled: 0,
+    checkedin: 0,
+    pending: 0,
+  });
+
+  const [week, setWeek] = useState([]);
+  const [mix, setMix] = useState([]);
+  const [top, setTop] = useState([]);
+  const [reactionMix, setReactionMix] = useState([]);
+  const [openReactions, setOpenReactions] = useState(0);
+
+  const loadStats = useCallback(async () => {
+    try {
+      let report;
+      if (customMode) {
+        report = await staffService.getStaffReport({ fromDate, toDate });
+      } else {
+        const days = Number(range) || 30;
+        report = await staffService.getStaffReport({ days });
+      }
+      const k = report?.kpi || {};
+      setKpi({
+        appointments: k.appointments ?? 0,
+        completed: k.completed ?? 0,
+        cancelled: k.cancelled ?? 0,
+        checkedin: k.checkedIn ?? 0,
+        pending: k.pending ?? 0,
+      });
+      setWeek(
+        (report?.weekSeries || []).map((d) => ({
+          label: d.label,
+          val: d.count,
+          h: d.barHeight || 4,
+          today: !!d.today,
+        }))
+      );
+      // For longer ranges, prefer dailySeries trimmed to week for small chart is already weekSeries
+      // Mix from vaccine ranking
+      const ranking = report?.vaccineRanking || [];
+      const colors = ['#5b8ae0', '#21b56e', '#6366f1', '#e0a308', '#e0473a', '#74b4ff', '#8b9bab'];
+      setMix(
+        ranking.map((x, i) => ({
+          name: x.vaccineName,
+          pct: x.pct,
+          color: colors[i % colors.length],
+        }))
+      );
+      setTop(
+        ranking.map((x) => ({
+          rank: x.rank,
+          name: x.vaccineName,
+          shots: x.shots,
+          pct: `${x.pct}%`,
+          tag: x.tag || '',
+        }))
+      );
+      const rMix = report?.reactionMix || [];
+      const colorBySev = {
+        NONE: 'var(--ok-dot)',
+        MILD: 'var(--warn-dot)',
+        MODERATE: 'var(--danger-dot)',
+        SEVERE: '#3b0a0a',
+      };
+      setReactionMix(
+        rMix.map((r) => ({
+          name: r.label,
+          pct: r.pct,
+          color: colorBySev[r.severity] || 'var(--ok-dot)',
+        }))
+      );
+      setOpenReactions(report?.openReactions ?? 0);
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || 'Không tải được số liệu báo cáo', 'warn');
+    }
+  }, [showToast, range, customMode, fromDate, toDate]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadStats();
+  }, [loadStats]);
+
 
   return (
     <>
@@ -48,22 +114,91 @@ export default function StaffReportsPage() {
               <button
                 key={r}
                 type="button"
-                className={range === r ? 'active' : ''}
+                className={!customMode && range === r ? 'active' : ''}
                 onClick={() => {
+                  setCustomMode(false);
                   setRange(r);
-                  showToast(`Đã áp dụng khoảng ${r} ngày (demo tĩnh)`, 'ok');
+                  showToast(`Đã áp dụng khoảng ${r} ngày`, 'ok');
                 }}
               >
                 {r} ngày
               </button>
             ))}
-          </div>
-          <div className="filter-right">
-            <button type="button" className="btn outline" onClick={() => showToast('Chuẩn bị bản in báo cáo…', 'ok')}>
-              In
+            <button
+              type="button"
+              className={customMode ? 'active' : ''}
+              onClick={() => setCustomMode(true)}
+            >
+              Tùy chọn
             </button>
-            <button type="button" className="btn primary" onClick={() => showToast('Đang xuất Excel báo cáo vận hành…', 'ok')}>
-              Xuất Excel
+          </div>
+          {customMode && (
+            <div className="filter-group" style={{ display: 'flex', gap: 8, alignItems: 'center', marginLeft: 8 }}>
+              <label className="date-picker">
+                <input
+                  type="date"
+                  value={fromDate}
+                  max={toDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                />
+              </label>
+              <span style={{ fontSize: 13, color: 'var(--muted)' }}>→</span>
+              <label className="date-picker">
+                <input
+                  type="date"
+                  value={toDate}
+                  min={fromDate}
+                  max={todayStr}
+                  onChange={(e) => setToDate(e.target.value)}
+                />
+              </label>
+              <button
+                type="button"
+                className="btn primary"
+                style={{ height: 36 }}
+                onClick={() => {
+                  loadStats();
+                  showToast(`Báo cáo ${fromDate} → ${toDate}`, 'ok');
+                }}
+              >
+                Áp dụng
+              </button>
+            </div>
+          )}
+          <div className="filter-right">
+            <button
+              type="button"
+              className="btn outline"
+              onClick={async () => {
+                try {
+                  const opts = customMode
+                    ? { fromDate, toDate }
+                    : { days: Number(range) || 30 };
+                  await staffService.exportSummaryCsv(opts);
+                  showToast('Đã tải CSV tổng hợp', 'ok');
+                } catch (err) {
+                  showToast(err.message || 'Xuất CSV thất bại', 'warn');
+                }
+              }}
+            >
+              Xuất tổng hợp
+            </button>
+            <button
+              type="button"
+              className="btn primary"
+              onClick={async () => {
+                try {
+                  const opts = customMode
+                    ? { fromDate, toDate }
+                    : { days: Number(range) || 30 };
+                  await staffService.exportAppointmentsCsv(opts);
+                  showToast('Đã tải CSV lịch hẹn', 'ok');
+                } catch (err) {
+                  showToast(err.message || 'Xuất CSV thất bại', 'warn');
+                }
+              }}
+            >
+              Xuất lịch hẹn CSV
             </button>
           </div>
         </div>
@@ -79,8 +214,8 @@ export default function StaffReportsPage() {
               </span>
               <span className="trend up">+12%</span>
             </div>
-            <div className="num">486</div>
-            <div className="lbl">Lịch hẹn trong kỳ</div>
+            <div className="num">{kpi.appointments}</div>
+            <div className="lbl">Lịch hẹn hôm nay</div>
           </div>
           <div className="kpi c2">
             <div className="top">
@@ -91,7 +226,7 @@ export default function StaffReportsPage() {
               </span>
               <span className="trend up">+8%</span>
             </div>
-            <div className="num">412</div>
+            <div className="num">{kpi.completed}</div>
             <div className="lbl">Mũi tiêm hoàn thành</div>
           </div>
           <div className="kpi c3">
@@ -103,7 +238,7 @@ export default function StaffReportsPage() {
               </span>
               <span className="trend flat">≈</span>
             </div>
-            <div className="num">84.8%</div>
+            <div className="num">{kpi.appointments ? Math.round((kpi.completed / kpi.appointments) * 1000) / 10 : 0}%</div>
             <div className="lbl">Tỷ lệ hoàn thành</div>
           </div>
           <div className="kpi c4">
@@ -116,7 +251,7 @@ export default function StaffReportsPage() {
               </span>
               <span className="trend down">-2%</span>
             </div>
-            <div className="num">18</div>
+            <div className="num">{kpi.cancelled}</div>
             <div className="lbl">Hủy / Vắng mặt</div>
           </div>
           <div className="kpi c5">
@@ -128,7 +263,7 @@ export default function StaffReportsPage() {
               </span>
               <span className="trend flat">5</span>
             </div>
-            <div className="num">5</div>
+            <div className="num">{kpi.pending}</div>
             <div className="lbl">Phản ứng cần theo dõi</div>
           </div>
         </section>
@@ -142,7 +277,7 @@ export default function StaffReportsPage() {
               </div>
             </div>
             <div className="week-chart">
-              {WEEK.map((d) => (
+              {week.map((d) => (
                 <div key={d.label} className={`wc-col${d.today ? ' is-today' : ''}`}>
                   <div className="wc-val">{d.val}</div>
                   <div className="wc-bar-wrap">
@@ -212,7 +347,7 @@ export default function StaffReportsPage() {
               </div>
             </div>
             <div className="mix-list">
-              {MIX.map((m) => (
+              {mix.map((m) => (
                 <div key={m.name} className="mix-row">
                   <div>
                     <div className="mix-label">
@@ -247,7 +382,7 @@ export default function StaffReportsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {TOP.map((t) => (
+                  {top.map((t) => (
                     <tr key={t.rank}>
                       <td>
                         <span className={`rank${t.rank <= 3 ? ' top' : ''}`}>{t.rank}</span>
@@ -307,12 +442,15 @@ export default function StaffReportsPage() {
               </div>
             </div>
             <div className="mix-list">
-              {[
-                { name: 'Không có / Tự khỏi', pct: 78, color: 'var(--ok-dot)' },
-                { name: 'Nhẹ', pct: 16, color: 'var(--warn-dot)' },
-                { name: 'Trung bình', pct: 5, color: 'var(--danger-dot)' },
-                { name: 'Nặng', pct: 1, color: '#3b0a0a' },
-              ].map((m) => (
+              {(reactionMix.length
+                ? reactionMix
+                : [
+                    { name: 'Không có / Tự khỏi', pct: 0, color: 'var(--ok-dot)' },
+                    { name: 'Nhẹ', pct: 0, color: 'var(--warn-dot)' },
+                    { name: 'Trung bình', pct: 0, color: 'var(--danger-dot)' },
+                    { name: 'Nặng', pct: 0, color: '#3b0a0a' },
+                  ]
+              ).map((m) => (
                 <div key={m.name} className="mix-row">
                   <div>
                     <div className="mix-label">
@@ -332,7 +470,7 @@ export default function StaffReportsPage() {
                 <path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8" />
               </svg>
               <span>
-                Tỷ lệ phản ứng cần can thiệp thấp. 2 case đang mở trên trang{' '}
+                Tỷ lệ phản ứng cần can thiệp. {openReactions} case đang mở trên trang{' '}
                 <Link to="/staff/reactions" style={{ color: 'var(--teal-700)', fontWeight: 700 }}>
                   Theo dõi sau tiêm
                 </Link>
