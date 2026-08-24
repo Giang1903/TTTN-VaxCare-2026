@@ -17,14 +17,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class VaccinationReminderService {
 
-    /** Nhắc trước bao nhiêu ngày trước ngày tiêm dự kiến. */
     private static final int REMINDER_LEAD_DAYS = 3;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -55,7 +56,29 @@ public class VaccinationReminderService {
             }
         }
 
-        // Fallback: dùng khoảng cách mặc định khai báo trực tiếp trên Vaccine nếu không có phác đồ chi tiết
+        if (vaccine.getDoseIntervalDays() != null) {
+            return Optional.of(fromDate.plusDays(vaccine.getDoseIntervalDays()));
+        }
+
+        return Optional.empty();
+    }
+
+    private Optional<LocalDate> calculateNextDoseDate(Vaccine vaccine, int justAdministeredDoseNumber, LocalDate fromDate,
+                                                       Map<Long, List<ProtocolDetail>> protocolDetailsByVaccineId) {
+        if (vaccine.getRequiredDoses() != null && justAdministeredDoseNumber >= vaccine.getRequiredDoses()) {
+            return Optional.empty();
+        }
+
+        Optional<ProtocolDetail> nextDetail = protocolDetailsByVaccineId
+                .getOrDefault(vaccine.getVaccineId(), List.of()).stream()
+                .filter(pd -> pd.getDoseNumber() != null && pd.getDoseNumber() == justAdministeredDoseNumber + 1)
+                .findFirst();
+
+        if (nextDetail.isPresent()) {
+            Integer intervalDays = nextDetail.get().getIntervalDays();
+            return Optional.of(fromDate.plusDays(intervalDays != null ? intervalDays : 0));
+        }
+
         if (vaccine.getDoseIntervalDays() != null) {
             return Optional.of(fromDate.plusDays(vaccine.getDoseIntervalDays()));
         }
@@ -88,22 +111,24 @@ public class VaccinationReminderService {
     public void sendDueReminders() {
         LocalDate today = LocalDate.now();
         LocalDate targetReminderDate = today.plusDays(REMINDER_LEAD_DAYS);
-
         List<VaccinationDetail> latestDetails = detailRepository.findLatestSuccessDetailPerUserAndVaccine();
+        Map<Long, List<ProtocolDetail>> protocolDetailsByVaccineId = protocolDetailRepository
+                .findAllWithProtocolAndVaccine().stream()
+                .collect(Collectors.groupingBy(pd -> pd.getProtocol().getVaccine().getVaccineId()));
+
         int sentCount = 0;
 
         for (VaccinationDetail detail : latestDetails) {
             Vaccine vaccine = detail.getVaccine();
             Optional<LocalDate> nextDoseDateOpt =
-                    calculateNextDoseDate(vaccine, detail.getDoseNumber(), detail.getInjectionDate());
+                    calculateNextDoseDate(vaccine, detail.getDoseNumber(), detail.getInjectionDate(), protocolDetailsByVaccineId);
 
             if (nextDoseDateOpt.isEmpty() || !nextDoseDateOpt.get().isEqual(targetReminderDate)) {
-                continue; // chưa tới hạn nhắc, hoặc đã hoàn thành phác đồ
+                continue;
             }
 
             var account = detail.getHistory().getUser().getAccount();
 
-            // Tránh gửi trùng nếu cronjob vô tình chạy lại nhiều lần cho cùng 1 mũi đã đến hạn nhắc
             if (notificationService.alreadyNotified(account.getAccountId(), detail.getDetailId(), NotificationType.REMINDER)) {
                 continue;
             }

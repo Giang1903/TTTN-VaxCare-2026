@@ -17,6 +17,19 @@ public interface VaccinationDetailRepository extends JpaRepository<VaccinationDe
     long countByHistory_HistoryIdAndVaccine_VaccineIdAndResultNot(
             Long historyId, Long vaccineId, VaccinationResult excludedResult);
 
+    long countByHistory_User_UserIdAndResult(Long userId, VaccinationResult result);
+
+    long countByResultAndInjectionDateBetween(VaccinationResult result, java.time.LocalDate from, java.time.LocalDate to);
+
+    @Query("""
+        SELECT d.result, COUNT(d) FROM VaccinationDetail d
+        WHERE d.appointment.facility.facilityId = :facilityId
+          AND d.injectionDate = :date
+        GROUP BY d.result
+        """)
+    List<Object[]> countByFacilityAndDateGroupByResult(@Param("facilityId") Long facilityId,
+                                                        @Param("date") java.time.LocalDate date);
+
     @Query("""
         SELECT d FROM VaccinationDetail d
         JOIN FETCH d.vaccine

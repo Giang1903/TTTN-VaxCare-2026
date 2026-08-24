@@ -14,6 +14,8 @@ public interface VaccineRepository extends JpaRepository<Vaccine, Long> {
 
     List<Vaccine> findByStatus(ActiveStatus status);
 
+    long countByStatus(ActiveStatus status);
+
     List<Vaccine> findByCategory_CategoryIdAndStatus(Long categoryId, ActiveStatus status);
 
     List<Vaccine> findByVaccineNameContainingIgnoreCase(String keyword);

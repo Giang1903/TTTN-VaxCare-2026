@@ -17,6 +17,40 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     List<Appointment> findByUser_UserIdOrderByAppointmentDateDesc(Long userId);
 
+    long countByUser_UserId(Long userId);
+
+    @Query("""
+        SELECT a FROM Appointment a
+        JOIN FETCH a.user u
+        JOIN FETCH u.account
+        JOIN FETCH a.facility
+        JOIN FETCH a.vaccine
+        LEFT JOIN FETCH a.staff
+        WHERE u.userId = :userId
+          AND a.appointmentDate >= :fromDate
+          AND a.status IN :statuses
+        ORDER BY a.appointmentDate ASC, a.timeSlot ASC
+        """)
+    List<Appointment> findUpcomingByUserId(@Param("userId") Long userId,
+                                            @Param("fromDate") LocalDate fromDate,
+                                            @Param("statuses") List<AppointmentStatus> statuses);
+
+    @Query("""
+        SELECT a.status, COUNT(a) FROM Appointment a
+        WHERE a.facility.facilityId = :facilityId
+          AND a.appointmentDate = :date
+        GROUP BY a.status
+        """)
+    List<Object[]> countByFacilityAndDateGroupByStatus(@Param("facilityId") Long facilityId,
+                                                        @Param("date") LocalDate date);
+
+     @Query("""
+        SELECT a.status, COUNT(a) FROM Appointment a
+        WHERE a.appointmentDate BETWEEN :from AND :to
+        GROUP BY a.status
+        """)
+    List<Object[]> countGroupByStatusInRange(@Param("from") LocalDate from, @Param("to") LocalDate to);
+
     @Query("""
         SELECT a FROM Appointment a
         JOIN FETCH a.user u
