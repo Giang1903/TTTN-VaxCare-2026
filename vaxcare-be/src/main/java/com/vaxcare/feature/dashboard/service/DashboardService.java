@@ -40,6 +40,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class DashboardService {
 
     private static final int UPCOMING_APPOINTMENTS_LIMIT = 5;

@@ -12,5 +12,7 @@ public interface MedicalStaffRepository extends JpaRepository<MedicalStaff, Long
 
     Optional<MedicalStaff> findByStaffCode(String staffCode);
 
+    boolean existsByStaffCode(String staffCode);
+
     List<MedicalStaff> findByFacility_FacilityId(Long facilityId);
 }
