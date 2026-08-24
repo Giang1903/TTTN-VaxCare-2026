@@ -29,6 +29,12 @@ public class PriceListController {
                 priceListService.getCurrentPrices(vaccineId, facilityId));
     }
 
+    @GetMapping("/admin/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<List<PriceListResponse>> getAllPricesForAdmin() {
+        return ApiResponse.success("Lấy toàn bộ bảng giá thành công", priceListService.getAllForAdmin());
+    }
+
     @GetMapping("/vaccine/{vaccineId}/history")
     @PreAuthorize("hasAnyRole('ADMIN', 'MEDICAL_STAFF')")
     public ApiResponse<List<PriceListResponse>> getPriceHistory(@PathVariable Long vaccineId) {

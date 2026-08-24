@@ -1,29 +1,40 @@
-import { useMemo, useState } from 'react';
+/* eslint-disable no-unused-vars */
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Topbar from '../../components/layout/Topbar';
 import { Overlay, Modal } from '../../components/ui/Modal';
 import { useToast } from '../../components/ui/Toast';
-
-const INITIAL = [
-  { id: 1, vaxId: 1, name: 'BCG', price: 250000, from: '01/01/2026', to: null, status: 'ACTIVE' },
-  { id: 2, vaxId: 2, name: 'Viêm gan B', price: 350000, from: '01/01/2026', to: null, status: 'ACTIVE' },
-  { id: 3, vaxId: 3, name: 'DTaP', price: 520000, from: '01/01/2026', to: null, status: 'ACTIVE' },
-  { id: 4, vaxId: 4, name: 'IPV', price: 390000, from: '01/01/2026', to: null, status: 'ACTIVE' },
-  { id: 5, vaxId: 5, name: 'Hib', price: 420000, from: '01/01/2026', to: null, status: 'ACTIVE' },
-  { id: 6, vaxId: 6, name: 'MMR', price: 350000, from: '01/01/2026', to: null, status: 'ACTIVE' },
-  { id: 7, vaxId: 7, name: 'Thủy đậu', price: 850000, from: '01/01/2026', to: null, status: 'ACTIVE' },
-  { id: 8, vaxId: 8, name: 'Phế cầu', price: 1150000, from: '01/01/2026', to: null, status: 'ACTIVE' },
-  { id: 9, vaxId: 9, name: 'Viêm não NB', price: 450000, from: '01/01/2026', to: null, status: 'ACTIVE' },
-  { id: 10, vaxId: 10, name: 'Cúm mùa', price: 450000, from: '01/01/2026', to: null, status: 'ACTIVE' },
-  { id: 11, vaxId: 11, name: 'HPV', price: 1790000, from: '01/01/2026', to: null, status: 'ACTIVE' },
-  { id: 12, vaxId: 12, name: 'COVID-19', price: 550000, from: '01/01/2026', to: null, status: 'ACTIVE' },
-  { id: 13, vaxId: 13, name: 'Zona (Shingrix)', price: 3200000, from: '01/01/2026', to: null, status: 'ACTIVE' },
-];
+import * as adminService from '../../services/adminService';
 
 const fmt = (n) => n.toLocaleString('vi-VN') + '₫';
 
 export default function Pricing() {
   const showToast = useToast();
-  const [prices, setPrices] = useState(INITIAL);
+  const [prices, setPrices] = useState([]);
+  const [vaccines, setVaccines] = useState([]);
+  const [facilities, setFacilities] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [plist, vlist, flist] = await Promise.all([
+        adminService.getAllPricesAdmin(),
+        adminService.getVaccinesAdmin().catch(() => []),
+        adminService.getFacilitiesAdmin().catch(() => []),
+      ]);
+      setPrices((plist || []).map(adminService.mapPriceToUi));
+      setVaccines((vlist || []).map(adminService.mapVaccineToUi));
+      setFacilities((flist || []).map(adminService.mapFacilityToUi));
+    } catch (err) {
+      showToast(err.message || 'Không tải được bảng giá', 'error');
+      setPrices([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [showToast]);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { load(); }, [load]);
   const [filter, setFilter] = useState('all');
   const [q, setQ] = useState('');
   const [editId, setEditId] = useState(null);
@@ -50,20 +61,36 @@ export default function Pricing() {
     setFormOpen(true);
   };
 
-  const save = () => {
-    const price = Number(fPrice);
-    if (!price) {
-      showToast('Nhập giá hợp lệ', 'warn');
+  const save = async () => {
+    const priceNum = Number(String(fPrice).replace(/[^\d.]/g, '')) || 0;
+    if (priceNum <= 0) {
+      showToast('Giá phải > 0', 'warn');
       return;
     }
     if (editId) {
-      setPrices((prev) =>
-        prev.map((p) => (p.id === editId ? { ...p, price, status: fStatus } : p))
-      );
-      const name = prices.find((x) => x.id === editId)?.name;
-      showToast('Đã cập nhật giá ' + name, 'ok');
+      // BE chưa có PUT giá — vô hiệu hóa cái cũ rồi tạo mới nếu cần; ở đây chỉ thông báo
+      showToast('Chỉ hỗ trợ tạo giá mới / vô hiệu hóa. Dùng thêm giá hoặc tắt giá cũ.', 'warn');
+      setFormOpen(false);
+      return;
     }
-    setFormOpen(false);
+    try {
+      await adminService.createPrice({
+        vaccineId: Number(fVax),
+        // eslint-disable-next-line no-undef
+        facilityId: fFac ? Number(fFac) : null,
+        price: priceNum,
+        // eslint-disable-next-line no-undef
+        effectiveDate: fEff || new Date().toISOString().slice(0, 10),
+        // eslint-disable-next-line no-undef
+        expiryDate: fExp || undefined,
+        status: fStatus || 'ACTIVE',
+      });
+      showToast('Đã thêm bảng giá', 'ok');
+      setFormOpen(false);
+      await load();
+    } catch (err) {
+      showToast(err.message || 'Lưu giá thất bại', 'error');
+    }
   };
 
   return (

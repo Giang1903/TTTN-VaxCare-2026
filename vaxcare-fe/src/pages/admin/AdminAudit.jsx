@@ -1,24 +1,9 @@
-import { useMemo, useState } from 'react';
+/* eslint-disable no-unused-vars */
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Topbar from "../../components/layout/Topbar";
 import { Overlay, Modal } from "../../components/ui/Modal";
 import { useToast } from "../../components/ui/Toast";
-
-const LOGS = [
-  { t: '18/08 09:22', actor: 'BS. Trần Minh', action: 'Ghi nhận tiêm DTaP mũi 3', target: 'Phạm Gia Huy · VXC-CERT-003', scope: 'Phú Nhuận', cat: 'VACCINATION' },
-  { t: '18/08 08:45', actor: 'BS. Trần Minh', action: 'Yêu cầu nhập kho HPV', target: 'HPV-2026-G9A · 100 liều', scope: 'Phú Nhuận', cat: 'INVENTORY' },
-  { t: '18/08 08:10', actor: 'Quản trị hệ thống', action: 'Tạo tài khoản staff', target: 'STF-NZ-004', scope: 'Nowzone', cat: 'USER' },
-  { t: '18/08 07:55', actor: 'Hệ thống', action: 'Cảnh báo HSD lô', target: 'BCG-2026-002 · 210 liều', scope: 'Nowzone', cat: 'INVENTORY' },
-  { t: '17/08 16:40', actor: 'Quản trị hệ thống', action: 'Cập nhật bảng giá HPV', target: '1.790.000₫', scope: 'Toàn hệ thống', cat: 'CONFIG' },
-  { t: '17/08 15:12', actor: 'BS. Phạm Quốc Bảo', action: 'Ghi nhận tiêm Cúm mùa', target: 'Nguyễn Minh Quân', scope: 'Nowzone', cat: 'VACCINATION' },
-  { t: '17/08 14:05', actor: 'Hệ thống', action: 'Đăng nhập thất bại ×3', target: 'ly.long@email.com', scope: '—', cat: 'SECURITY' },
-  { t: '17/08 11:30', actor: 'Quản trị hệ thống', action: 'Khóa tài khoản USER', target: 'Lý Hoàng Long · #22', scope: 'Toàn hệ thống', cat: 'USER' },
-  { t: '17/08 10:18', actor: 'BS. Hoàng Đức', action: 'Check-in lịch hẹn', target: 'VXC-20260817-008', scope: 'Oriental Plaza', cat: 'VACCINATION' },
-  { t: '17/08 09:00', actor: 'Quản trị hệ thống', action: 'Sửa capacity cơ sở', target: 'Phú Nhuận · 15→18', scope: 'Phú Nhuận', cat: 'CONFIG' },
-  { t: '16/08 17:20', actor: 'BS. Trần Minh', action: 'Xử lý phản ứng sau tiêm', target: 'Lê Thị Thu · MMR', scope: 'Phú Nhuận', cat: 'VACCINATION' },
-  { t: '16/08 11:45', actor: 'Hệ thống', action: 'Xuất báo cáo tồn kho', target: 'inventory export CSV', scope: 'Toàn hệ thống', cat: 'INVENTORY' },
-  { t: '15/08 09:30', actor: 'Quản trị hệ thống', action: 'Đổi booking_advance_days', target: '21 → 30 ngày', scope: 'system_configs', cat: 'CONFIG' },
-  { t: '15/08 08:00', actor: 'Hệ thống', action: 'Backup DB hoàn tất', target: 'vaxcare_2026 snapshot', scope: '—', cat: 'SECURITY' },
-];
+import * as adminService from "../../services/adminService";
 
 const tagMap = { VACCINATION: 'ok', INVENTORY: 'warn', USER: 'info', CONFIG: 'neutral', SECURITY: 'danger' };
 const TABS = [
@@ -35,15 +20,33 @@ export default function Audit() {
   const [filter, setFilter] = useState('all');
   const [q, setQ] = useState('');
   const [detail, setDetail] = useState(null);
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await adminService.listAuditLogs({ limit: 300 });
+      setLogs((data || []).map(adminService.mapAuditToUi));
+    } catch (err) {
+      showToast(err.message || 'Không tải được nhật ký', 'error');
+      setLogs([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [showToast]);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { load(); }, [load]);
 
   const rows = useMemo(() => {
     const qq = q.toLowerCase();
-    return LOGS.filter((l) => {
+    return logs.filter((l) => {
       if (filter !== 'all' && l.cat !== filter) return false;
       if (!qq) return true;
       return (l.actor + l.action + l.target + l.scope).toLowerCase().includes(qq);
     });
-  }, [filter, q]);
+  }, [filter, q, logs]);
 
   return (
     <>

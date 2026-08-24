@@ -1,7 +1,9 @@
-import { useMemo, useState } from 'react';
+/* eslint-disable no-unused-vars */
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Topbar from '../../components/layout/Topbar';
 import { Overlay, Modal } from '../../components/ui/Modal';
 import { useToast } from '../../components/ui/Toast';
+import * as adminService from '../../services/adminService';
 
 const CATS = {
   1: 'Trẻ sơ sinh & Trẻ nhỏ',
@@ -12,25 +14,26 @@ const CATS = {
   6: 'Phối hợp & Đặc biệt',
 };
 
-const INITIAL = [
-  { id: 1, cat: 1, name: 'BCG', full: 'Vắc xin BCG (Bacille Calmette–Guérin)', disease: 'Bệnh lao', doses: 1, interval: null, proto: 'Phác đồ BCG chuẩn (1 liều)', status: 'ACTIVE' },
-  { id: 2, cat: 1, name: 'Viêm gan B', full: 'Vắc xin Viêm gan B (Hepatitis B)', disease: 'Viêm gan B', doses: 3, interval: 30, proto: 'Phác đồ 3 liều', status: 'ACTIVE' },
-  { id: 3, cat: 2, name: 'DTaP', full: 'Vắc xin Bạch hầu – Ho gà – Uốn ván (DTaP/Tdap)', disease: 'Bạch hầu, ho gà, uốn ván', doses: 5, interval: 60, proto: 'Phác đồ DTaP trẻ em (5 liều)', status: 'ACTIVE' },
-  { id: 4, cat: 1, name: 'IPV', full: 'Vắc xin Bại liệt (IPV)', disease: 'Bệnh bại liệt', doses: 4, interval: 60, proto: 'Phác đồ IPV chuẩn (4 liều)', status: 'ACTIVE' },
-  { id: 5, cat: 1, name: 'Hib', full: 'Vắc xin Hib', disease: 'Bệnh xâm lấn do Hib', doses: 3, interval: 60, proto: 'Phác đồ Hib chuẩn (3 liều)', status: 'ACTIVE' },
-  { id: 6, cat: 2, name: 'MMR', full: 'Vắc xin MMR (Sởi – Quai bị – Rubella)', disease: 'Sởi, quai bị, rubella', doses: 2, interval: 28, proto: 'Phác đồ MMR 2 liều', status: 'ACTIVE' },
-  { id: 7, cat: 2, name: 'Thủy đậu', full: 'Vắc xin Thủy đậu (Varicella)', disease: 'Thủy đậu', doses: 2, interval: 28, proto: 'Phác đồ Thủy đậu 2 liều', status: 'ACTIVE' },
-  { id: 8, cat: 1, name: 'Phế cầu', full: 'Vắc xin Phế cầu (Pneumococcal)', disease: 'Nhiễm khuẩn phế cầu', doses: 2, interval: 60, proto: 'Phác đồ Phế cầu cơ bản', status: 'ACTIVE' },
-  { id: 9, cat: 2, name: 'Viêm não NB', full: 'Vắc xin Viêm não Nhật Bản', disease: 'Viêm não Nhật Bản', doses: 3, interval: 14, proto: 'Phác đồ 3 liều', status: 'ACTIVE' },
-  { id: 10, cat: 5, name: 'Cúm mùa', full: 'Vắc xin Cúm mùa (Influenza)', disease: 'Cúm', doses: 1, interval: null, proto: '1 liều mỗi mùa', status: 'ACTIVE' },
-  { id: 11, cat: 2, name: 'HPV', full: 'Vắc xin HPV (Human Papillomavirus)', disease: 'Ung thư cổ tử cung / HPV', doses: 2, interval: 180, proto: 'HPV 2 liều (9–14t) / 3 liều', status: 'ACTIVE' },
-  { id: 12, cat: 3, name: 'COVID-19', full: 'Vắc xin COVID-19', disease: 'COVID-19', doses: 2, interval: 28, proto: '2 liều cơ bản + cập nhật', status: 'ACTIVE' },
-  { id: 13, cat: 4, name: 'Zona', full: 'Vắc xin Zona (Shingrix)', disease: 'Zona thần kinh', doses: 2, interval: 60, proto: 'Shingrix 2 liều (2–6 tháng)', status: 'ACTIVE' },
-];
-
 export default function Vaccines() {
   const showToast = useToast();
-  const [list, setList] = useState(INITIAL);
+  const [list, setList] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await adminService.getVaccinesAdmin();
+      setList((data || []).map(adminService.mapVaccineToUi));
+    } catch (err) {
+      showToast(err.message || 'Không tải được danh sách vắc xin', 'error');
+      setList([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [showToast]);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { load(); }, [load]);
   const [filter, setFilter] = useState('all');
   const [q, setQ] = useState('');
   const [detail, setDetail] = useState(null);
@@ -58,29 +61,33 @@ export default function Vaccines() {
     setFormOpen(true);
   };
 
-  const save = () => {
-    if (!form.name.trim()) {
+  const save = async () => {
+    if (!form.name?.trim()) {
       showToast('Nhập tên vắc xin', 'warn');
       return;
     }
-    const data = {
-      name: form.name.trim(),
-      full: form.full.trim() || form.name.trim(),
-      disease: form.disease.trim() || '—',
-      cat: Number(form.cat),
-      doses: Number(form.doses) || 1,
-      interval: form.interval !== '' ? Number(form.interval) : null,
-      proto: form.proto.trim() || '—',
-      status: form.status,
+    const body = {
+      vaccineName: form.name.trim(),
+      manufacturer: form.full || undefined,
+      targetDisease: form.disease || undefined,
+      requiredDoses: form.doses ? Number(form.doses) : undefined,
+      doseIntervalDays: form.interval ? Number(form.interval) : undefined,
+      description: form.proto || undefined,
+      status: form.status || 'ACTIVE',
     };
-    if (editId) {
-      setList((prev) => prev.map((x) => (x.id === editId ? { ...x, ...data } : x)));
-      showToast('Đã cập nhật ' + data.name, 'ok');
-    } else {
-      setList((prev) => [...prev, { id: Date.now(), ...data }]);
-      showToast('Đã thêm ' + data.name, 'ok');
+    try {
+      if (editId) {
+        await adminService.updateVaccine(editId, body);
+        showToast('Đã cập nhật ' + form.name, 'ok');
+      } else {
+        await adminService.createVaccine(body);
+        showToast('Đã thêm vắc xin ' + form.name, 'ok');
+      }
+      setFormOpen(false);
+      await load();
+    } catch (err) {
+      showToast(err.message || 'Lưu thất bại', 'error');
     }
-    setFormOpen(false);
   };
 
   return (

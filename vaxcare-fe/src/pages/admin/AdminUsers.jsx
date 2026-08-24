@@ -1,26 +1,30 @@
-import { useMemo, useState } from 'react';
+/* eslint-disable no-unused-vars */
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import * as adminService from '../../services/adminService';
 import Topbar from '../../components/layout/Topbar';
 import { Overlay, Modal } from '../../components/ui/Modal';
 import { useToast } from '../../components/ui/Toast';
 
-const INITIAL = [
-  { id: 1, name: 'Nguyễn An', initials: 'NA', email: 'nguyen.an@email.com', phone: '0901234567', gender: 'Nam', age: 28, addr: 'Quận Phú Nhuận, TP.HCM', status: 'ACTIVE', appts: 5, lastLogin: '17/08/2026' },
-  { id: 13, name: 'Lê Thị Thu', initials: 'LT', email: 'le.thu@email.com', phone: '0912345678', gender: 'Nữ', age: 3, addr: 'Quận 1 (phụ huynh)', status: 'ACTIVE', appts: 3, lastLogin: '17/08/2026' },
-  { id: 14, name: 'Phạm Gia Huy', initials: 'PH', email: 'pham.huy.parent@email.com', phone: '0987654321', gender: 'Nam', age: 0, addr: 'Quận Bình Thạnh', status: 'ACTIVE', appts: 4, lastLogin: '17/08/2026' },
-  { id: 15, name: 'Trần Văn Khoa', initials: 'TV', email: 'tran.khoa@email.com', phone: '0933111222', gender: 'Nam', age: 15, addr: 'Quận Tân Bình', status: 'ACTIVE', appts: 2, lastLogin: '16/08/2026' },
-  { id: 16, name: 'Hoàng Ngọc Mai', initials: 'HN', email: 'hoang.mai@email.com', phone: '0909888777', gender: 'Nữ', age: 16, addr: 'Quận 3', status: 'ACTIVE', appts: 1, lastLogin: '15/08/2026' },
-  { id: 17, name: 'Vũ Đình Đạt', initials: 'VD', email: 'vu.dat.parent@email.com', phone: '0911222333', gender: 'Nam', age: 2, addr: 'Quận Phú Nhuận', status: 'ACTIVE', appts: 2, lastLogin: '14/08/2026' },
-  { id: 18, name: 'Đỗ Lan Anh', initials: 'ĐL', email: 'do.lananh@email.com', phone: '0977444555', gender: 'Nữ', age: 5, addr: 'Quận Gò Vấp', status: 'ACTIVE', appts: 1, lastLogin: '13/08/2026' },
-  { id: 19, name: 'Nguyễn Minh Quân', initials: 'NM', email: 'nguyen.quan@email.com', phone: '0905555666', gender: 'Nam', age: 42, addr: 'Quận 7', status: 'ACTIVE', appts: 3, lastLogin: '18/08/2026' },
-  { id: 20, name: 'Huỳnh Thị Bình', initials: 'HT', email: 'huynh.binh@email.com', phone: '0922333444', gender: 'Nữ', age: 55, addr: 'Quận Tân Phú', status: 'ACTIVE', appts: 1, lastLogin: '12/08/2026' },
-  { id: 21, name: 'Phan Thành Đạt', initials: 'PT', email: 'phan.dat@email.com', phone: '0944555666', gender: 'Nam', age: 31, addr: 'Quận 10', status: 'INACTIVE', appts: 0, lastLogin: '01/07/2026' },
-  { id: 22, name: 'Lý Hoàng Long', initials: 'LH', email: 'ly.long@email.com', phone: '0955666777', gender: 'Nam', age: 24, addr: 'Quận Bình Tân', status: 'LOCKED', appts: 2, lastLogin: '20/06/2026' },
-  { id: 23, name: 'Trịnh Mỹ Linh', initials: 'TM', email: 'trinh.linh@email.com', phone: '0966777888', gender: 'Nữ', age: 29, addr: 'TP. Thủ Đức', status: 'ACTIVE', appts: 6, lastLogin: '18/08/2026' },
-];
-
 export default function Users() {
   const showToast = useToast();
-  const [list, setList] = useState(INITIAL);
+  const [list, setList] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await adminService.listUsers();
+      setList((data || []).map(adminService.mapAccountToUi));
+    } catch (err) {
+      showToast(err.message || 'Không tải được danh sách', 'error');
+      setList([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [showToast]);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { load(); }, [load]);
   const [filter, setFilter] = useState('all');
   const [q, setQ] = useState('');
   const [detail, setDetail] = useState(null);
@@ -34,23 +38,17 @@ export default function Users() {
     });
   }, [list, filter, q]);
 
-  const toggleStatus = (u) => {
-    setList((prev) =>
-      prev.map((x) => {
-        if (x.id !== u.id) return x;
-        let status = x.status;
-        if (status === 'LOCKED') status = 'ACTIVE';
-        else if (status === 'ACTIVE') status = 'LOCKED';
-        else status = 'ACTIVE';
-        return { ...x, status };
-      })
-    );
-    const next = u.status === 'LOCKED' ? 'ACTIVE' : 'LOCKED';
-    showToast(next === 'LOCKED' ? 'Đã khóa tài khoản ' + u.name : 'Đã mở khóa ' + u.name, 'ok');
-    if (detail?.id === u.id) {
-      setDetail((d) => ({ ...d, status: next === 'LOCKED' ? 'LOCKED' : 'ACTIVE' }));
+  const toggleStatus = async (row) => {
+    const next = String(row.status).toUpperCase() === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
+    try {
+      await adminService.updateAccountStatus(row.id, next);
+      showToast(`Đã đổi trạng thái ${row.name} → ${next}`, 'ok');
+      await load();
+    } catch (err) {
+      showToast(err.message || 'Cập nhật thất bại', 'error');
     }
   };
+  const toggle = toggleStatus;
 
   return (
     <>
@@ -108,7 +106,7 @@ export default function Users() {
                     <td>
                       <div className="row-actions">
                         <button className="row-btn outline" type="button" onClick={() => setDetail(u)}>Chi tiết</button>
-                        <button className="row-btn danger" type="button" onClick={() => toggleStatus(u)}>{u.status === 'LOCKED' ? 'Mở khóa' : 'Khóa'}</button>
+                        <button className="row-btn danger" type="button" onClick={() => toggleStatus(u)}>{String(u.status).toUpperCase() === 'SUSPENDED' || String(u.status).toUpperCase() === 'INACTIVE' ? 'Mở khóa' : 'Khóa'}</button>
                       </div>
                     </td>
                   </tr>

@@ -1,25 +1,31 @@
-import { useMemo, useState } from 'react';
+/* eslint-disable no-unused-vars */
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import * as adminService from '../../services/adminService';
 import Topbar from '../../components/layout/Topbar';
 import { Overlay, Modal } from '../../components/ui/Modal';
 import { useToast } from '../../components/ui/Toast';
 
 const FAC_NAMES = { 1: 'Phú Nhuận', 2: 'Thủ Đức', 3: 'Nowzone', 6: 'Co.opmart QT', 7: 'Oriental Plaza', 10: 'Tân Định' };
-const INITIAL = [
-  { id: 3, name: 'BS. Trần Minh', initials: 'TM', code: 'STF-PN-001', spec: 'Tiêm chủng', fac: 1, email: 'staff.phunhuan@vaxcare.vn', phone: '0908888777', status: 'ACTIVE', shots: 186 },
-  { id: 4, name: 'BS. Lê Hoàng Anh', initials: 'LA', code: 'STF-PN-002', spec: 'Tiêm chủng', fac: 1, email: 'le.hoanganh@vaxcare.vn', phone: '0901111222', status: 'ACTIVE', shots: 142 },
-  { id: 5, name: 'ĐD. Nguyễn Thị Mai', initials: 'NM', code: 'STF-PN-003', spec: 'Điều dưỡng tiêm', fac: 1, email: 'nguyen.mai@vaxcare.vn', phone: '0903333444', status: 'ACTIVE', shots: 98 },
-  { id: 6, name: 'BS. Phạm Quốc Bảo', initials: 'PB', code: 'STF-NZ-001', spec: 'Tiêm chủng', fac: 3, email: 'pham.bao@vaxcare.vn', phone: '0912222333', status: 'ACTIVE', shots: 210 },
-  { id: 7, name: 'BS. Võ Minh Châu', initials: 'VC', code: 'STF-NZ-002', spec: 'Nhi khoa', fac: 3, email: 'vo.chau@vaxcare.vn', phone: '0914444555', status: 'ACTIVE', shots: 156 },
-  { id: 8, name: 'ĐD. Trần Thu Hà', initials: 'TH', code: 'STF-NZ-003', spec: 'Điều dưỡng tiêm', fac: 3, email: 'tran.ha@vaxcare.vn', phone: '0916666777', status: 'ACTIVE', shots: 120 },
-  { id: 9, name: 'BS. Hoàng Đức', initials: 'HD', code: 'STF-OP-001', spec: 'Tiêm chủng', fac: 7, email: 'hoang.duc@vaxcare.vn', phone: '0921111222', status: 'ACTIVE', shots: 175 },
-  { id: 10, name: 'BS. Đặng Lan', initials: 'ĐL', code: 'STF-TD-001', spec: 'Tiêm chủng', fac: 2, email: 'dang.lan@vaxcare.vn', phone: '0932222333', status: 'ACTIVE', shots: 88 },
-  { id: 11, name: 'ĐD. Lý Văn Khoa', initials: 'LK', code: 'STF-TD-002', spec: 'Điều dưỡng tiêm', fac: 2, email: 'ly.khoa@vaxcare.vn', phone: '0934444555', status: 'INACTIVE', shots: 45 },
-  { id: 12, name: 'BS. Ngô Thanh Tùng', initials: 'NT', code: 'STF-TĐ-001', spec: 'Tiêm chủng', fac: 10, email: 'ngo.tung@vaxcare.vn', phone: '0945555666', status: 'ACTIVE', shots: 102 },
-];
-
 export default function Staff() {
   const showToast = useToast();
-  const [list, setList] = useState(INITIAL);
+  const [list, setList] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await adminService.listStaff();
+      setList((data || []).map(adminService.mapAccountToUi));
+    } catch (err) {
+      showToast(err.message || 'Không tải được danh sách', 'error');
+      setList([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [showToast]);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { load(); }, [load]);
   const [filterFac, setFilterFac] = useState('all');
   const [q, setQ] = useState('');
   const [detail, setDetail] = useState(null);
@@ -50,30 +56,20 @@ export default function Staff() {
     setFormOpen(true);
   };
 
-  const save = () => {
-    if (!form.name.trim() || !form.code.trim()) {
-      showToast('Nhập họ tên và mã NV', 'warn');
-      return;
-    }
-    const parts = form.name.replace(/^BS\.\s*|^ĐD\.\s*/i, '').split(/\s+/);
-    const initials = ((parts[0]?.[0] || '') + (parts[parts.length - 1]?.[0] || '')).toUpperCase() || 'NV';
-    const data = { ...form, initials, fac: Number(form.fac) };
-    if (editId) {
-      setList((prev) => prev.map((x) => (x.id === editId ? { ...x, ...data } : x)));
-      showToast('Đã cập nhật ' + form.name, 'ok');
-    } else {
-      setList((prev) => [...prev, { id: Date.now(), shots: 0, ...data }]);
-      showToast('Đã thêm nhân viên ' + form.name, 'ok');
-    }
+  const save = async () => {
+    showToast('Tạo/sửa nhân viên qua API đang hạn chế — dùng đổi trạng thái tài khoản. Vui lòng seed NV từ BE.', 'warn');
     setFormOpen(false);
   };
 
-  const lock = (s) => {
-    setList((prev) =>
-      prev.map((x) => (x.id === s.id ? { ...x, status: x.status === 'LOCKED' ? 'ACTIVE' : 'LOCKED' } : x))
-    );
-    const next = s.status === 'LOCKED' ? 'ACTIVE' : 'LOCKED';
-    showToast(next === 'LOCKED' ? 'Đã khóa TK ' + s.name : 'Đã mở khóa ' + s.name, 'ok');
+  const lock = async (s) => {
+    const next = String(s.status).toUpperCase() === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
+    try {
+      await adminService.updateAccountStatus(s.id, next);
+      showToast(next === 'SUSPENDED' ? 'Đã khóa TK ' + s.name : 'Đã mở khóa ' + s.name, 'ok');
+      await load();
+    } catch (err) {
+      showToast(err.message || 'Thao tác thất bại', 'error');
+    }
   };
 
   return (
@@ -83,7 +79,7 @@ export default function Staff() {
         <section className="kpi-row">
           <div className="kpi c1"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg></span></div><div className="num">{kpiTotal}</div><div className="lbl">Tổng nhân viên</div></div>
           <div className="kpi c2"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6 9 17l-5-5" /></svg></span></div><div className="num">{kpiActive}</div><div className="lbl">Đang làm việc</div></div>
-          <div className="kpi c3"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 21h18M5 21V7l7-4 7 4v14" /></svg></span></div><div className="num">12</div><div className="lbl">Cơ sở có NV</div></div>
+          <div className="kpi c3"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 21h18M5 21V7l7-4 7 4v14" /></svg></span></div><div className="num">{new Set(list.map((x) => x.facilityId).filter(Boolean)).size}</div><div className="lbl">Cơ sở có NV</div></div>
           <div className="kpi c4"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg></span></div><div className="num">1</div><div className="lbl">Chờ kích hoạt TK</div></div>
         </section>
 

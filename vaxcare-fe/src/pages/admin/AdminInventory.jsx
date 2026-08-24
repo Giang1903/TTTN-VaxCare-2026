@@ -1,30 +1,9 @@
-import { useMemo, useState } from 'react';
+/* eslint-disable no-unused-vars */
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Topbar from '../../components/layout/Topbar';
 import { Overlay, Modal } from '../../components/ui/Modal';
 import { useToast } from '../../components/ui/Toast';
-
-const FAC = { 1: 'Phú Nhuận', 2: 'Thủ Đức', 3: 'Nowzone', 4: 'Củ Chi', 5: 'Trung Mỹ Tây', 6: 'Co.opmart QT', 7: 'Oriental', 9: 'Hiệp Bình', 10: 'Tân Định' };
-const VNAMES = { 1: 'BCG', 2: 'Viêm gan B', 3: 'DTaP', 4: 'IPV', 5: 'Hib', 6: 'MMR', 7: 'Thủy đậu', 8: 'Phế cầu', 9: 'Viêm não NB', 10: 'Cúm mùa', 11: 'HPV', 12: 'COVID-19', 13: 'Zona' };
-
-const INITIAL = [
-  { id: 1, fac: 1, vax: 1, code: 'BCG-2026-001', stock: 280, exp: '01/11/2027', status: 'AVAILABLE', low: false, expiring: false },
-  { id: 2, fac: 3, vax: 1, code: 'BCG-2026-002', stock: 210, exp: '01/12/2027', status: 'AVAILABLE', low: false, expiring: true },
-  { id: 3, fac: 1, vax: 2, code: 'HBV-2026-A1', stock: 420, exp: '15/10/2027', status: 'AVAILABLE', low: false, expiring: false },
-  { id: 4, fac: 5, vax: 2, code: 'HBV-2026-A2', stock: 310, exp: '20/11/2027', status: 'AVAILABLE', low: false, expiring: false },
-  { id: 5, fac: 10, vax: 2, code: 'HBV-2026-A3', stock: 290, exp: '10/12/2027', status: 'AVAILABLE', low: false, expiring: false },
-  { id: 6, fac: 1, vax: 3, code: 'DTAP-2026-01', stock: 240, exp: '01/09/2027', status: 'AVAILABLE', low: false, expiring: true },
-  { id: 7, fac: 6, vax: 3, code: 'DTAP-2026-02', stock: 190, exp: '01/10/2027', status: 'AVAILABLE', low: false, expiring: false },
-  { id: 8, fac: 2, vax: 4, code: 'IPV-2026-X1', stock: 260, exp: '15/08/2027', status: 'AVAILABLE', low: false, expiring: false },
-  { id: 9, fac: 9, vax: 4, code: 'IPV-2026-X2', stock: 210, exp: '20/09/2027', status: 'AVAILABLE', low: false, expiring: false },
-  { id: 10, fac: 1, vax: 5, code: 'HIB-2026-01', stock: 230, exp: '20/09/2027', status: 'AVAILABLE', low: false, expiring: false },
-  { id: 12, fac: 1, vax: 6, code: 'MMR-2026-01', stock: 320, exp: '10/10/2027', status: 'AVAILABLE', low: false, expiring: false },
-  { id: 17, fac: 1, vax: 8, code: 'PCV-2026-01', stock: 130, exp: '01/08/2027', status: 'AVAILABLE', low: false, expiring: false },
-  { id: 19, fac: 10, vax: 8, code: 'PCV-2026-03', stock: 95, exp: '05/10/2027', status: 'AVAILABLE', low: true, expiring: false },
-  { id: 30, fac: 1, vax: 11, code: 'HPV-2026-G9A', stock: 48, exp: '01/07/2027', status: 'AVAILABLE', low: true, expiring: false },
-  { id: 31, fac: 3, vax: 11, code: 'HPV-2026-G9B', stock: 62, exp: '15/08/2027', status: 'AVAILABLE', low: false, expiring: false },
-  { id: 32, fac: 7, vax: 10, code: 'FLU-2026-A', stock: 580, exp: '31/12/2026', status: 'AVAILABLE', low: false, expiring: true },
-  { id: 33, fac: 1, vax: 13, code: 'ZONA-2026-01', stock: 85, exp: '01/06/2027', status: 'AVAILABLE', low: true, expiring: false },
-];
+import * as adminService from '../../services/adminService';
 
 function formatDateVN(iso) {
   if (!iso) return '—';
@@ -42,16 +21,48 @@ function isExpiringSoon(expStr) {
   return diff >= 0 && diff <= 180;
 }
 
+
+
 export default function Inventory() {
   const showToast = useToast();
-  const [list, setList] = useState(INITIAL);
+  const [list, setList] = useState([]);
+  const [facilities, setFacilities] = useState([]);
+  const [facFilter, setFacFilter] = useState('all');
   const [filter, setFilter] = useState('all');
   const [q, setQ] = useState('');
   const [detail, setDetail] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [importOpen, setImportOpen] = useState(false);
-  const [form, setForm] = useState({
-    code: '', vax: 11, fac: 1, qty: 100, stock: 100, mfg: '', exp: '', importDate: '', status: 'AVAILABLE',
-  });
+  const [form, setForm] = useState({ code: '', vax: '', fac: '', qty: 100, mfg: '', exp: '', importDate: '', status: 'AVAILABLE' });
+  const [vaccines, setVaccines] = useState([]);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [facs, vaxList] = await Promise.all([
+        adminService.getFacilitiesAdmin(),
+        adminService.getVaccinesAdmin().catch(() => []),
+      ]);
+      setVaccines((vaxList || []).map(adminService.mapVaccineToUi));
+      const facUi = (facs || []).map(adminService.mapFacilityToUi);
+      setFacilities(facUi);
+      const nameMap = Object.fromEntries(facUi.map((f) => [f.id, f.name]));
+      const targets = facFilter === 'all' ? facUi : facUi.filter((f) => String(f.id) === String(facFilter));
+      const batchLists = await Promise.all(
+        targets.map((f) => adminService.getBatches(f.id).catch(() => []))
+      );
+      const merged = batchLists.flat().map((b) => adminService.mapBatchAdminToUi(b, nameMap));
+      setList(merged);
+    } catch (err) {
+      showToast(err.message || 'Không tải được tồn kho', 'error');
+      setList([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [showToast, facFilter]);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { load(); }, [load]);
 
   const rows = useMemo(() => {
     const qq = q.toLowerCase();
@@ -60,7 +71,7 @@ export default function Inventory() {
       if (filter === 'exp' && !b.expiring) return false;
       if (filter === 'AVAILABLE' && b.status !== 'AVAILABLE') return false;
       if (!qq) return true;
-      return (b.code + (VNAMES[b.vax] || '') + (FAC[b.fac] || '')).toLowerCase().includes(qq);
+      return `${b.code} ${b.vaxName || ''} ${b.facName || ''}`.toLowerCase().includes(qq);
     });
   }, [list, filter, q]);
 
@@ -70,30 +81,30 @@ export default function Inventory() {
     setImportOpen(true);
   };
 
-  const saveImport = () => {
+  const saveImport = async () => {
     const code = form.code.trim();
     const qty = Number(form.qty) || 0;
-    const stock = Number(form.stock) || 0;
     if (!code) { showToast('Vui lòng nhập mã lô', 'warn'); return; }
+    if (!form.fac) { showToast('Chọn cơ sở', 'warn'); return; }
+    if (!form.vax) { showToast('Chọn vắc xin', 'warn'); return; }
     if (qty <= 0) { showToast('Số lượng nhập phải > 0', 'warn'); return; }
     if (!form.exp) { showToast('Vui lòng chọn hạn sử dụng', 'warn'); return; }
-    if (list.some((b) => b.code === code)) { showToast('Mã lô đã tồn tại', 'warn'); return; }
-
-    const expVN = formatDateVN(form.exp);
-    const newBatch = {
-      id: Date.now(),
-      fac: Number(form.fac),
-      vax: Number(form.vax),
-      code,
-      stock,
-      exp: expVN,
-      status: form.status,
-      low: stock < 50,
-      expiring: isExpiringSoon(expVN),
-    };
-    setList((prev) => [newBatch, ...prev]);
-    setImportOpen(false);
-    showToast(`Đã nhập lô ${code} · ${stock} liều · ${FAC[newBatch.fac]}`, 'ok');
+    try {
+      await adminService.importBatch({
+        facilityId: Number(form.fac),
+        vaccineId: Number(form.vax),
+        batchNumber: code,
+        manufactureDate: form.mfg || undefined,
+        expiryDate: form.exp,
+        importedQuantity: qty,
+        importDate: form.importDate || undefined,
+      });
+      setImportOpen(false);
+      showToast(`Đã nhập lô ${code}`, 'ok');
+      await load();
+    } catch (err) {
+      showToast(err.message || 'Nhập lô thất bại', 'error');
+    }
   };
 
   return (
@@ -143,8 +154,8 @@ export default function Inventory() {
                   return (
                     <tr key={b.id} className={b.low ? 'alert-row' : b.expiring ? 'danger-row' : ''}>
                       <td className="mono">{b.code}</td>
-                      <td><div className="fname">{VNAMES[b.vax] || `#${b.vax}`}</div></td>
-                      <td>{FAC[b.fac] || b.fac}</td>
+                      <td><div className="fname">{b.vaxName || `#${b.vax}`}</div></td>
+                      <td>{(facilities.find(f=>f.id===b.fac)?.name || ('CS #'+b.fac)) || b.fac}</td>
                       <td className="mono">{b.stock}</td>
                       <td>{b.exp}</td>
                       <td>{tag}</td>
@@ -171,8 +182,8 @@ export default function Inventory() {
       >
         {detail && (
           <>
-            <div className="detail-row"><span className="lbl">Vắc xin</span><span className="val">{VNAMES[detail.vax] || detail.vax}</span></div>
-            <div className="detail-row"><span className="lbl">Cơ sở</span><span className="val">{FAC[detail.fac] || detail.fac}</span></div>
+            <div className="detail-row"><span className="lbl">Vắc xin</span><span className="val">{detail.vaxName || detail.vax}</span></div>
+            <div className="detail-row"><span className="lbl">Cơ sở</span><span className="val">{(facilities.find(f=>f.id===detail.fac)?.name || ('CS #'+detail.fac)) || detail.fac}</span></div>
             <div className="detail-row"><span className="lbl">Tồn kho</span><span className="val">{detail.stock} liều</span></div>
             <div className="detail-row"><span className="lbl">Hạn dùng</span><span className="val">{detail.exp}</span></div>
             <div className="detail-row"><span className="lbl">Trạng thái</span><span className="val">{detail.low ? 'Tồn thấp' : detail.expiring ? 'Ưu tiên FEFO' : 'OK'}</span></div>
@@ -199,13 +210,13 @@ export default function Inventory() {
           <div className="field">
             <label>Vắc xin <span className="req">*</span></label>
             <select value={form.vax} onChange={(e) => setForm({ ...form, vax: e.target.value })}>
-              {Object.entries(VNAMES).map(([k, n]) => <option key={k} value={k}>{n}</option>)}
+              {vaccines.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
             </select>
           </div>
           <div className="field">
             <label>Cơ sở (kho) <span className="req">*</span></label>
             <select value={form.fac} onChange={(e) => setForm({ ...form, fac: e.target.value })}>
-              {Object.entries(FAC).map(([k, n]) => <option key={k} value={k}>VaxCare {n}</option>)}
+              {facilities.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
             </select>
           </div>
         </div>
