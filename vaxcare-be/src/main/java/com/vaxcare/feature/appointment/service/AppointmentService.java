@@ -22,6 +22,7 @@ import com.vaxcare.feature.vaccine.entity.Vaccine;
 import com.vaxcare.feature.vaccine.repository.PriceListRepository;
 import com.vaxcare.feature.vaccine.repository.VaccineRepository;
 import com.vaxcare.feature.notification.service.EmailService;
+import com.vaxcare.utils.QRCodeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
