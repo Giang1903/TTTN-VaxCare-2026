@@ -13,6 +13,8 @@ public interface VaccinationFacilityRepository extends JpaRepository<Vaccination
 
     List<VaccinationFacility> findByStatus(ActiveStatus status);
 
+    long countByStatus(ActiveStatus status);
+
     boolean existsByFacilityNameIgnoreCase(String facilityName);
 
     boolean existsByFacilityNameIgnoreCaseAndFacilityIdNot(String facilityName, Long facilityId);

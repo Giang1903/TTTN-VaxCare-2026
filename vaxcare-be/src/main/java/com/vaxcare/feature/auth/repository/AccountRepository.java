@@ -16,5 +16,7 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 
     List<Account> findByRole(Role role);
 
+    long countByRole(Role role);
+
     Optional<Account> findByVerificationToken(String verificationToken);
 }
