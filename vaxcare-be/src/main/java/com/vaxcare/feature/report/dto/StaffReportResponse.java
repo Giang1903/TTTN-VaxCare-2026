@@ -27,4 +27,5 @@ public class StaffReportResponse {
     private long openReactions;
     /** Today's slot load (overload) */
     private List<TimeSlotLoadItem> todayOverload;
+    private List<FacilityStatItem> facilityStats;
 }

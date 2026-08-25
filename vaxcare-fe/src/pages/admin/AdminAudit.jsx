@@ -48,6 +48,11 @@ export default function Audit() {
     });
   }, [filter, q, logs]);
 
+  const kpiTotal = logs.length;
+  const kpiVaccination = logs.filter((l) => l.cat === 'VACCINATION').length;
+  const kpiConfig = logs.filter((l) => l.cat === 'CONFIG').length;
+  const kpiSecurity = logs.filter((l) => l.cat === 'SECURITY').length;
+
   return (
     <>
       <Topbar
@@ -66,8 +71,8 @@ export default function Audit() {
                 </svg>
               </span>
             </div>
-            <div className="num">1,842</div>
-            <div className="lbl">Sự kiện 30 ngày</div>
+            <div className="num">{kpiTotal}</div>
+            <div className="lbl">Tổng sự kiện</div>
           </div>
           <div className="kpi c2">
             <div className="top">
@@ -77,7 +82,7 @@ export default function Audit() {
                 </svg>
               </span>
             </div>
-            <div className="num">1,256</div>
+            <div className="num">{kpiVaccination}</div>
             <div className="lbl">Ghi nhận tiêm</div>
           </div>
           <div className="kpi c3">
@@ -88,7 +93,7 @@ export default function Audit() {
                 </svg>
               </span>
             </div>
-            <div className="num">48</div>
+            <div className="num">{kpiConfig}</div>
             <div className="lbl">Cấu hình / giá</div>
           </div>
           <div className="kpi c4">
@@ -99,7 +104,7 @@ export default function Audit() {
                 </svg>
               </span>
             </div>
-            <div className="num">12</div>
+            <div className="num">{kpiSecurity}</div>
             <div className="lbl">Sự kiện bảo mật</div>
           </div>
         </section>
@@ -140,7 +145,7 @@ export default function Audit() {
           <div className="panel-head">
             <div>
               <h3>Nhật ký audit</h3>
-              <div className="sub">audit_logs · demo</div>
+              <div className="sub">audit_logs · {rows.length} bản ghi</div>
             </div>
           </div>
           <div className="table-wrap">

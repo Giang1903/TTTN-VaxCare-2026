@@ -41,6 +41,10 @@ export default function Facilities() {
     });
   }, [list, filter, q]);
 
+  const kpiTotal = list.length;
+  const kpiActive = list.filter((f) => f.status === 'ACTIVE').length;
+  const kpiCapSum = list.reduce((sum, f) => sum + (Number(f.cap) || 0), 0);
+
   const openForm = (f) => {
     setEditId(f ? f.id : null);
     setForm(
@@ -101,16 +105,16 @@ export default function Facilities() {
       <Topbar title="Cơ sở tiêm chủng" subtitle="Thứ Ba, 18/08/2026 · vaccination_facilities" onSearch={setQ} searchPlaceholder="Tìm tên, địa chỉ, SĐT…" />
       <div className="content">
         <section className="kpi-row">
-          <div className="kpi c1"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 21h18M5 21V7l7-4 7 4v14" /></svg></span></div><div className="num">12</div><div className="lbl">Tổng cơ sở</div></div>
-          <div className="kpi c2"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6 9 17l-5-5" /></svg></span></div><div className="num">12</div><div className="lbl">Đang hoạt động</div></div>
-          <div className="kpi c3"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg></span></div><div className="num">48</div><div className="lbl">Nhân viên phân bổ</div></div>
-          <div className="kpi c4"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12h4l2 5 4-14 2 9h6" /></svg></span></div><div className="num">156</div><div className="lbl">Tổng capacity/slot</div></div>
+          <div className="kpi c1"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 21h18M5 21V7l7-4 7 4v14" /></svg></span></div><div className="num">{kpiTotal}</div><div className="lbl">Tổng cơ sở</div></div>
+          <div className="kpi c2"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6 9 17l-5-5" /></svg></span></div><div className="num">{kpiActive}</div><div className="lbl">Đang hoạt động</div></div>
+          <div className="kpi c3"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg></span></div><div className="num">{kpiTotal - kpiActive}</div><div className="lbl">Ngừng hoạt động</div></div>
+          <div className="kpi c4"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12h4l2 5 4-14 2 9h6" /></svg></span></div><div className="num">{kpiCapSum}</div><div className="lbl">Tổng capacity/slot</div></div>
         </section>
 
         <div className="toolbar">
           <div className="seg-tabs">
             {[
-              { f: 'all', label: 'Tất cả (12)' },
+              { f: 'all', label: `Tất cả (${kpiTotal})` },
               { f: 'ACTIVE', label: 'Đang hoạt động' },
               { f: 'INACTIVE', label: 'Ngừng' },
             ].map((t) => (
@@ -127,7 +131,7 @@ export default function Facilities() {
         </div>
 
         <div className="panel">
-          <div className="panel-head"><div><h3>Danh sách cơ sở</h3><div className="sub">vaccination_facilities · 12 bản ghi</div></div></div>
+          <div className="panel-head"><div><h3>Danh sách cơ sở</h3><div className="sub">vaccination_facilities · {rows.length} bản ghi</div></div></div>
           <div className="table-wrap">
             <table>
               <thead>
@@ -179,8 +183,6 @@ export default function Facilities() {
             <div className="detail-row"><span className="lbl">Điện thoại</span><span className="val">{detail.phone}</span></div>
             <div className="detail-row"><span className="lbl">Giờ hoạt động</span><span className="val">{detail.open} – {detail.close}</span></div>
             <div className="detail-row"><span className="lbl">Capacity / slot</span><span className="val">{detail.cap} người</span></div>
-            <div className="detail-row"><span className="lbl">Nhân viên</span><span className="val">{detail.staff} người</span></div>
-            <div className="detail-row"><span className="lbl">Lịch hôm nay</span><span className="val">{detail.apptToday}</span></div>
             <div className="detail-row"><span className="lbl">Trạng thái</span><span className="val"><span className={`tag ${detail.status === 'ACTIVE' ? 'ok' : 'neutral'}`}>{detail.status}</span></span></div>
           </>
         )}

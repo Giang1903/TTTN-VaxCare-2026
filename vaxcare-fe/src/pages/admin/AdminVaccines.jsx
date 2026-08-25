@@ -50,6 +50,10 @@ export default function Vaccines() {
     });
   }, [list, filter, q]);
 
+  const kpiTotal = list.length;
+  const kpiActive = list.filter((v) => v.status === 'ACTIVE').length;
+  const kpiCatCount = new Set(list.map((v) => v.cat).filter((c) => c !== '' && c != null)).size;
+
   const openForm = (v) => {
     setEditId(v ? v.id : null);
     setForm(
@@ -67,6 +71,7 @@ export default function Vaccines() {
       return;
     }
     const body = {
+      categoryId: form.cat ? Number(form.cat) : undefined,
       vaccineName: form.name.trim(),
       manufacturer: form.full || undefined,
       targetDisease: form.disease || undefined,
@@ -95,10 +100,10 @@ export default function Vaccines() {
       <Topbar title="Vắc xin & phác đồ" subtitle="Thứ Ba, 18/08/2026 · vaccines + vaccination_protocols" onSearch={setQ} />
       <div className="content">
         <section className="kpi-row">
-          <div className="kpi c1"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 2 3 10l3 3 8-8-3-3Z" /></svg></span></div><div className="num">13</div><div className="lbl">Loại vắc xin</div></div>
-          <div className="kpi c2"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6 9 17l-5-5" /></svg></span></div><div className="num">13</div><div className="lbl">ACTIVE</div></div>
-          <div className="kpi c3"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16h12V8z" /></svg></span></div><div className="num">14</div><div className="lbl">Phác đồ</div></div>
-          <div className="kpi c4"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg></span></div><div className="num">6</div><div className="lbl">Nhóm danh mục</div></div>
+          <div className="kpi c1"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 2 3 10l3 3 8-8-3-3Z" /></svg></span></div><div className="num">{kpiTotal}</div><div className="lbl">Loại vắc xin</div></div>
+          <div className="kpi c2"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6 9 17l-5-5" /></svg></span></div><div className="num">{kpiActive}</div><div className="lbl">ACTIVE</div></div>
+          <div className="kpi c3"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16h12V8z" /></svg></span></div><div className="num">{list.filter((v) => v.proto).length}</div><div className="lbl">Có phác đồ</div></div>
+          <div className="kpi c4"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg></span></div><div className="num">{kpiCatCount}</div><div className="lbl">Nhóm danh mục</div></div>
         </section>
 
         <div className="toolbar">
@@ -123,7 +128,7 @@ export default function Vaccines() {
         </div>
 
         <div className="panel">
-          <div className="panel-head"><div><h3>Danh mục vắc xin</h3><div className="sub">vaccines · vaccination_protocols</div></div></div>
+          <div className="panel-head"><div><h3>Danh mục vắc xin</h3><div className="sub">vaccines · vaccination_protocols · {rows.length} bản ghi</div></div></div>
           <div className="table-wrap">
             <table>
               <thead>
@@ -204,6 +209,7 @@ export default function Vaccines() {
               <option value="3">Người lớn</option>
               <option value="4">Người cao tuổi</option>
               <option value="5">Mùa vụ</option>
+              <option value="6">Phối hợp & Đặc biệt</option>
             </select>
           </div>
         </div>

@@ -7,6 +7,7 @@ import com.vaxcare.feature.facility.dto.FacilityRequest;
 import com.vaxcare.feature.facility.dto.FacilityResponse;
 import com.vaxcare.feature.facility.entity.VaccinationFacility;
 import com.vaxcare.feature.facility.repository.VaccinationFacilityRepository;
+import com.vaxcare.feature.dashboard.service.AuditLogWriter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,7 @@ import java.util.List;
 public class VaccinationFacilityService {
 
     private final VaccinationFacilityRepository facilityRepository;
+    private final AuditLogWriter auditLogWriter;
 
     @Transactional(readOnly = true)
     public List<FacilityResponse> getAllFacilities() {
@@ -110,6 +112,7 @@ public class VaccinationFacilityService {
         }
 
         VaccinationFacility updatedFacility = facilityRepository.save(facility);
+        auditLogWriter.write("UPDATE_FACILITY", "CONFIG", updatedFacility.getFacilityId(), null, updatedFacility.getFacilityName());
         return mapToResponse(updatedFacility);
     }
 

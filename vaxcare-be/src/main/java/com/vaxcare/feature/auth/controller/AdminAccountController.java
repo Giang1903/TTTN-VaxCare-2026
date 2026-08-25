@@ -4,6 +4,8 @@ import com.vaxcare.common.dto.ApiResponse;
 import com.vaxcare.common.enums.AccountStatus;
 import com.vaxcare.common.enums.Role;
 import com.vaxcare.feature.auth.dto.AdminAccountItemResponse;
+import com.vaxcare.feature.auth.dto.CreateStaffRequest;
+import jakarta.validation.Valid;
 import com.vaxcare.feature.auth.service.AdminAccountService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,6 +35,12 @@ public class AdminAccountController {
     public ApiResponse<List<AdminAccountItemResponse>> listStaff() {
         return ApiResponse.success("Lấy danh sách nhân viên y tế thành công",
                 adminAccountService.listByRole(Role.MEDICAL_STAFF));
+    }
+
+    @PostMapping("/staff")
+    public ApiResponse<AdminAccountItemResponse> createStaff(@Valid @RequestBody CreateStaffRequest request) {
+        return ApiResponse.success("Tạo nhân viên y tế thành công",
+                adminAccountService.createStaff(request));
     }
 
     @PatchMapping("/{id}/status")
