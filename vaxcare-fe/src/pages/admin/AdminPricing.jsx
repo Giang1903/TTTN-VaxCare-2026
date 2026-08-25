@@ -86,13 +86,15 @@ export default function Pricing() {
       showToast('Giá phải > 0', 'warn');
       return;
     }
-    if (editId) {
-      // BE chưa có PUT giá — vô hiệu hóa cái cũ rồi tạo mới nếu cần; ở đây chỉ thông báo
-      showToast('Chỉ hỗ trợ tạo giá mới / vô hiệu hóa. Dùng thêm giá hoặc tắt giá cũ.', 'warn');
-      setFormOpen(false);
-      return;
-    }
     try {
+      // BE không có PUT: sửa = vô hiệu hóa bản cũ rồi tạo bản mới (service cũng auto-supersede cùng scope)
+      if (editId) {
+        try {
+          await adminService.deactivatePrice(editId);
+        } catch {
+          /* nếu đã inactive vẫn tiếp tục tạo mới */
+        }
+      }
       await adminService.createPrice({
         vaccineId: Number(fVax),
         facilityId: fFac ? Number(fFac) : null,
@@ -101,8 +103,9 @@ export default function Pricing() {
         expiryDate: fExp || undefined,
         status: fStatus || 'ACTIVE',
       });
-      showToast('Đã thêm bảng giá', 'ok');
+      showToast(editId ? 'Đã cập nhật giá' : 'Đã thêm bảng giá', 'ok');
       setFormOpen(false);
+      setEditId(null);
       await load();
     } catch (err) {
       showToast(err.message || 'Lưu giá thất bại', 'error');
@@ -151,7 +154,6 @@ export default function Pricing() {
             ))}
           </div>
           <div className="toolbar-right">
-            <button className="btn outline" type="button" onClick={() => showToast('Xuất bảng giá…', 'ok')}>Xuất</button>
             <button className="btn primary" type="button" onClick={() => openForm(null)}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 5v14M5 12h14" /></svg>
               Thêm / cập nhật giá
@@ -238,21 +240,21 @@ export default function Pricing() {
         </div>
         <div className="field">
           <label>Giá (₫) <span className="req">*</span></label>
-          <input type="number" min={0} step={1000} value={fPrice} onChange={(e) => setFPrice(e.target.value)} disabled={!!editId} />
+          <input type="number" min={0} step={1000} value={fPrice} onChange={(e) => setFPrice(e.target.value)} />
         </div>
         <div className="field-row">
           <div className="field">
             <label>Hiệu lực từ</label>
-            <input type="date" value={fEff} onChange={(e) => setFEff(e.target.value)} disabled={!!editId} />
+            <input type="date" value={fEff} onChange={(e) => setFEff(e.target.value)} />
           </div>
           <div className="field">
             <label>Hết hạn</label>
-            <input type="date" value={fExp} onChange={(e) => setFExp(e.target.value)} disabled={!!editId} />
+            <input type="date" value={fExp} onChange={(e) => setFExp(e.target.value)} />
           </div>
         </div>
         <div className="field">
           <label>Trạng thái</label>
-          <select value={fStatus} onChange={(e) => setFStatus(e.target.value)} disabled={!!editId}>
+          <select value={fStatus} onChange={(e) => setFStatus(e.target.value)}>
             <option value="ACTIVE">ACTIVE</option>
             <option value="INACTIVE">INACTIVE</option>
           </select>

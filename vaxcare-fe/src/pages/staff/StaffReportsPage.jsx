@@ -3,8 +3,11 @@ import * as staffService from '../../services/staffService';
 import { Link } from 'react-router-dom';
 import StaffTopbar from '../../components/staff/StaffTopbar';
 import useStaffToast from '../../hooks/useStaffToast';
+import { useAuth } from '../../context/AuthContext';
 
 export default function StaffReportsPage() {
+  const { user } = useAuth();
+  const facilityName = user?.facilityName || 'Cơ sở tiêm chủng';
   const { toast, showToast } = useStaffToast();
   const [range, setRange] = useState('30');
   const todayStr = new Date().toISOString().slice(0, 10);
@@ -22,7 +25,13 @@ export default function StaffReportsPage() {
     cancelled: 0,
     checkedin: 0,
     pending: 0,
+    confirmed: 0,
+    completionRate: 0,
   });
+  const [periodLabel, setPeriodLabel] = useState('30 ngày');
+  const [weekLabel, setWeekLabel] = useState('7 ngày gần nhất');
+  const [weekInsight, setWeekInsight] = useState('Chưa có dữ liệu lượt tiêm theo ngày.');
+  const [funnelInsight, setFunnelInsight] = useState('Chưa có dữ liệu phễu trạng thái.');
 
   const [week, setWeek] = useState([]);
   const [mix, setMix] = useState([]);
@@ -40,23 +49,95 @@ export default function StaffReportsPage() {
         report = await staffService.getStaffReport({ days });
       }
       const k = report?.kpi || {};
+      const appts = Number(k.appointments ?? 0);
+      const completed = Number(k.completed ?? 0);
+      const cancelled = Number(k.cancelled ?? 0);
+      const checkedIn = Number(k.checkedIn ?? 0);
+      const pending = Number(k.pending ?? 0);
+      const confirmed = Number(k.confirmed ?? 0);
+      const completionRate =
+        k.completionRate != null
+          ? Number(k.completionRate)
+          : appts
+            ? Math.round((completed / appts) * 1000) / 10
+            : 0;
       setKpi({
-        appointments: k.appointments ?? 0,
-        completed: k.completed ?? 0,
-        cancelled: k.cancelled ?? 0,
-        checkedin: k.checkedIn ?? 0,
-        pending: k.pending ?? 0,
+        appointments: appts,
+        completed,
+        cancelled,
+        checkedin: checkedIn,
+        pending,
+        confirmed,
+        completionRate,
       });
+
+      // Period labels from API or filter
+      const fmt = (s) => {
+        if (!s) return '';
+        const str = String(s);
+        if (str.includes('-')) {
+          const [y, m, d] = str.slice(0, 10).split('-');
+          return `${d}/${m}/${y}`;
+        }
+        return str;
+      };
+      if (report?.fromDate && report?.toDate) {
+        setPeriodLabel(`${fmt(report.fromDate)} – ${fmt(report.toDate)}`);
+      } else if (customMode) {
+        setPeriodLabel(`${fmt(fromDate)} – ${fmt(toDate)}`);
+      } else {
+        setPeriodLabel(`${Number(range) || 30} ngày gần nhất`);
+      }
+
+      const weekSeries = report?.weekSeries || [];
       setWeek(
-        (report?.weekSeries || []).map((d) => ({
+        weekSeries.map((d) => ({
           label: d.label,
           val: d.count,
           h: d.barHeight || 4,
           today: !!d.today,
         }))
       );
-      // For longer ranges, prefer dailySeries trimmed to week for small chart is already weekSeries
-      // Mix from vaccine ranking
+      if (weekSeries.length) {
+        const first = weekSeries[0];
+        const last = weekSeries[weekSeries.length - 1];
+        setWeekLabel(
+          first?.date && last?.date
+            ? `${fmt(first.date)} – ${fmt(last.date)}`
+            : '7 ngày gần nhất'
+        );
+        const total = weekSeries.reduce((s, d) => s + Number(d.count || 0), 0);
+        const avg = Math.round((total / weekSeries.length) * 10) / 10;
+        const peak = [...weekSeries].sort((a, b) => Number(b.count) - Number(a.count))[0];
+        setWeekInsight(
+          total
+            ? `Trung bình ${avg} mũi/ngày. Cao nhất ${peak?.label || ''} (${peak?.count ?? 0}).`
+            : 'Chưa có lượt tiêm trong 7 ngày gần nhất.'
+        );
+      } else {
+        setWeekLabel('7 ngày gần nhất');
+        setWeekInsight('Chưa có dữ liệu lượt tiêm theo ngày.');
+      }
+
+      // Funnel insight from real KPI
+      const dropConfirmToCheckin = Math.max(0, confirmed - checkedIn);
+      const dropCheckinToDone = Math.max(0, checkedIn - completed);
+      if (appts === 0) {
+        setFunnelInsight('Chưa có lịch hẹn trong khoảng đã chọn.');
+      } else if (dropConfirmToCheckin >= dropCheckinToDone && dropConfirmToCheckin > 0) {
+        setFunnelInsight(
+          `Rớt chủ yếu ở bước xác nhận → check-in (${dropConfirmToCheckin} ca). Gợi ý nhắc lịch trước giờ tiêm.`
+        );
+      } else if (dropCheckinToDone > 0) {
+        setFunnelInsight(
+          `Rớt chủ yếu ở bước check-in → hoàn thành (${dropCheckinToDone} ca). Kiểm tra quy trình ghi nhận tiêm.`
+        );
+      } else {
+        setFunnelInsight(
+          `Tỷ lệ hoàn thành ${completionRate}%. Hủy/vắng: ${cancelled} ca.`
+        );
+      }
+
       const ranking = report?.vaccineRanking || [];
       const colors = ['#5b8ae0', '#21b56e', '#6366f1', '#e0a308', '#e0473a', '#74b4ff', '#8b9bab'];
       setMix(
@@ -104,7 +185,7 @@ export default function StaffReportsPage() {
 
   return (
     <>
-      <StaffTopbar title="Báo cáo thống kê" subtitle="Vận hành tiêm chủng · VaxCare Phú Nhuận" showSearch={false} />
+      <StaffTopbar title="Báo cáo thống kê" subtitle={`Vận hành tiêm chủng · ${facilityName}`} showSearch={false} />
 
       <div className="staff-content">
         <div className="filter-bar">
@@ -212,10 +293,9 @@ export default function StaffReportsPage() {
                   <path d="M16 2v4M8 2v4M3 10h18" />
                 </svg>
               </span>
-              <span className="trend up">+12%</span>
             </div>
             <div className="num">{kpi.appointments}</div>
-            <div className="lbl">Lịch hẹn hôm nay</div>
+            <div className="lbl">Tổng lịch hẹn</div>
           </div>
           <div className="kpi c2">
             <div className="top">
@@ -224,7 +304,6 @@ export default function StaffReportsPage() {
                   <path d="M20 6 9 17l-5-5" />
                 </svg>
               </span>
-              <span className="trend up">+8%</span>
             </div>
             <div className="num">{kpi.completed}</div>
             <div className="lbl">Mũi tiêm hoàn thành</div>
@@ -236,9 +315,8 @@ export default function StaffReportsPage() {
                   <path d="M3 12h4l2 5 4-14 2 9h6" />
                 </svg>
               </span>
-              <span className="trend flat">≈</span>
             </div>
-            <div className="num">{kpi.appointments ? Math.round((kpi.completed / kpi.appointments) * 1000) / 10 : 0}%</div>
+            <div className="num">{kpi.completionRate}%</div>
             <div className="lbl">Tỷ lệ hoàn thành</div>
           </div>
           <div className="kpi c4">
@@ -249,7 +327,6 @@ export default function StaffReportsPage() {
                   <path d="M12 7v5l3 3" />
                 </svg>
               </span>
-              <span className="trend down">-2%</span>
             </div>
             <div className="num">{kpi.cancelled}</div>
             <div className="lbl">Hủy / Vắng mặt</div>
@@ -261,9 +338,8 @@ export default function StaffReportsPage() {
                   <path d="M12 21s-7.5-4.6-10-9.3C.6 8 2.4 4.5 6 4c2.1-.3 4 .8 6 3 2-2.2 3.9-3.3 6-3 3.6.5 5.4 4 4 7.7-2.5 4.7-10 9.3-10 9.3Z" />
                 </svg>
               </span>
-              <span className="trend flat">5</span>
             </div>
-            <div className="num">{kpi.pending}</div>
+            <div className="num">{openReactions}</div>
             <div className="lbl">Phản ứng cần theo dõi</div>
           </div>
         </section>
@@ -273,7 +349,7 @@ export default function StaffReportsPage() {
             <div className="panel-head">
               <div>
                 <h3>Lượt tiêm theo ngày</h3>
-                <div className="sub">11/08 – 17/08/2026 (tuần gần nhất)</div>
+                <div className="sub">{weekLabel}</div>
               </div>
             </div>
             <div className="week-chart">
@@ -291,10 +367,7 @@ export default function StaffReportsPage() {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8" />
               </svg>
-              <span>
-                Trung bình <strong>19.3 mũi/ngày</strong>. Thứ Năm cao điểm (25). Cuối tuần thấp hơn — có thể mở slot
-                chiều T7 nếu nhu cầu tăng.
-              </span>
+              <span>{weekInsight}</span>
             </div>
           </div>
 
@@ -302,38 +375,42 @@ export default function StaffReportsPage() {
             <div className="panel-head">
               <div>
                 <h3>Phễu trạng thái lịch hẹn</h3>
-                <div className="sub">30 ngày gần nhất · 486 lịch</div>
+                <div className="sub">{periodLabel} · {kpi.appointments} lịch</div>
               </div>
             </div>
             <div className="funnel">
-              {[
-                { lbl: 'Đặt lịch', w: 100, bg: 'var(--teal-500)', n: 486, p: '100%' },
-                { lbl: 'Đã xác nhận', w: 92, bg: 'var(--info-dot)', n: 447, p: '92%' },
-                { lbl: 'Check-in', w: 88, bg: 'var(--teal-700)', n: 428, p: '88%' },
-                { lbl: 'Hoàn thành', w: 85, bg: 'var(--ok-dot)', n: 412, p: '85%' },
-                { lbl: 'Hủy / Vắng', w: 4, bg: 'var(--danger-dot)', n: 18, p: '3.7%', min: 36 },
-              ].map((f) => (
-                <div key={f.lbl} className="funnel-row">
-                  <span className="lbl">{f.lbl}</span>
-                  <div className="funnel-track">
-                    <div
-                      className="funnel-fill"
-                      style={{ width: `${f.w}%`, background: f.bg, minWidth: f.min }}
-                    >
-                      {f.n}
+              {(() => {
+                const total = kpi.appointments || 0;
+                const pct = (n) => (total ? Math.round((n / total) * 1000) / 10 : 0);
+                const w = (n) => (total ? Math.max(4, Math.round((n / total) * 100)) : 0);
+                const rows = [
+                  { lbl: 'Đặt lịch', n: total, bg: 'var(--teal-500)' },
+                  { lbl: 'Đã xác nhận', n: kpi.confirmed || 0, bg: 'var(--info-dot)' },
+                  { lbl: 'Check-in', n: kpi.checkedin || 0, bg: 'var(--teal-700)' },
+                  { lbl: 'Hoàn thành', n: kpi.completed || 0, bg: 'var(--ok-dot)' },
+                  { lbl: 'Hủy / Vắng', n: kpi.cancelled || 0, bg: 'var(--danger-dot)' },
+                ];
+                return rows.map((f) => (
+                  <div key={f.lbl} className="funnel-row">
+                    <span className="lbl">{f.lbl}</span>
+                    <div className="funnel-track">
+                      <div
+                        className="funnel-fill"
+                        style={{ width: `${w(f.n)}%`, background: f.bg, minWidth: f.n ? 28 : 0 }}
+                      >
+                        {f.n}
+                      </div>
                     </div>
+                    <span className="n">{pct(f.n)}%</span>
                   </div>
-                  <span className="n">{f.p}</span>
-                </div>
-              ))}
+                ));
+              })()}
             </div>
             <div className="insight">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8" />
               </svg>
-              <span>
-                Rớt chủ yếu ở bước <strong>xác nhận → check-in</strong> (19 ca). Gợi ý: nhắc SMS/Zalo trước 2 giờ.
-              </span>
+              <span>{funnelInsight}</span>
             </div>
           </div>
         </div>
@@ -343,24 +420,28 @@ export default function StaffReportsPage() {
             <div className="panel-head">
               <div>
                 <h3>Cơ cấu vắc xin đã tiêm</h3>
-                <div className="sub">Top theo số mũi · 30 ngày</div>
+                <div className="sub">Top theo số mũi · {periodLabel}</div>
               </div>
             </div>
             <div className="mix-list">
-              {mix.map((m) => (
-                <div key={m.name} className="mix-row">
-                  <div>
-                    <div className="mix-label">
-                      <span className="mix-dot" style={{ background: m.color }} />
-                      {m.name}
+              {mix.length === 0 ? (
+                <div className="sub" style={{ padding: '12px 0' }}>Chưa có dữ liệu vắc xin trong khoảng này.</div>
+              ) : (
+                mix.map((m) => (
+                  <div key={m.name} className="mix-row">
+                    <div>
+                      <div className="mix-label">
+                        <span className="mix-dot" style={{ background: m.color }} />
+                        {m.name}
+                      </div>
+                      <div className="mix-track">
+                        <div className="mix-fill" style={{ width: `${m.pct}%`, background: m.color }} />
+                      </div>
                     </div>
-                    <div className="mix-track">
-                      <div className="mix-fill" style={{ width: `${m.pct}%`, background: m.color }} />
-                    </div>
+                    <div className="mix-pct">{m.pct}%</div>
                   </div>
-                  <div className="mix-pct">{m.pct}%</div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
@@ -368,7 +449,7 @@ export default function StaffReportsPage() {
             <div className="panel-head">
               <div>
                 <h3>Top vắc xin theo lượt</h3>
-                <div className="sub">Hoàn thành · 30 ngày</div>
+                <div className="sub">Hoàn thành · {periodLabel}</div>
               </div>
             </div>
             <div className="table-wrap">
@@ -382,101 +463,74 @@ export default function StaffReportsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {top.map((t) => (
-                    <tr key={t.rank}>
-                      <td>
-                        <span className={`rank${t.rank <= 3 ? ' top' : ''}`}>{t.rank}</span>
-                      </td>
-                      <td>{t.name}</td>
-                      <td className="mono">{t.shots}</td>
-                      <td>
-                        <span className={`tag ${t.tag}`}>{t.pct}</span>
+                  {top.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} style={{ color: 'var(--gray-500)' }}>
+                        Chưa có dữ liệu
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    top.map((t) => (
+                      <tr key={t.rank}>
+                        <td>
+                          <span className={`rank${t.rank <= 3 ? ' top' : ''}`}>{t.rank}</span>
+                        </td>
+                        <td>{t.name}</td>
+                        <td className="mono">{t.shots}</td>
+                        <td>
+                          <span className={`tag ${t.tag}`}>{t.pct}</span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
           </div>
         </div>
 
-        <div className="grid-2">
-          <div className="panel">
-            <div className="panel-head">
-              <div>
-                <h3>Hiệu suất nhân viên</h3>
-                <div className="sub">Số mũi ghi nhận · 30 ngày</div>
-              </div>
-            </div>
-            <div className="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Nhân viên</th>
-                    <th>Mã</th>
-                    <th>Mũi tiêm</th>
-                    <th>Check-in</th>
-                    <th>Phản ứng xử lý</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>
-                      <strong>BS. Trần Minh</strong>
-                    </td>
-                    <td className="mono">STF-PN-001</td>
-                    <td className="mono">186</td>
-                    <td className="mono">94</td>
-                    <td className="mono">8</td>
-                  </tr>
-                </tbody>
-              </table>
+        <div className="panel">
+          <div className="panel-head">
+            <div>
+              <h3>Phản ứng sau tiêm</h3>
+              <div className="sub">Phân loại mức độ · {periodLabel}</div>
             </div>
           </div>
-
-          <div className="panel">
-            <div className="panel-head">
-              <div>
-                <h3>Phản ứng sau tiêm</h3>
-                <div className="sub">Phân loại mức độ · 30 ngày</div>
-              </div>
-            </div>
-            <div className="mix-list">
-              {(reactionMix.length
-                ? reactionMix
-                : [
-                    { name: 'Không có / Tự khỏi', pct: 0, color: 'var(--ok-dot)' },
-                    { name: 'Nhẹ', pct: 0, color: 'var(--warn-dot)' },
-                    { name: 'Trung bình', pct: 0, color: 'var(--danger-dot)' },
-                    { name: 'Nặng', pct: 0, color: '#3b0a0a' },
-                  ]
-              ).map((m) => (
-                <div key={m.name} className="mix-row">
-                  <div>
-                    <div className="mix-label">
-                      <span className="mix-dot" style={{ background: m.color }} />
-                      {m.name}
-                    </div>
-                    <div className="mix-track">
-                      <div className="mix-fill" style={{ width: `${m.pct}%`, background: m.color }} />
-                    </div>
+          <div className="mix-list">
+            {(reactionMix.length
+              ? reactionMix
+              : [
+                  { name: 'Không có / Tự khỏi', pct: 0, color: 'var(--ok-dot)' },
+                  { name: 'Nhẹ', pct: 0, color: 'var(--warn-dot)' },
+                  { name: 'Trung bình', pct: 0, color: 'var(--danger-dot)' },
+                  { name: 'Nặng', pct: 0, color: '#3b0a0a' },
+                ]
+            ).map((m) => (
+              <div key={m.name} className="mix-row">
+                <div>
+                  <div className="mix-label">
+                    <span className="mix-dot" style={{ background: m.color }} />
+                    {m.name}
                   </div>
-                  <div className="mix-pct">{m.pct}%</div>
+                  <div className="mix-track">
+                    <div className="mix-fill" style={{ width: `${m.pct}%`, background: m.color }} />
+                  </div>
                 </div>
-              ))}
-            </div>
-            <div className="insight">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8" />
-              </svg>
-              <span>
-                Tỷ lệ phản ứng cần can thiệp. {openReactions} case đang mở trên trang{' '}
-                <Link to="/staff/reactions" style={{ color: 'var(--teal-700)', fontWeight: 700 }}>
-                  Theo dõi sau tiêm
-                </Link>
-                .
-              </span>
-            </div>
+                <div className="mix-pct">{m.pct}%</div>
+              </div>
+            ))}
+          </div>
+          <div className="insight">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8" />
+            </svg>
+            <span>
+              Tỷ lệ phản ứng cần can thiệp. {openReactions} case đang mở trên trang{' '}
+              <Link to="/staff/reactions" style={{ color: 'var(--teal-700)', fontWeight: 700 }}>
+                Theo dõi sau tiêm
+              </Link>
+              .
+            </span>
           </div>
         </div>
       </div>

@@ -13,14 +13,18 @@ export default function Dashboard() {
   const [staffCount, setStaffCount] = useState(0);
   const [facilityStats, setFacilityStats] = useState([]);
   const [ranking, setRanking] = useState([]);
+  const [activities, setActivities] = useState([]);
+  const [openReactions, setOpenReactions] = useState(0);
+  const [todayLabel, setTodayLabel] = useState('');
 
   const load = useCallback(async () => {
     try {
-      const [report, facs, users, staff] = await Promise.all([
+      const [report, facs, users, staff, audits] = await Promise.all([
         adminService.getReport({ days: 7 }),
         adminService.getFacilitiesAdmin().catch(() => []),
         adminService.listUsers().catch(() => []),
         adminService.listStaff().catch(() => []),
+        adminService.listAuditLogs({ limit: 8 }).catch(() => []),
       ]);
       const k = report?.kpi || {};
       setKpi({
@@ -30,11 +34,36 @@ export default function Dashboard() {
         pending: k.pending ?? 0,
         completionRate: k.completionRate ?? 0,
       });
+      setOpenReactions(report?.openReactions ?? 0);
       setFacilities((facs || []).map(adminService.mapFacilityToUi));
       setUsersCount((users || []).length);
       setStaffCount((staff || []).length);
       setFacilityStats(report?.facilityStats || []);
       setRanking((report?.vaccineRanking || []).slice(0, 5));
+      setActivities(
+        (audits || []).slice(0, 8).map((log) => {
+          const ui = adminService.mapAuditToUi(log);
+          const act = String(ui.action || '').toUpperCase();
+          let cls = 'info';
+          if (act.includes('DELETE') || act.includes('FAIL') || act.includes('ERROR')) cls = 'danger';
+          else if (act.includes('UPDATE') || act.includes('CREATE') || act.includes('POST')) cls = 'ok';
+          else if (act.includes('WARN') || act.includes('ALERT')) cls = 'warn';
+          return {
+            cls,
+            t: `${ui.actor}: ${ui.action}`,
+            d: [ui.target, ui.t].filter(Boolean).join(' · '),
+            icon: 'M12 8v4l3 3M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z',
+          };
+        })
+      );
+      setTodayLabel(
+        new Date().toLocaleDateString('vi-VN', {
+          weekday: 'long',
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        })
+      );
     } catch (err) {
       showToast(err.message || 'Không tải được dashboard', 'error');
     }
@@ -47,19 +76,17 @@ export default function Dashboard() {
     <>
       <Topbar
         title="Bảng điều khiển"
-        subtitle="Thứ Ba, 18/08/2026 · toàn hệ thống"
-        searchPlaceholder="Tìm cơ sở, nhân viên, user…"
-        onSearch={(v) => {
-          if (v) showToast('Tìm kiếm: ' + v + ' (demo)', 'ok');
-        }}
+        subtitle={`${todayLabel || 'Hôm nay'} · toàn hệ thống`}
+        showSearch={false}
       />
       <div className="content">
         <div className="welcome-banner">
           <div>
             <h2>Xin chào, Quản trị viên</h2>
             <p>
-              Hệ thống đang hoạt động ổn định. Hôm nay có <strong>186 lịch hẹn</strong> toàn mạng và{' '}
-              <strong>5 cảnh báo kho</strong> cần xử lý.
+              7 ngày gần nhất: <strong>{kpi.appointments} lịch hẹn</strong> ·{' '}
+              <strong>{kpi.completed} hoàn thành</strong> ·{' '}
+              <strong>{openReactions} phản ứng cần theo dõi</strong>.
             </p>
           </div>
           <div className="welcome-actions">
@@ -134,7 +161,7 @@ export default function Dashboard() {
             <div className="panel">
               <div className="panel-head">
                 <div>
-                  <h3>Top vắc xin toàn mạng (30 ngày)</h3>
+                  <h3>Top vắc xin toàn mạng (7 ngày)</h3>
                   <div className="sub">Theo số mũi hoàn thành</div>
                 </div>
                 <Link to="/admin/vaccines" className="panel-link">Danh mục</Link>
@@ -142,24 +169,22 @@ export default function Dashboard() {
               <div className="table-wrap">
                 <table>
                   <thead>
-                    <tr><th>#</th><th>Vắc xin</th><th>Mũi</th><th>Doanh thu</th><th>Trạng thái</th></tr>
+                    <tr><th>#</th><th>Vắc xin</th><th>Mũi</th><th>Tỷ lệ</th><th>Tag</th></tr>
                   </thead>
                   <tbody>
-                    {[
-                      { rank: 1, name: 'Cúm mùa (Influenza)', shots: 412, rev: '185.4tr', tag: 'ok', status: 'ACTIVE' },
-                      { rank: 2, name: 'Viêm gan B', shots: 286, rev: '71.5tr', tag: 'ok', status: 'ACTIVE' },
-                      { rank: 3, name: 'HPV (Gardasil 9)', shots: 198, rev: '354.4tr', tag: 'warn', status: 'Tồn thấp' },
-                      { rank: 4, name: 'DTaP', shots: 175, rev: '91.0tr', tag: 'ok', status: 'ACTIVE' },
-                      { rank: 5, name: 'Zona (Shingrix)', shots: 64, rev: '204.8tr', tag: 'ok', status: 'ACTIVE' },
-                    ].map((v) => (
-                      <tr key={v.rank}>
-                        <td><strong>{v.rank}</strong></td>
-                        <td>{v.name}</td>
-                        <td className="mono">{v.shots}</td>
-                        <td className="mono">{v.rev}</td>
-                        <td><span className={`tag ${v.tag}`}>{v.status}</span></td>
-                      </tr>
-                    ))}
+                    {ranking.length === 0 ? (
+                      <tr><td colSpan={5} style={{ color: 'var(--gray-500)' }}>Chưa có dữ liệu</td></tr>
+                    ) : (
+                      ranking.map((v, i) => (
+                        <tr key={v.vaccineId || v.rank || i}>
+                          <td><strong>{v.rank ?? i + 1}</strong></td>
+                          <td>{v.vaccineName || v.name}</td>
+                          <td className="mono">{v.shots ?? 0}</td>
+                          <td className="mono">{v.pct != null ? `${v.pct}%` : '—'}</td>
+                          <td><span className={`tag ${v.tag === 'warn' ? 'warn' : 'ok'}`}>{v.tag || 'ACTIVE'}</span></td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -176,13 +201,13 @@ export default function Dashboard() {
               </div>
               <div className="panel-body">
                 <div className="health-grid">
-                  <div className="health-card"><div className="lbl">API / Backend</div><div className="val ok">99.8%</div></div>
-                  <div className="health-card"><div className="lbl">Thời gian phản hồi</div><div className="val ok">142ms</div></div>
-                  <div className="health-card"><div className="lbl">Lịch hẹn chờ duyệt</div><div className="val warn">27</div></div>
-                  <div className="health-card"><div className="lbl">Phản ứng mở</div><div className="val warn">8</div></div>
+                  <div className="health-card"><div className="lbl">Cơ sở hoạt động</div><div className="val ok">{facilities.filter((f) => f.status === 'ACTIVE').length}</div></div>
+                  <div className="health-card"><div className="lbl">Tỷ lệ hoàn thành (7 ngày)</div><div className="val ok">{kpi.completionRate ?? 0}%</div></div>
+                  <div className="health-card"><div className="lbl">Lịch hẹn chờ xử lý</div><div className={`val ${kpi.pending ? 'warn' : 'ok'}`}>{kpi.pending}</div></div>
+                  <div className="health-card"><div className="lbl">Phản ứng mở</div><div className={`val ${openReactions ? 'warn' : 'ok'}`}>{openReactions}</div></div>
                 </div>
                 <div style={{ marginTop: 14, fontSize: '12.5px', color: 'var(--gray-500)' }}>
-                  Cấu hình: đặt lịch trước tối đa <strong>30 ngày</strong> · QR prefix <strong>VXC</strong> · tiền tệ <strong>VND</strong>
+                  Số liệu lấy từ báo cáo hệ thống và danh mục cơ sở (API).
                 </div>
               </div>
             </div>
@@ -191,30 +216,28 @@ export default function Dashboard() {
               <div className="panel-head">
                 <div>
                   <h3>Hoạt động gần đây</h3>
-                  <div className="sub">audit_logs (demo)</div>
+                  <div className="sub">audit_logs (API)</div>
                 </div>
                 <Link to="/admin/audit" className="panel-link">Nhật ký</Link>
               </div>
               <div className="panel-body" style={{ paddingTop: 8 }}>
-                {[
-                  { cls: 'ok', t: 'BS. Trần Minh ghi nhận tiêm DTaP', d: 'Phú Nhuận · 09:22 · vaccination_details', icon: 'M20 6 9 17l-5-5' },
-                  { cls: 'warn', t: 'Yêu cầu nhập kho HPV — Phú Nhuận', d: '48 liều còn lại · ưu tiên CAO · 08:45', icon: 'M21 8 12 3 3 8m18 0-9 5m9-5v9l-9 5' },
-                  { cls: 'info', t: 'Tài khoản staff mới: STF-NZ-004', d: 'VaxCare Nowzone · 08:10', icon: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z' },
-                  { cls: 'danger', t: 'Cảnh báo HSD: BCG-2026-002', d: 'Ưu tiên FEFO · còn 210 liều', icon: 'M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0ZM12 9v4M12 17h.01' },
-                  { cls: 'ok', t: 'Cập nhật bảng giá HPV', d: '1.790.000₫ · hiệu lực 01/08/2026', icon: 'M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6' },
-                ].map((a, i) => (
-                  <div className="act-item" key={i}>
-                    <span className={`act-ic ${a.cls}`}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d={a.icon} />
-                      </svg>
-                    </span>
-                    <div className="act-txt">
-                      <div className="t">{a.t}</div>
-                      <div className="d">{a.d}</div>
+                {activities.length === 0 ? (
+                  <div style={{ color: 'var(--gray-500)', fontSize: 13.5, padding: '8px 0' }}>Chưa có nhật ký gần đây.</div>
+                ) : (
+                  activities.map((a, i) => (
+                    <div className="act-item" key={i}>
+                      <span className={`act-ic ${a.cls}`}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d={a.icon} />
+                        </svg>
+                      </span>
+                      <div className="act-txt">
+                        <div className="t">{a.t}</div>
+                        <div className="d">{a.d}</div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
 

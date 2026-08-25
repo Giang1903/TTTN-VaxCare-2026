@@ -135,9 +135,6 @@ export default function Audit() {
                 onChange={(e) => setQ(e.target.value)}
               />
             </div>
-            <button className="btn outline" type="button" onClick={() => showToast('Xuất nhật ký audit…', 'ok')}>
-              Xuất
-            </button>
           </div>
         </div>
 

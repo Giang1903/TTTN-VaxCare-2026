@@ -144,6 +144,49 @@ export function getLowStockAlerts(facilityId) {
   );
 }
 
+/** GET /inventory/alerts/expiring-soon?facilityId=&withinDays= */
+export function getExpiringSoon(facilityId, withinDays) {
+  const params = new URLSearchParams({ facilityId: String(facilityId) });
+  if (withinDays != null) params.set("withinDays", String(withinDays));
+  return apiClient.request(`/inventory/alerts/expiring-soon?${params}`, {
+    method: "GET",
+  });
+}
+
+/** POST /inventory/batches — nhập lô vắc xin mới */
+export function importBatch({
+  facilityId,
+  vaccineId,
+  batchNumber,
+  manufactureDate,
+  expiryDate,
+  importedQuantity,
+  importPrice,
+  importDate,
+}) {
+  return apiClient.request(`/inventory/batches`, {
+    method: "POST",
+    body: {
+      facilityId: Number(facilityId),
+      vaccineId: Number(vaccineId),
+      batchNumber,
+      manufactureDate: manufactureDate || undefined,
+      expiryDate,
+      importedQuantity: Number(importedQuantity),
+      importPrice: importPrice !== "" && importPrice != null ? Number(importPrice) : undefined,
+      importDate: importDate || undefined,
+    },
+  });
+}
+
+/** PUT /inventory/{facilityId}/alert-threshold */
+export function updateAlertThreshold(facilityId, alertThreshold) {
+  return apiClient.request(`/inventory/${facilityId}/alert-threshold`, {
+    method: "PUT",
+    body: { alertThreshold: Number(alertThreshold) },
+  });
+}
+
 /** GET /reactions?status= */
 export function listReactions(status) {
   const qs = status ? `?status=${status}` : "";
@@ -487,4 +530,33 @@ export function exportSummaryCsv(opts = {}) {
     reportQuery(opts),
     "vaxcare-report-summary.csv"
   );
+}
+
+/** GET /vaccinations/{detailId}/certificate */
+export async function downloadCertificate(detailId) {
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api/v1";
+  const authToken = apiClient.getAccessToken();
+  const res = await fetch(`${API_BASE_URL}/vaccinations/${detailId}/certificate`, {
+    method: "GET",
+    headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+  });
+  if (!res.ok) {
+    let message = "Tải chứng nhận thất bại";
+    try {
+      const j = await res.json();
+      message = j?.message || message;
+    } catch {
+      /* ignore */
+    }
+    throw new Error(message);
+  }
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `chung-nhan-tiem-chung-${detailId}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
