@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { apiClient } from "../services/apiClient";
 import * as authService from "../services/authService";
 
@@ -7,20 +7,30 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  /** Tăng mỗi lần login/logout để bỏ kết quả loadProfile cũ (tránh lần 1 bị clearTokens sau khi đã login). */
+  const sessionGen = useRef(0);
+
   const loadProfile = useCallback(async () => {
+    const gen = sessionGen.current;
     if (!apiClient.getAccessToken()) {
-      setUser(null);
-      setLoading(false);
+      if (gen === sessionGen.current) {
+        setUser(null);
+        setLoading(false);
+      }
       return;
     }
     try {
       const profile = await authService.getCurrentUser();
+      if (gen !== sessionGen.current) return; // đã login/logout trong lúc chờ
       setUser(profile);
     } catch {
+      if (gen !== sessionGen.current) return;
       apiClient.clearTokens();
       setUser(null);
     } finally {
-      setLoading(false);
+      if (gen === sessionGen.current) {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -31,18 +41,28 @@ export function AuthProvider({ children }) {
 
   async function login({ email, password }) {
     const data = await authService.login({ email, password });
+    // Vô hiệu hóa mọi loadProfile đang chạy (token hết hạn từ session trước)
+    sessionGen.current += 1;
+    const gen = sessionGen.current;
+
     apiClient.setTokens(data);
-    // Load full profile (includes facilityId for MEDICAL_STAFF)
+    setLoading(false);
+
     try {
       const profile = await authService.getCurrentUser();
-      setUser(profile);
+      if (gen === sessionGen.current) {
+        setUser(profile);
+      }
     } catch {
-      setUser({
-        userId: data.accountId,
-        email: data.email,
-        fullName: data.fullName,
-        role: data.role,
-      });
+      // Fallback từ AuthResponse nếu /me lỗi tạm thời
+      if (gen === sessionGen.current) {
+        setUser({
+          userId: data.accountId,
+          email: data.email,
+          fullName: data.fullName,
+          role: data.role,
+        });
+      }
     }
     return data;
   }
@@ -52,8 +72,10 @@ export function AuthProvider({ children }) {
   }
 
   function logout() {
+    sessionGen.current += 1;
     apiClient.clearTokens();
     setUser(null);
+    setLoading(false);
   }
 
   const value = {
