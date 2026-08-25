@@ -1,5 +1,4 @@
-// ============ VX MODAL (wrapper dùng chung) ============
-// Chuyển từ .vx-modal-overlay / openModal() / closeModal() trong my-record.html.
+
 export default function VxModal({ open, onClose, titleId, title, large, children, footer }) {
   return (
     <div
