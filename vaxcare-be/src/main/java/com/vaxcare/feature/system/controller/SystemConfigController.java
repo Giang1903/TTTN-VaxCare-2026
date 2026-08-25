@@ -16,7 +16,7 @@ import java.util.List;
 @RequestMapping("/api/v1/admin/configs")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
-@Tag(name = "22. Admin - System Config", description = "Cấu hình hệ thống")
+@Tag(name = "23. Admin - System Config", description = "Cấu hình hệ thống")
 public class SystemConfigController {
 
     private final SystemConfigService systemConfigService;
