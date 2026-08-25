@@ -72,26 +72,25 @@ export default function StaffReactionsPage() {
     setNote(d.note || '');
   };
 
-  const applyForm = async (id, nextSeverity, nextStatus, nextNote) => {
+  // Backend chỉ lưu processingStatus + staffNote (xem ProcessReactionRequest),
+  // KHÔNG có API cập nhật mức độ (severity) — nên severity không được gửi lên
+  // và không được ghi đè trong state cục bộ để tránh sai lệch dữ liệu sau khi tải lại trang.
+  const applyForm = async (id, nextStatus, nextNote) => {
     try {
       await staffService.processReaction(id, {
         processingStatus: nextStatus,
         staffNote: nextNote || undefined,
       });
-      const [sev, sevLabel] = SEV_MAP[nextSeverity] || ['mild', 'Nhẹ'];
       const [proc, procLabel] = ST_MAP[nextStatus] || ['pending', 'Chờ xử lý'];
       setData((prev) => ({
         ...prev,
         [id]: {
           ...prev[id],
-          severity: nextSeverity,
           status: nextStatus,
-          sev,
-          sevLabel,
           proc,
           procLabel,
           note: nextNote,
-          f: `${proc} ${sev}`,
+          f: `${proc} ${prev[id].sev}`,
         },
       }));
       showToast('Đã cập nhật xử lý phản ứng', 'ok');
@@ -272,8 +271,8 @@ export default function StaffReactionsPage() {
 
                 <div className="section-title">Xử lý</div>
                 <div className="field">
-                  <label>Mức độ (cập nhật)</label>
-                  <select value={severity} onChange={(e) => setSeverity(e.target.value)}>
+                  <label>Mức độ (do người khai báo ghi nhận)</label>
+                  <select value={severity} disabled>
                     <option value="NONE">Không có</option>
                     <option value="MILD">Nhẹ</option>
                     <option value="MODERATE">Trung bình</option>
@@ -300,16 +299,12 @@ export default function StaffReactionsPage() {
                 </div>
               </div>
               <div className="detail-foot">
-                <button type="button" className="btn outline" onClick={() => showToast('Đang gọi phụ huynh (demo)…', 'ok')}>
-                  Gọi phụ huynh
-                </button>
                 <button
                   type="button"
                   className="btn warn"
                   onClick={() => {
                     setStatus('CONTACTED');
-                    applyForm(activeId, severity, 'CONTACTED', note);
-                    showToast('Đã đánh dấu liên hệ', 'ok');
+                    applyForm(activeId, 'CONTACTED', note);
                   }}
                 >
                   Đánh dấu đã liên hệ
@@ -317,10 +312,7 @@ export default function StaffReactionsPage() {
                 <button
                   type="button"
                   className="btn primary"
-                  onClick={() => {
-                    applyForm(activeId, severity, status, note);
-                    showToast('Đã lưu xử lý phản ứng sau tiêm', 'ok');
-                  }}
+                  onClick={() => applyForm(activeId, status, note)}
                 >
                   Lưu xử lý
                 </button>
@@ -329,8 +321,7 @@ export default function StaffReactionsPage() {
                   className="btn ok"
                   onClick={() => {
                     setStatus('RESOLVED');
-                    applyForm(activeId, severity, 'RESOLVED', note);
-                    showToast('Case đã giải quyết xong', 'ok');
+                    applyForm(activeId, 'RESOLVED', note);
                   }}
                 >
                   Giải quyết xong

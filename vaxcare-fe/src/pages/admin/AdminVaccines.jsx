@@ -22,8 +22,17 @@ export default function Vaccines() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await adminService.getVaccinesAdmin();
+      const [data, cats] = await Promise.all([
+        adminService.getVaccinesAdmin(),
+        adminService.getVaccineCategories().catch(() => []),
+      ]);
       setList((data || []).map(adminService.mapVaccineToUi));
+      const catList = (cats || []).map((c) => ({
+        id: c.categoryId ?? c.id,
+        name: c.categoryName || c.name || `Danh mục ${c.categoryId ?? c.id}`,
+      }));
+      // eslint-disable-next-line react-hooks/immutability
+      setCategories(catList);
     } catch (err) {
       showToast(err.message || 'Không tải được danh sách vắc xin', 'error');
       setList([]);
@@ -39,7 +48,9 @@ export default function Vaccines() {
   const [detail, setDetail] = useState(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editId, setEditId] = useState(null);
-  const [form, setForm] = useState({ name: '', full: '', disease: '', cat: 1, doses: 1, interval: '', proto: '', status: 'ACTIVE' });
+  const [form, setForm] = useState({ name: '', full: '', disease: '', cat: '', doses: 1, interval: '', proto: '', status: 'ACTIVE' });
+  const [categories, setCategories] = useState([]);
+  const [saving, setSaving] = useState(false);
 
   const rows = useMemo(() => {
     const qq = q.toLowerCase();
@@ -59,27 +70,44 @@ export default function Vaccines() {
     setForm(
       v
         ? { name: v.name, full: v.full, disease: v.disease, cat: v.cat, doses: v.doses, interval: v.interval ?? '', proto: v.proto, status: v.status }
-        : { name: '', full: '', disease: '', cat: 1, doses: 1, interval: '', proto: '', status: 'ACTIVE' }
+        : { name: '', full: '', disease: '', cat: '', doses: 1, interval: '', proto: '', status: 'ACTIVE' }
     );
     setDetail(null);
     setFormOpen(true);
   };
 
-  const save = async () => {
+  const save = async (e) => {
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
+    if (saving) return;
     if (!form.name?.trim()) {
       showToast('Nhập tên vắc xin', 'warn');
       return;
     }
+    const doses = form.doses === '' || form.doses == null ? 1 : Number(form.doses);
+    if (!Number.isFinite(doses) || doses < 1) {
+      showToast('Số mũi phải ≥ 1', 'warn');
+      return;
+    }
+    let doseIntervalDays;
+    if (form.interval !== '' && form.interval != null) {
+      doseIntervalDays = Number(form.interval);
+      if (!Number.isFinite(doseIntervalDays) || doseIntervalDays < 1) {
+        showToast('Khoảng cách (ngày) phải ≥ 1 hoặc để trống', 'warn');
+        return;
+      }
+    }
     const body = {
       categoryId: form.cat ? Number(form.cat) : undefined,
       vaccineName: form.name.trim(),
-      manufacturer: form.full || undefined,
-      targetDisease: form.disease || undefined,
-      requiredDoses: form.doses ? Number(form.doses) : undefined,
-      doseIntervalDays: form.interval ? Number(form.interval) : undefined,
-      description: form.proto || undefined,
+      manufacturer: form.full?.trim() || undefined,
+      targetDisease: form.disease?.trim() || undefined,
+      requiredDoses: doses,
+      doseIntervalDays,
+      description: form.proto?.trim() || undefined,
       status: form.status || 'ACTIVE',
     };
+    setSaving(true);
     try {
       if (editId) {
         await adminService.updateVaccine(editId, body);
@@ -91,7 +119,13 @@ export default function Vaccines() {
       setFormOpen(false);
       await load();
     } catch (err) {
-      showToast(err.message || 'Lưu thất bại', 'error');
+      const fe = err.fieldErrors;
+      const detail = fe
+        ? Object.values(fe).flat().filter(Boolean).join('; ')
+        : null;
+      showToast(detail || err.message || 'Lưu thất bại', 'error');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -119,7 +153,6 @@ export default function Vaccines() {
             ))}
           </div>
           <div className="toolbar-right">
-            <button className="btn outline" type="button" onClick={() => showToast('Xuất danh mục vắc xin…', 'ok')}>Xuất</button>
             <button className="btn primary" type="button" onClick={() => openForm(null)}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 5v14M5 12h14" /></svg>
               Thêm vắc xin
@@ -193,7 +226,7 @@ export default function Vaccines() {
         footer={
           <>
             <button className="btn outline" type="button" onClick={() => setFormOpen(false)}>Hủy</button>
-            <button className="btn primary" type="button" onClick={save}>Lưu</button>
+            <button className="btn primary" type="button" onClick={save} disabled={saving}>{saving ? "Đang lưu…" : "Lưu"}</button>
           </>
         }
       >
@@ -203,13 +236,11 @@ export default function Vaccines() {
           <div className="field"><label>Phòng bệnh</label><input value={form.disease} onChange={(e) => setForm({ ...form, disease: e.target.value })} /></div>
           <div className="field">
             <label>Danh mục</label>
-            <select value={form.cat} onChange={(e) => setForm({ ...form, cat: e.target.value })}>
-              <option value="1">Trẻ sơ sinh</option>
-              <option value="2">Trẻ em</option>
-              <option value="3">Người lớn</option>
-              <option value="4">Người cao tuổi</option>
-              <option value="5">Mùa vụ</option>
-              <option value="6">Phối hợp & Đặc biệt</option>
+            <select value={form.cat === "" || form.cat == null ? "" : String(form.cat)} onChange={(e) => setForm({ ...form, cat: e.target.value })}>
+              <option value="">— Không chọn —</option>
+              {categories.map((c) => (
+                <option key={c.id} value={String(c.id)}>{c.name}</option>
+              ))}
             </select>
           </div>
         </div>

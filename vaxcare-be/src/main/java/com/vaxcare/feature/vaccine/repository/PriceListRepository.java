@@ -19,11 +19,18 @@ public interface PriceListRepository extends JpaRepository<PriceList, Long> {
     @Query("""
         SELECT p FROM PriceList p
         WHERE p.vaccine.vaccineId = :vaccineId
-          AND p.status = 'ACTIVE'
+          AND p.status = com.vaxcare.common.enums.ActiveStatus.ACTIVE
           AND p.effectiveDate <= :date
           AND (p.expiryDate IS NULL OR p.expiryDate >= :date)
-          AND (p.facility IS NULL OR p.facility.facilityId = :facilityId)
-        ORDER BY p.facility.facilityId DESC NULLS LAST, p.effectiveDate DESC
+          AND (
+                :facilityId IS NULL
+                OR p.facility IS NULL
+                OR p.facility.facilityId = :facilityId
+              )
+        ORDER BY
+          CASE WHEN p.facility IS NOT NULL AND p.facility.facilityId = :facilityId THEN 0 ELSE 1 END,
+          p.effectiveDate DESC,
+          p.priceListId DESC
         """)
     List<PriceList> findActivePrices(@Param("vaccineId") Long vaccineId,
                                      @Param("facilityId") Long facilityId,

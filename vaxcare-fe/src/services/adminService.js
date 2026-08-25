@@ -35,6 +35,10 @@ export function mapFacilityToUi(f) {
 }
 
 // ---- Vaccines ----
+export function getVaccineCategories() {
+  return apiClient.request("/vaccine-categories", { method: "GET", auth: false });
+}
+
 export function getVaccinesAdmin() {
   return apiClient.request("/admin/vaccines", { method: "GET" });
 }

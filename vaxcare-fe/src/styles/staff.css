@@ -1,8 +1,3 @@
-/* =========================================================
-   VaxCare Staff Console — shared design system & layout
-   Import once in StaffLayout (avoid duplicating per page)
-   ========================================================= */
-
 :root {
   --teal-900: #24408c;
   --teal-800: #31549f;
@@ -107,7 +102,6 @@
   width: 38px;
   height: 38px;
   border-radius: 11px;
-  background: rgba(255, 255, 255, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1065,6 +1059,12 @@
   height: 260px;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(159, 203, 255, 0.28), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+.welcome-banner > * {
+  position: relative;
+  z-index: 1;
 }
 .welcome-banner h2 {
   font-size: 24px;
@@ -1084,6 +1084,7 @@
   display: flex;
   gap: 12px;
   position: relative;
+  z-index: 1;
   flex-shrink: 0;
 }
 .wb-btn {

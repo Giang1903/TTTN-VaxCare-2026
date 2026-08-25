@@ -54,19 +54,37 @@ public class AdminAccountService {
 
     @Transactional
     public AdminAccountItemResponse createStaff(CreateStaffRequest req) {
-        if (accountRepository.existsByEmail(req.getEmail())) {
+        if (req.getEmail() == null || req.getEmail().isBlank()) {
+            throw new BadRequestException("Email không được để trống");
+        }
+        if (req.getPassword() == null || req.getPassword().length() < 6) {
+            throw new BadRequestException("Mật khẩu phải có ít nhất 6 ký tự");
+        }
+        if (req.getFullName() == null || req.getFullName().isBlank()) {
+            throw new BadRequestException("Họ tên không được để trống");
+        }
+        if (req.getStaffCode() == null || req.getStaffCode().isBlank()) {
+            throw new BadRequestException("Mã nhân viên không được để trống");
+        }
+        if (req.getFacilityId() == null) {
+            throw new BadRequestException("facilityId không được để trống");
+        }
+        String email = req.getEmail().trim().toLowerCase();
+        String staffCode = req.getStaffCode().trim();
+        if (accountRepository.existsByEmail(email)) {
             throw new BadRequestException("Email đã được sử dụng");
         }
-        if (medicalStaffRepository.findByStaffCode(req.getStaffCode()).isPresent()) {
+        if (medicalStaffRepository.existsByStaffCode(staffCode)
+                || medicalStaffRepository.findByStaffCode(staffCode).isPresent()) {
             throw new BadRequestException("Mã nhân viên đã tồn tại");
         }
         VaccinationFacility facility = facilityRepository.findById(req.getFacilityId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy cơ sở ID: " + req.getFacilityId()));
 
         Account account = Account.builder()
-                .email(req.getEmail().trim().toLowerCase())
+                .email(email)
                 .passwordHash(passwordEncoder.encode(req.getPassword()))
-                .phone(req.getPhone())
+                .phone(req.getPhone() != null && !req.getPhone().isBlank() ? req.getPhone().trim() : null)
                 .role(Role.MEDICAL_STAFF)
                 .status(AccountStatus.ACTIVE)
                 .build();
@@ -74,19 +92,30 @@ public class AdminAccountService {
         MedicalStaff staff = MedicalStaff.builder()
                 .account(account)
                 .fullName(req.getFullName().trim())
-                .staffCode(req.getStaffCode().trim())
-                .specialty(req.getSpecialty())
+                .staffCode(staffCode)
+                .specialty(req.getSpecialty() != null && !req.getSpecialty().isBlank()
+                        ? req.getSpecialty().trim() : null)
                 .facility(facility)
                 .build();
         account.setMedicalStaff(staff);
 
         Account saved = accountRepository.save(account);
-        auditLogWriter.write("CREATE_STAFF", "USER", saved.getAccountId(), null,
-                req.getEmail() + " / " + req.getStaffCode());
-        return map(accountRepository.findByRoleWithDetails(Role.MEDICAL_STAFF).stream()
-                .filter(a -> a.getAccountId().equals(saved.getAccountId()))
-                .findFirst()
-                .orElse(saved));
+        accountRepository.flush();
+
+        // Audit tách transaction — lỗi audit không được làm fail tạo staff
+        try {
+            auditLogWriter.write(
+                    "CREATE_STAFF",
+                    "USER",
+                    saved.getAccountId(),
+                    null,
+                    email + " / " + staffCode);
+        } catch (Exception ignored) {
+            // ignore
+        }
+
+        // Dùng entity vừa save (đã có medicalStaff) — tránh query lại gây lỗi lazy/tx
+        return map(saved);
     }
 
     private AdminAccountItemResponse map(Account a) {

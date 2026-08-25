@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable no-unused-vars */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -19,6 +20,8 @@ export default function StaffVaccinationPage() {
   const [doneIds, setDoneIds] = useState(new Set());
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+  const [lastDetailId, setLastDetailId] = useState(null);
+  const [historyItems, setHistoryItems] = useState([]);
   const [result, setResult] = useState('SUCCESS');
   const [reaction, setReaction] = useState('NONE');
   const [staffNote, setStaffNote] = useState('');
@@ -108,9 +111,52 @@ export default function StaffVaccinationPage() {
     };
   }, [currentId, facilityId, queue]);
 
+  // Load real vaccination history for selected patient
+  useEffect(() => {
+    const patient = queue.find((p) => p.id === currentId);
+    if (!patient?.userId) {
+      setHistoryItems([]);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const hist = await staffService.getVaccinationHistory(patient.userId);
+        if (cancelled) return;
+        const details = hist?.details || [];
+        setHistoryItems(
+          details
+            .slice()
+            .sort((a, b) => String(b.injectionDate || '').localeCompare(String(a.injectionDate || '')))
+            .slice(0, 8)
+            .map((d) => ({
+              date: d.injectionDate
+                ? String(d.injectionDate).split('-').reverse().join('/')
+                : '',
+              title: d.vaccineName || 'Vắc xin',
+              detail: [
+                d.doseNumber != null ? `Mũi ${d.doseNumber}` : null,
+                d.batchNumber ? `Lô ${d.batchNumber}` : null,
+                d.result || null,
+                d.facilityName || null,
+              ]
+                .filter(Boolean)
+                .join(' · '),
+            }))
+        );
+      } catch (err) {
+        console.error(err);
+        if (!cancelled) setHistoryItems([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentId, queue]);
+
   const patientRaw = queue.find((p) => p.id === currentId) || null;
   const patient = patientRaw
-    ? { ...patientRaw, batches: batches, history: patientRaw.history || [] }
+    ? { ...patientRaw, batches: batches, history: historyItems }
     : {
         id: '',
         time: '',
@@ -147,17 +193,19 @@ export default function StaffVaccinationPage() {
     setReaction('NONE');
     setStaffNote('');
     setShowSuccess(false);
+    setLastDetailId(null);
   };
 
   const handleSubmit = async () => {
     if (!patient) return;
     try {
-      await staffService.recordVaccination({
+      const detail = await staffService.recordVaccination({
         appointmentId: patient.id,
         result,
         note: staffNote || undefined,
       });
       setDoneIds((prev) => new Set(prev).add(patient.id));
+      setLastDetailId(detail?.detailId ?? null);
       setSuccessMsg(`Đã ghi nhận tiêm ${patient.vaccine} cho ${patient.name}`);
       setShowSuccess(true);
       showToast(`Đã ghi nhận tiêm cho ${patient.name}`, 'ok');
@@ -168,18 +216,17 @@ export default function StaffVaccinationPage() {
     }
   };
 
-  const printCert = () => {
-    const w = window.open('', '_blank', 'width=640,height=720');
-    if (!w || !patient) return;
-    w.document.write(`<html><head><title>Chứng nhận</title></head><body>
-      <h2>Chứng nhận tiêm chủng</h2>
-      <p>Mã: ${certCode}</p>
-      <p>Bệnh nhân: ${patient.name}</p>
-      <p>Vắc xin: ${patient.vaccine}</p>
-      <p>Ngày: ${new Date().toLocaleDateString('vi-VN')}</p>
-    </body></html>`);
-    w.document.close();
-    w.print();
+  const downloadCert = async () => {
+    if (!lastDetailId) {
+      showToast('Chưa có chứng nhận để tải (chỉ áp dụng sau khi ghi nhận SUCCESS)', 'warn');
+      return;
+    }
+    try {
+      await staffService.downloadCertificate(lastDetailId);
+      showToast('Đã tải chứng nhận PDF', 'ok');
+    } catch (err) {
+      showToast(err.message || 'Tải chứng nhận thất bại', 'warn');
+    }
   };
 
   const nextPatient = () => {
@@ -193,7 +240,7 @@ export default function StaffVaccinationPage() {
     <>
       <StaffTopbar
         title="Ghi nhận tiêm chủng"
-        subtitle="Hàng chờ check-in · Chọn lô · Xuất chứng nhận"
+        subtitle="Hàng chờ check-in · Ghi nhận tiêm · Chứng nhận PDF"
         searchPlaceholder="Tìm trong hàng chờ..."
         searchValue={q}
         onSearchChange={setQ}
@@ -368,9 +415,6 @@ export default function StaffVaccinationPage() {
                     <button type="button" className="btn outline" onClick={() => showToast('Đã hủy phiếu ghi nhận hiện tại', 'warn')}>
                       Hủy
                     </button>
-                    <button type="button" className="btn ghost" onClick={() => showToast('Đã lưu nháp phiếu ghi nhận', 'ok')}>
-                      Lưu nháp
-                    </button>
                     <button type="button" className="btn primary" onClick={handleSubmit} disabled={!hasPatient}>
                       Xác nhận đã tiêm
                     </button>
@@ -386,8 +430,8 @@ export default function StaffVaccinationPage() {
                   <h3>Ghi nhận tiêm thành công</h3>
                   <p>{successMsg}</p>
                   <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-                    <button type="button" className="btn outline" onClick={printCert}>
-                      In chứng nhận
+                    <button type="button" className="btn outline" onClick={downloadCert}>
+                      Tải chứng nhận PDF
                     </button>
                     <button type="button" className="btn primary" onClick={nextPatient}>
                       Ca tiếp theo

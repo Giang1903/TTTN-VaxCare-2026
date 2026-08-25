@@ -74,7 +74,6 @@ export default function Users() {
             ))}
           </div>
           <div className="toolbar-right">
-            <button className="btn outline" type="button" onClick={() => showToast('Đang xuất CSV người dùng…', 'ok')}>Xuất CSV</button>
           </div>
         </div>
 
@@ -132,7 +131,6 @@ export default function Users() {
         footer={
           <>
             <button className="btn outline" type="button" onClick={() => setDetail(null)}>Đóng</button>
-            <button className="btn outline" type="button" onClick={() => showToast('Đã gửi email reset mật khẩu (demo)', 'ok')}>Reset mật khẩu</button>
             <button className="btn primary" type="button" onClick={() => detail && toggleStatus(detail)}>
               {detail?.status === 'SUSPENDED' ? 'Mở khóa' : 'Khóa tài khoản'}
             </button>

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StaffTopbar from '../../components/staff/StaffTopbar';
 import useStaffToast from '../../hooks/useStaffToast';
+import { useAuth } from '../../context/AuthContext';
 import * as staffService from '../../services/staffService';
 
 const STATUS_LABEL = {
@@ -80,6 +81,8 @@ function RowActions({ status, onAction }) {
 }
 
 export default function StaffAppointmentsPage() {
+  const { user } = useAuth();
+  const facilityName = user?.facilityName || 'Cơ sở tiêm chủng';
   // eslint-disable-next-line no-unused-vars
   const navigate = useNavigate();
   const { toast, showToast } = useStaffToast();
@@ -187,7 +190,11 @@ export default function StaffAppointmentsPage() {
         return;
       }
       if (action === 'cancel') {
-        await staffService.cancelAppointment(appt.id, 'Từ chối bởi nhân viên');
+        // Dùng ghi chú nhân viên đã nhập (nếu có, và cùng lịch hẹn đang mở) làm lý do hủy;
+        // nếu không có thì dùng lý do mặc định — đồng bộ với ô "Ghi chú" trên drawer chi tiết.
+        const reason =
+          drawer.apptId === appt.id && noteDraft.trim() ? noteDraft.trim() : 'Từ chối bởi nhân viên';
+        await staffService.cancelAppointment(appt.id, reason);
         updateLocal(appt.id, 'cancelled');
         showToast(`Đã từ chối / hủy lịch của ${appt.name}`, 'warn');
         return;
@@ -247,7 +254,7 @@ export default function StaffAppointmentsPage() {
     <>
       <StaffTopbar
         title="Lịch hẹn & Check-in"
-        subtitle="Danh sách đầy đủ · VaxCare Phú Nhuận"
+        subtitle={`Danh sách đầy đủ · ${facilityName}`}
         searchPlaceholder="Tìm lịch hẹn, bệnh nhân..."
         searchValue={q}
         onSearchChange={setQ}
