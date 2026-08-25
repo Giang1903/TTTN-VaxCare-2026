@@ -56,11 +56,16 @@ export function mapVaccineToUi(v) {
     id: v.vaccineId,
     name: v.vaccineName || "",
     manufacturer: v.manufacturer || "",
+    full: v.manufacturer || "",
     disease: v.targetDisease || "",
     doses: v.requiredDoses ?? "",
     interval: v.doseIntervalDays ?? "",
+    cat: v.categoryId ?? "",
+    categoryName: v.categoryName || "",
+    proto: v.description || "",
     status: String(v.status || "ACTIVE").toUpperCase(),
     price: v.currentPrice != null ? Number(v.currentPrice).toLocaleString("vi-VN") + "₫" : "",
+    priceRaw: v.currentPrice,
     bookings: v.totalBookings ?? 0,
     rating: v.averageRating ?? "",
     _raw: v,
@@ -226,4 +231,49 @@ export function mapBatchAdminToUi(b, facilityNameMap = {}) {
     expiring,
     _raw: b,
   };
+}
+
+// ---- System configs ----
+export function listConfigs() {
+  return apiClient.request("/admin/configs", { method: "GET" });
+}
+export function saveConfigsBatch(items) {
+  return apiClient.request("/admin/configs/batch", { method: "PUT", body: items });
+}
+
+// ---- Create staff ----
+export function createStaff(body) {
+  return apiClient.request("/admin/accounts/staff", { method: "POST", body });
+}
+
+// ---- Report export (admin uses staff endpoints) ----
+export async function exportReportAppointments({ fromDate, toDate, facilityId } = {}) {
+  const params = new URLSearchParams();
+  if (fromDate) params.set("fromDate", fromDate);
+  if (toDate) params.set("toDate", toDate);
+  if (facilityId != null) params.set("facilityId", String(facilityId));
+  const qs = params.toString();
+  const res = await fetch(
+    `${import.meta.env.VITE_API_URL || "http://localhost:8080/api/v1"}/staff/reports/export/appointments${qs ? `?${qs}` : ""}`,
+    {
+      headers: { Authorization: `Bearer ${apiClient.getAccessToken() || ""}` },
+    }
+  );
+  if (!res.ok) throw new Error("Export thất bại");
+  return res.blob();
+}
+export async function exportReportSummary({ fromDate, toDate, facilityId } = {}) {
+  const params = new URLSearchParams();
+  if (fromDate) params.set("fromDate", fromDate);
+  if (toDate) params.set("toDate", toDate);
+  if (facilityId != null) params.set("facilityId", String(facilityId));
+  const qs = params.toString();
+  const res = await fetch(
+    `${import.meta.env.VITE_API_URL || "http://localhost:8080/api/v1"}/staff/reports/export/summary${qs ? `?${qs}` : ""}`,
+    {
+      headers: { Authorization: `Bearer ${apiClient.getAccessToken() || ""}` },
+    }
+  );
+  if (!res.ok) throw new Error("Export thất bại");
+  return res.blob();
 }
