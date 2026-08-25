@@ -3,8 +3,11 @@ import * as staffService from '../../services/staffService';
 import { Link } from 'react-router-dom';
 import StaffTopbar from '../../components/staff/StaffTopbar';
 import useStaffToast from '../../hooks/useStaffToast';
+import { useAuth } from '../../context/AuthContext';
 
 export default function StaffReportsPage() {
+  const { user } = useAuth();
+  const facilityName = user?.facilityName || 'Cơ sở tiêm chủng';
   const { toast, showToast } = useStaffToast();
   const [range, setRange] = useState('30');
   const todayStr = new Date().toISOString().slice(0, 10);
@@ -104,7 +107,7 @@ export default function StaffReportsPage() {
 
   return (
     <>
-      <StaffTopbar title="Báo cáo thống kê" subtitle="Vận hành tiêm chủng · VaxCare Phú Nhuận" showSearch={false} />
+      <StaffTopbar title="Báo cáo thống kê" subtitle={`Vận hành tiêm chủng · ${facilityName}`} showSearch={false} />
 
       <div className="staff-content">
         <div className="filter-bar">
