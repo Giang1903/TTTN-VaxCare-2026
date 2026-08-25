@@ -19,7 +19,7 @@ import java.time.LocalDate;
 @RestController
 @RequestMapping("/api/v1/dashboard")
 @RequiredArgsConstructor
-@Tag(name = "20. Dashboard", description = "Dashboard tổng hợp cho User / Staff / Admin")
+@Tag(name = "21. Dashboard", description = "Dashboard tổng hợp cho User / Staff / Admin")
 public class DashboardController {
 
     private final DashboardService dashboardService;

@@ -52,13 +52,4 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
         WHERE a.accountId = :accountId
         """)
     Optional<Account> findByIdWithProfiles(@Param("accountId") Long accountId);
-    @Query("""
-    SELECT a FROM Account a
-    LEFT JOIN FETCH a.medicalStaff ms
-    LEFT JOIN FETCH ms.facility
-    LEFT JOIN FETCH a.user
-    LEFT JOIN FETCH a.admin
-    WHERE a.role = :role
-    """)
-    List<Account> findByRoleWithDetails(@Param("role") Role role);
 }
