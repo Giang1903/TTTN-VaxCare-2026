@@ -8,6 +8,7 @@ import com.vaxcare.feature.appointment.entity.Appointment;
 import com.vaxcare.feature.appointment.entity.Payment;
 import com.vaxcare.feature.appointment.repository.AppointmentRepository;
 import com.vaxcare.feature.appointment.repository.PaymentRepository;
+import com.vaxcare.feature.ai.repository.DemandForecastRepository;
 import com.vaxcare.feature.appointment.service.AppointmentService;
 import com.vaxcare.feature.auth.entity.Account;
 import com.vaxcare.feature.auth.entity.MedicalStaff;
@@ -48,6 +49,7 @@ public class DashboardService {
     private static final int EXPIRING_SOON_DAYS = 30;
     private static final int EXPIRING_SOON_LIMIT = 10;
     private static final int DEFAULT_INVENTORY_ALERT_THRESHOLD = 50;
+    private static final int FORECAST_HORIZON_DAYS = 14;
     private static final int REVENUE_TREND_MONTHS = 6;
 
     private final AccountRepository accountRepository;
@@ -62,6 +64,7 @@ public class DashboardService {
     private final PaymentRepository paymentRepository;
     private final VaccinationFacilityRepository facilityRepository;
     private final VaccineRepository vaccineRepository;
+    private final DemandForecastRepository demandForecastRepository;
 
     // ===================== DASHBOARD USER =====================
 
@@ -195,8 +198,6 @@ public class DashboardService {
         long totalMedicalStaff = accountRepository.countByRole(Role.MEDICAL_STAFF);
         long totalActiveFacilities = facilityRepository.countByStatus(ActiveStatus.ACTIVE);
         long totalActiveVaccines = vaccineRepository.countByStatus(ActiveStatus.ACTIVE);
-
-        // --- Doanh thu: lấy payments từ mốc xa hơn trong (from, 6-tháng-gần-nhất) để tính được cả 2 chỉ số ---
         YearMonth toYearMonth = YearMonth.from(effectiveTo);
         LocalDate sixMonthsAgoStart = toYearMonth.minusMonths(REVENUE_TREND_MONTHS - 1L).atDay(1);
         LocalDate queryFrom = effectiveFrom.isBefore(sixMonthsAgoStart) ? effectiveFrom : sixMonthsAgoStart;
@@ -235,14 +236,37 @@ public class DashboardService {
                         .build())
                 .toList();
 
+        LocalDate forecastFrom = LocalDate.now();
+        LocalDate forecastTo = forecastFrom.plusDays(FORECAST_HORIZON_DAYS);
+        Map<Long, Integer> forecastByVaccine = new LinkedHashMap<>();
+        for (Object[] row : demandForecastRepository.sumPredictedQuantityByVaccineBetween(forecastFrom, forecastTo)) {
+            Long vaccineId = (Long) row[0];
+            int predicted = ((Number) row[1]).intValue();
+            forecastByVaccine.put(vaccineId, predicted);
+        }
+
         List<StockVsForecastItem> stockVsForecast = vaccineBatchRepository
                 .sumStockGroupByVaccineSystemWide().stream()
-                .map(row -> StockVsForecastItem.builder()
-                        .vaccineId((Long) row[0])
-                        .vaccineName((String) row[1])
-                        .currentStock(((Number) row[2]).intValue())
-                        .aiForecastedDemand(null)
-                        .build())
+                .map(row -> {
+                    Long vaccineId = (Long) row[0];
+                    int currentStock = ((Number) row[2]).intValue();
+                    Integer aiDemand = forecastByVaccine.get(vaccineId);
+                    String note;
+                    if (aiDemand == null) {
+                        note = "Chưa có dữ liệu dự báo AI — chạy job forecast hoặc gọi API Admin AI";
+                    } else if (currentStock < aiDemand) {
+                        note = "Tồn kho thấp hơn nhu cầu dự báo " + FORECAST_HORIZON_DAYS + " ngày tới";
+                    } else {
+                        note = "Đủ tồn so với nhu cầu dự báo " + FORECAST_HORIZON_DAYS + " ngày tới";
+                    }
+                    return StockVsForecastItem.builder()
+                            .vaccineId(vaccineId)
+                            .vaccineName((String) row[1])
+                            .currentStock(currentStock)
+                            .aiForecastedDemand(aiDemand)
+                            .note(note)
+                            .build();
+                })
                 .toList();
 
         return AdminDashboardResponse.builder()
