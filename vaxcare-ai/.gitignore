@@ -1,0 +1,28 @@
+# Python bytecode cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Env vars
+.env
+
+# Models / data (thường nặng, không nên commit)
+models/*
+!models/.gitkeep
+data/*
+!data/.gitkeep
+
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store

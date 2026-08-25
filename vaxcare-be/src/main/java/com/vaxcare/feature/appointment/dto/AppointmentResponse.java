@@ -27,6 +27,7 @@ public class AppointmentResponse {
     private String staffName;
     private BigDecimal price;
     private Boolean recommendedByAi;
+    private Long predictionId;
     private LocalDate appointmentDate;
     private LocalTime timeSlot;
     private AppointmentStatus status;

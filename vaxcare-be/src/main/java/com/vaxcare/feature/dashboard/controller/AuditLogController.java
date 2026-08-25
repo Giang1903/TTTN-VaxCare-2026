@@ -18,7 +18,7 @@ import java.util.List;
 @RequestMapping("/api/v1/admin/audit-logs")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
-@Tag(name = "23. Admin - Audit Logs", description = "Nhật ký hệ thống cho Admin")
+@Tag(name = "25. Admin - Audit Logs", description = "Nhật ký hệ thống cho Admin")
 public class AuditLogController {
 
     private final AuditLogService auditLogService;
