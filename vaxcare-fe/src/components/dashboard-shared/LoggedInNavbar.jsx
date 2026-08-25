@@ -8,6 +8,7 @@ export default function LoggedInNavbar({ onOpenMobileNav }) {
   const { user, logout } = useAuth();
   const userName = user?.fullName || user?.email || 'Người dùng';
 
+  // eslint-disable-next-line no-unused-vars
   function handleLogout() {
     logout();
     navigate('/login', { replace: true });
@@ -75,9 +76,6 @@ export default function LoggedInNavbar({ onOpenMobileNav }) {
           </Link>
           <div className="user-menu" id="userMenu">
             <span className="user-name">{userName}</span>
-            <button type="button" className="btn btn-ghost btn-sm" onClick={handleLogout}>
-              Đăng xuất
-            </button>
           </div>
           <button
             className="hamburger"

@@ -1,16 +1,32 @@
+import { useEffect, useState } from 'react';
 import PageHero from '../../components/shared/PageHero';
 import FacilityFinder from '../../components/facilities/FacilityFinder';
 import FacilitiesWhy from '../../components/facilities/FacilitiesWhy';
 import FacilitiesCTA from '../../components/facilities/FacilitiesCTA';
+import { getFacilities } from '../../services/facilityService';
 
 export default function FacilitiesPage() {
+  const [count, setCount] = useState(null);
+
+  useEffect(() => {
+    getFacilities()
+      .then((list) => setCount((list || []).length))
+      .catch(() => setCount(null));
+  }, []);
+
+  const badge = count != null ? String(count) : '…';
+  const lead =
+    count != null
+      ? `${count} cơ sở VaxCare trên hệ thống, đồng bộ hồ sơ tiêm chủng và cập nhật số chỗ trống theo thời gian thực.`
+      : 'Mạng lưới cơ sở VaxCare, đồng bộ hồ sơ tiêm chủng và cập nhật số chỗ trống theo thời gian thực.';
+
   return (
     <>
       <PageHero
         currentLabel="Cơ sở tiêm chủng"
         eyebrow="Mạng lưới cơ sở"
         title="Tìm cơ sở tiêm chủng gần bạn"
-        lead="12 cơ sở VaxCare trải khắp TP.HCM, đồng bộ hồ sơ tiêm chủng và cập nhật số chỗ trống theo thời gian thực."
+        lead={lead}
         image="/assets/map.jpg"
         imageAlt="Đội ngũ y tế VaxCare"
         imageObjectPosition="78% 35%"
@@ -20,8 +36,8 @@ export default function FacilitiesPage() {
             <circle cx="12" cy="10" r="3" />
           </svg>
         }
-        badgeNum="12"
-        badgeLabel="Cơ sở tại TP.HCM"
+        badgeNum={badge}
+        badgeLabel="Cơ sở trên hệ thống"
       />
       <FacilityFinder />
       <FacilitiesWhy />

@@ -1,16 +1,32 @@
+import { useEffect, useState } from 'react';
 import PageHero from '../../components/shared/PageHero';
 import VaccineCatalog from '../../components/vaccines/VaccineCatalog';
 import VaccinesWhy from '../../components/vaccines/VaccinesWhy';
 import VaccinesCTA from '../../components/vaccines/VaccinesCTA';
+import { searchVaccines } from '../../services/vaccineService';
 
 export default function VaccinesPage() {
+  const [count, setCount] = useState(null);
+
+  useEffect(() => {
+    searchVaccines({})
+      .then((list) => setCount((list || []).length))
+      .catch(() => setCount(null));
+  }, []);
+
+  const badge = count != null ? String(count) : '…';
+  const lead =
+    count != null
+      ? `Tra cứu phác đồ và giá của ${count} loại vắc xin trên hệ thống, giúp bạn chọn đúng mũi tiêm cần thiết.`
+      : 'Tra cứu phác đồ và giá vắc xin trên hệ thống VaxCare.';
+
   return (
     <>
       <PageHero
         currentLabel="Vắc xin"
-        eyebrow="Thư viện vắc xin"
-        title="Tra cứu & đặt lịch tiêm vắc xin"
-        lead="Thông tin minh bạch về nguồn gốc, phác đồ và giá của hơn 30 loại vắc xin, giúp bạn và gia đình chọn đúng mũi tiêm cần thiết."
+        eyebrow="Danh mục vắc xin"
+        title="Tra cứu vắc xin & phác đồ"
+        lead={lead}
         image="/assets/vaccine.jpg"
         imageAlt="Tra cứu vắc xin tại VaxCare"
         imageObjectPosition="62% 40%"
@@ -20,8 +36,8 @@ export default function VaccinesPage() {
             <path d="m9 12 2 2 4-4" />
           </svg>
         }
-        badgeNum="32+"
-        badgeLabel="Loại vắc xin chính hãng"
+        badgeNum={badge}
+        badgeLabel="Loại vắc xin"
       />
       <VaccineCatalog />
       <VaccinesWhy />

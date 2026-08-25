@@ -1,10 +1,12 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 // ============ MOBILE / SLIDE NAV ============
-// Chuyển từ .mobile-nav-overlay dùng chung trong dashboard.html,
-// my-appointments.html, my-record.html, booking.html.
-export default function MobileNavPanel({ isOpen, onClose, userName = 'Nguyễn Văn A' }) {
+export default function MobileNavPanel({ isOpen, onClose, userName: userNameProp }) {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const userName = userNameProp || user?.fullName || user?.email || 'Người dùng';
 
   const initials = userName
     .split(' ')
@@ -12,7 +14,14 @@ export default function MobileNavPanel({ isOpen, onClose, userName = 'Nguyễn V
     .slice(-2)
     .map((s) => s[0])
     .join('')
-    .toUpperCase();
+    .toUpperCase() || 'U';
+
+  function handleLogout(e) {
+    e.preventDefault();
+    onClose?.();
+    logout();
+    navigate('/login', { replace: true });
+  }
 
   const navItem = (to, dataNav, label, icon) => (
     <Link to={to} className={pathname === to ? 'active' : undefined} onClick={onClose}>
@@ -29,7 +38,7 @@ export default function MobileNavPanel({ isOpen, onClose, userName = 'Nguyễn V
             <div className="mn-av">{initials}</div>
             <div>
               <div className="mn-name">{userName}</div>
-              <div className="mn-role">Tài khoản cá nhân</div>
+              <div className="mn-role">{user?.email || 'Tài khoản cá nhân'}</div>
             </div>
           </div>
           <button type="button" className="mobile-nav-close" aria-label="Đóng menu" onClick={onClose}>
@@ -59,8 +68,17 @@ export default function MobileNavPanel({ isOpen, onClose, userName = 'Nguyễn V
             Giới thiệu
           </Link>
           <div className="mn-sep"></div>
-          <Link to="/" className="danger" onClick={onClose}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" /></svg>
+          <Link
+            to="/login"
+            className="danger"
+            onClick={(e) => {
+              e.preventDefault();
+              handleLogout(e);
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+            </svg>
             Đăng xuất
           </Link>
         </nav>
