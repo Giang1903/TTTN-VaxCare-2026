@@ -24,7 +24,7 @@ import java.time.LocalDate;
 @RequestMapping("/api/v1/staff/reports")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('MEDICAL_STAFF', 'ADMIN')")
-@Tag(name = "19. Staff - Reports",
+@Tag(name = "20. Staff - Reports",
         description = "Báo cáo vận hành: days=7/30/90 hoặc fromDate/toDate tùy ý; export CSV")
 public class StaffReportController {
 
