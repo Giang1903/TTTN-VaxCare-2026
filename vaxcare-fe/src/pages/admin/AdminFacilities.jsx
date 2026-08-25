@@ -122,7 +122,6 @@ export default function Facilities() {
             ))}
           </div>
           <div className="toolbar-right">
-            <button className="btn outline" type="button" onClick={() => showToast('Đang xuất danh sách cơ sở…', 'ok')}>Xuất danh sách</button>
             <button className="btn primary" type="button" onClick={() => openForm(null)}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 5v14M5 12h14" /></svg>
               Thêm cơ sở

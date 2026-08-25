@@ -127,6 +127,84 @@ export default function StaffInventoryPage() {
   const kpiLow = rows.filter((r) => r.fillClass === 'warn' || r.fillClass === 'danger').length;
   const kpiStock = rows.reduce((s, r) => s + (r.stock || 0), 0);
 
+  /** Cảnh báo thật từ tồn kho (không hardcode) */
+  const realAlerts = useMemo(() => {
+    const thr = alertThreshold != null ? Number(alertThreshold) : null;
+    const items = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (const r of rows) {
+      const stock = r.stock ?? 0;
+      const status = String(r.status || '').toUpperCase();
+      // parse exp dd/mm/yyyy
+      let daysLeft = null;
+      if (r.exp && r.exp.includes('/')) {
+        const [dd, mm, yyyy] = r.exp.split('/').map(Number);
+        const expD = new Date(yyyy, mm - 1, dd);
+        daysLeft = Math.ceil((expD - today) / (1000 * 60 * 60 * 24));
+      }
+
+      if (status === 'EXPIRED' || (daysLeft != null && daysLeft < 0)) {
+        items.push({
+          key: `exp-${r.id}`,
+          cls: 'danger',
+          t: `${r.batch || r.name} đã hết hạn`,
+          d: `HSD ${r.exp || '—'} · còn ${stock} liều`,
+          tag: 'Hết hạn',
+          tagCls: 'danger',
+          sort: 0,
+        });
+      } else if (status === 'NEAR_EXPIRY' || (daysLeft != null && daysLeft <= 90)) {
+        items.push({
+          key: `near-${r.id}`,
+          cls: 'danger',
+          t: `${r.batch || r.name} sắp hết hạn`,
+          d: `HSD ${r.exp || '—'} · còn ${stock} liều · ưu tiên FEFO`,
+          tag: 'Ưu tiên sử dụng trước',
+          tagCls: 'danger',
+          sort: 1,
+          daysLeft: daysLeft ?? 999,
+        });
+      }
+
+      const isLow =
+        (thr != null && stock > 0 && stock < thr) ||
+        r.fillClass === 'warn' ||
+        r.fillClass === 'danger';
+      if (isLow && stock > 0 && status !== 'EXPIRED') {
+        items.push({
+          key: `low-${r.id}`,
+          cls: 'warn',
+          t: `${r.name || r.vax} tồn kho thấp`,
+          d: thr != null
+            ? `Còn ${stock} liều · dưới ngưỡng ${thr}`
+            : `Còn ${stock} liều · cần theo dõi`,
+          tag: 'Cảnh báo tồn kho',
+          tagCls: 'warn',
+          sort: 2,
+        });
+      }
+    }
+
+    // Ưu tiên: hết hạn > sắp hết (gần nhất) > tồn thấp; tối đa 8
+    items.sort((a, b) => {
+      if (a.sort !== b.sort) return a.sort - b.sort;
+      return (a.daysLeft ?? 999) - (b.daysLeft ?? 999);
+    });
+    const seen = new Set();
+    const unique = [];
+    for (const it of items) {
+      if (seen.has(it.key)) continue;
+      seen.add(it.key);
+      unique.push(it);
+      if (unique.length >= 8) break;
+    }
+    return unique;
+  }, [rows, alertThreshold]);
+
+  const kpiFefo = realAlerts.filter((a) => a.sort <= 1).length;
+
   const openAddBatch = () => {
     setBatchForm(EMPTY_BATCH_FORM);
     setShowAddBatch(true);
@@ -197,7 +275,7 @@ export default function StaffInventoryPage() {
 
   return (
     <>
-      <StaffTopbar
+            <StaffTopbar
         title="Kho vắc xin"
         subtitle="Tồn kho · Lô · Cảnh báo hết hạn"
         searchPlaceholder="Tìm vắc xin, mã lô..."
@@ -239,7 +317,7 @@ export default function StaffInventoryPage() {
                 </svg>
               </span>
             </div>
-            <div className="num">{kpiLow}</div>
+            <div className="num">{kpiFefo}</div>
             <div className="lbl">Ưu tiên FEFO</div>
           </div>
           <div className="kpi c4">
@@ -274,7 +352,7 @@ export default function StaffInventoryPage() {
             ))}
           </div>
           <div className="toolbar-right">
-            <button type="button" className="btn primary" onClick={openAddBatch}>
+<button type="button" className="btn primary" onClick={openAddBatch}>
               + Thêm lô vắc xin
             </button>
           </div>
@@ -349,53 +427,39 @@ export default function StaffInventoryPage() {
               <div className="panel-head">
                 <div>
                   <h3>Cảnh báo cần xử lý</h3>
-                  <div className="sub">Từ dashboard &amp; AI dự báo</div>
+                  <div className="sub">Từ tồn kho thực tế · {facilityName}</div>
                 </div>
               </div>
               <div className="mini-body">
-                <div className="alert-item">
-                  <span className="alert-ic danger">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="12" cy="12" r="9" />
-                      <path d="M12 7v5l3 3" />
-                    </svg>
-                  </span>
-                  <div className="alert-txt">
-                    <div className="t">BCG-2026-002 sắp hết hạn tương đối</div>
-                    <div className="d">HSD 01/12/2027 · còn 210 liều · ưu tiên FEFO</div>
-                    <span className="tag danger" style={{ marginTop: 6 }}>
-                      Ưu tiên sử dụng trước
-                    </span>
+                {realAlerts.length === 0 ? (
+                  <div style={{ padding: '12px 0', fontSize: 13.5, color: 'var(--gray-500)' }}>
+                    Không có cảnh báo tồn thấp / hết hạn.
                   </div>
-                </div>
-                <div className="alert-item">
-                  <span className="alert-ic warn">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 8 12 3 3 8m18 0-9 5m9-5v9l-9 5m0-9L3 8m9 5v9M3 8v9l9 5" />
-                    </svg>
-                  </span>
-                  <div className="alert-txt">
-                    <div className="t">HPV tồn kho thấp</div>
-                    <div className="d">Còn 48 liều · AI dự báo cần nhập trong 5 ngày</div>
-                    <span className="tag warn" style={{ marginTop: 6 }}>
-                      Cảnh báo tồn kho
-                    </span>
-                  </div>
-                </div>
-                <div className="alert-item">
-                  <span className="alert-ic info">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M3 3v18h18M8 17V10M13 17V6M18 17v-4" />
-                    </svg>
-                  </span>
-                  <div className="alert-txt">
-                    <div className="t">Cúm mùa — mùa cao điểm</div>
-                    <div className="d">Dự báo nhu cầu tăng 25% 2 tuần tới</div>
-                    <span className="tag info" style={{ marginTop: 6 }}>
-                      AI forecast
-                    </span>
-                  </div>
-                </div>
+                ) : (
+                  realAlerts.map((a) => (
+                    <div className="alert-item" key={a.key}>
+                      <span className={`alert-ic ${a.cls}`}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          {a.cls === 'warn' ? (
+                            <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z M12 9v4M12 17h.01" />
+                          ) : (
+                            <>
+                              <circle cx="12" cy="12" r="9" />
+                              <path d="M12 7v5l3 3" />
+                            </>
+                          )}
+                        </svg>
+                      </span>
+                      <div className="alert-txt">
+                        <div className="t">{a.t}</div>
+                        <div className="d">{a.d}</div>
+                        <span className={`tag ${a.tagCls}`} style={{ marginTop: 6 }}>
+                          {a.tag}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 

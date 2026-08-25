@@ -60,20 +60,53 @@ public class PriceListService {
                             "Không tìm thấy cơ sở tiêm chủng có ID: " + request.getFacilityId()));
         }
 
-        if (request.getExpiryDate() != null && !request.getExpiryDate().isAfter(request.getEffectiveDate())) {
+        LocalDate effective = request.getEffectiveDate() != null
+                ? request.getEffectiveDate()
+                : LocalDate.now();
+        if (request.getExpiryDate() != null && !request.getExpiryDate().isAfter(effective)) {
             throw new BadRequestException("Ngày hết hiệu lực phải sau ngày hiệu lực");
+        }
+
+        ActiveStatus newStatus = request.getStatus() != null ? request.getStatus() : ActiveStatus.ACTIVE;
+
+        // Khi tạo giá ACTIVE: vô hiệu hóa các bản ACTIVE cùng phạm vi (cùng vaccine + cùng facility hoặc cùng giá chung)
+        // để staff/user luôn resolve đúng giá mới nhất.
+        if (newStatus == ActiveStatus.ACTIVE) {
+            deactivateOverlappingActive(vaccine.getVaccineId(), request.getFacilityId());
         }
 
         PriceList priceList = PriceList.builder()
                 .vaccine(vaccine)
                 .facility(facility)
                 .price(request.getPrice())
-                .effectiveDate(request.getEffectiveDate())
+                .effectiveDate(effective)
                 .expiryDate(request.getExpiryDate())
-                .status(request.getStatus() != null ? request.getStatus() : ActiveStatus.ACTIVE)
+                .status(newStatus)
                 .build();
 
         return mapToResponse(priceListRepository.save(priceList));
+    }
+
+    /**
+     * Vô hiệu hóa mọi price ACTIVE cùng vaccine và cùng scope facility
+     * (facilityId null = giá chung toàn hệ thống).
+     */
+    private void deactivateOverlappingActive(Long vaccineId, Long facilityId) {
+        List<PriceList> active = priceListRepository
+                .findByVaccine_VaccineIdAndStatus(vaccineId, ActiveStatus.ACTIVE);
+        for (PriceList p : active) {
+            Long pFac = p.getFacility() != null ? p.getFacility().getFacilityId() : null;
+            boolean sameScope = (facilityId == null && pFac == null)
+                    || (facilityId != null && facilityId.equals(pFac));
+            if (sameScope) {
+                p.setStatus(ActiveStatus.INACTIVE);
+                // Đóng hiệu lực để không còn match findActivePrices
+                if (p.getExpiryDate() == null || p.getExpiryDate().isAfter(LocalDate.now().minusDays(1))) {
+                    p.setExpiryDate(LocalDate.now().minusDays(1));
+                }
+                priceListRepository.save(p);
+            }
+        }
     }
 
     @Transactional
@@ -81,6 +114,10 @@ public class PriceListService {
         PriceList priceList = priceListRepository.findById(priceListId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bảng giá có ID: " + priceListId));
         priceList.setStatus(ActiveStatus.INACTIVE);
+        // Hết hiệu lực ngay để resolveCurrentPrice không còn chọn bản này
+        if (priceList.getExpiryDate() == null || !priceList.getExpiryDate().isBefore(LocalDate.now())) {
+            priceList.setExpiryDate(LocalDate.now().minusDays(1));
+        }
         priceListRepository.save(priceList);
     }
 

@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 export default function StaffTopbar({
@@ -9,8 +8,7 @@ export default function StaffTopbar({
   onSearchChange,
   showSearch = true,
 }) {
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const fullName = user?.fullName || 'Nhân viên y tế';
   const initials = fullName
     .split(' ')
@@ -19,11 +17,6 @@ export default function StaffTopbar({
     .map((w) => w[0])
     .join('')
     .toUpperCase();
-
-  function handleLogout() {
-    logout();
-    navigate('/login', { replace: true });
-  }
 
   return (
     <header className="staff-topbar">
@@ -47,13 +40,6 @@ export default function StaffTopbar({
         </div>
       )}
 
-      <button type="button" className="icon-btn" aria-label="Thông báo">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" />
-        </svg>
-        <span className="dot" />
-      </button>
-
       <div className="tb-profile">
         <div className="av">{initials || 'NV'}</div>
         <div>
@@ -61,9 +47,6 @@ export default function StaffTopbar({
           <div className="s">Nhân viên y tế</div>
         </div>
       </div>
-      <button type="button" className="btn btn-ghost btn-sm" onClick={handleLogout}>
-        Đăng xuất
-      </button>
     </header>
   );
 }

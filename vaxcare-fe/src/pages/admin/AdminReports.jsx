@@ -109,12 +109,8 @@ export default function Reports() {
 
   return (
     <>
-      <Topbar title="Báo cáo hệ thống" subtitle="Thứ Ba, 18/08/2026 · analytics" showSearch={false} />
+      <Topbar title="Báo cáo hệ thống" subtitle={`${dateFrom} → ${dateTo} · analytics`} showSearch={false} />
       <div className="content">
-        <div className="toolbar" style={{ marginBottom: 12, gap: 8, display: 'flex', flexWrap: 'wrap' }}>
-          <button type="button" className="btn outline" onClick={() => exportCsv('summary')}>Xuất CSV tổng hợp</button>
-          <button type="button" className="btn outline" onClick={() => exportCsv('appointments')}>Xuất CSV lịch hẹn</button>
-        </div>
         <div className="filter-bar">
           <label>Từ</label>
           <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
@@ -144,15 +140,8 @@ export default function Reports() {
             ))}
           </div>
           <div style={{ marginLeft: 'auto', display: 'flex', gap: 10 }}>
-            <button className="btn outline" type="button" onClick={() => { window.print(); showToast('Đã mở hộp thoại in', 'ok'); }}>
-              In
-            </button>
-            <button className="btn primary" type="button" onClick={() => showToast('Đang xuất Excel báo cáo hệ thống…', 'ok')}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
-              </svg>
-              Xuất Excel
-            </button>
+            <button type="button" className="btn outline" onClick={() => exportCsv('summary')}>Xuất CSV tổng hợp</button>
+            <button type="button" className="btn primary" onClick={() => exportCsv('appointments')}>Xuất CSV lịch hẹn</button>
           </div>
         </div>
 

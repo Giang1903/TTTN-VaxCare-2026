@@ -36,6 +36,7 @@ export default function Staff() {
   const [formOpen, setFormOpen] = useState(false);
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState({ name: '', code: '', spec: 'Tiêm chủng', fac: '', email: '', phone: '', password: '', status: 'ACTIVE' });
+  const [saving, setSaving] = useState(false);
 
   const rows = useMemo(() => {
     const qq = q.trim().toLowerCase();
@@ -55,45 +56,61 @@ export default function Staff() {
     setForm(
       s
         ? { name: s.name, code: s.staffCode || s.code, spec: s.specialty || s.spec, fac: s.facilityId || s.fac || '', email: s.email, phone: s.phone, password: '', status: s.status }
-        : { name: '', code: '', spec: 'Tiêm chủng', fac: 1, email: '', phone: '', status: 'ACTIVE' }
+        : { name: '', code: '', spec: 'Tiêm chủng', fac: '', email: '', phone: '', password: '', status: 'ACTIVE' }
     );
     setDetail(null);
     setFormOpen(true);
   };
 
-  const save = async () => {
+
+  const save = async (e) => {
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
+    if (saving) return;
     if (!form.name?.trim() || !form.code?.trim() || !form.email?.trim()) {
       showToast('Nhập họ tên, mã NV và email', 'warn');
       return;
     }
-    if (!form.password || form.password.length < 6) {
-      showToast('Nhập mật khẩu cho nhân viên (tối thiểu 6 ký tự)', 'warn');
+    if (!form.password || String(form.password).length < 6) {
+      showToast('Nhập mật khẩu (tối thiểu 6 ký tự)', 'warn');
       return;
     }
-    if (!form.fac) {
-      showToast('Chọn cơ sở', 'warn');
+    if (!form.fac && form.fac !== 0) {
+      showToast('Chọn cơ sở làm việc', 'warn');
+      return;
+    }
+    const facilityId = Number(form.fac);
+    if (!Number.isFinite(facilityId) || facilityId <= 0) {
+      showToast('Cơ sở không hợp lệ', 'warn');
       return;
     }
     if (editId) {
-      showToast('Sửa hồ sơ NV chưa hỗ trợ API — chỉ tạo mới / khóa TK', 'warn');
-      setFormOpen(false);
+      showToast('Sửa hồ sơ NV chưa hỗ trợ API — dùng khóa/mở khóa TK', 'warn');
       return;
     }
+    setSaving(true);
     try {
       await adminService.createStaff({
         email: form.email.trim(),
-        password: form.password,
-        phone: form.phone || undefined,
+        password: String(form.password),
+        phone: form.phone?.trim() || undefined,
         fullName: form.name.trim(),
         staffCode: form.code.trim(),
-        specialty: form.spec || undefined,
-        facilityId: Number(form.fac),
+        specialty: form.spec?.trim() || undefined,
+        facilityId,
       });
       showToast('Đã tạo nhân viên ' + form.name, 'ok');
       setFormOpen(false);
+      setForm({ name: '', code: '', spec: 'Tiêm chủng', fac: '', email: '', phone: '', password: '', status: 'ACTIVE' });
       await load();
     } catch (err) {
-      showToast(err.message || 'Tạo NV thất bại', 'error');
+      const fe = err.fieldErrors;
+      const detail = fe
+        ? Object.values(fe).flat().filter(Boolean).join('; ')
+        : null;
+      showToast(detail || err.message || 'Tạo NV thất bại', 'error');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -129,7 +146,6 @@ export default function Staff() {
             ))}
           </div>
           <div className="toolbar-right">
-            <button className="btn outline" type="button" onClick={() => showToast('Đang xuất danh sách nhân viên…', 'ok')}>Xuất</button>
             <button className="btn primary" type="button" onClick={() => openForm(null)}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 5v14M5 12h14" /></svg>
               Thêm nhân viên
@@ -216,7 +232,7 @@ export default function Staff() {
         footer={
           <>
             <button className="btn outline" type="button" onClick={() => setFormOpen(false)}>Hủy</button>
-            <button className="btn primary" type="button" onClick={save}>Lưu</button>
+            <button className="btn primary" type="button" onClick={save} disabled={saving}>{saving ? "Đang lưu…" : "Lưu"}</button>
           </>
         }
       >
@@ -227,7 +243,7 @@ export default function Staff() {
         </div>
         <div className="field">
           <label>Cơ sở <span className="req">*</span></label>
-          <select value={form.fac} onChange={(e) => setForm({ ...form, fac: e.target.value })}>
+          <select value={form.fac === "" || form.fac == null ? "" : String(form.fac)} onChange={(e) => setForm({ ...form, fac: e.target.value })}>
             <option value="">— Chọn cơ sở —</option>
             {facilities.map((f) => (
               <option key={f.id} value={f.id}>{f.name}</option>
