@@ -50,6 +50,51 @@ export default function Reports() {
   const series = report?.dailySeries || report?.weekSeries || [];
   const max = Math.max(1, ...series.map((d) => d.count || 0));
   const ranking = report?.vaccineRanking || [];
+  const facilityStats = report?.facilityStats || [];
+  const reactionMix = report?.reactionMix || [];
+
+  const funnelSteps = useMemo(() => {
+    const kk = report?.kpi || {};
+    const appts = kk.appointments ?? 0;
+    const denom = appts > 0 ? appts : 1;
+    const steps = [
+      { lbl: 'Đặt lịch', n: appts, bg: 'var(--teal-500)' },
+      { lbl: 'Đã xác nhận', n: kk.confirmed ?? 0, bg: 'var(--info-text)' },
+      { lbl: 'Check-in', n: kk.checkedIn ?? 0, bg: 'var(--teal-700)' },
+      { lbl: 'Hoàn thành', n: kk.completed ?? 0, bg: 'var(--ok-dot)' },
+      { lbl: 'Hủy / Vắng', n: kk.cancelled ?? 0, bg: 'var(--danger-dot)' },
+    ];
+    return steps.map((s) => {
+      const pct = Math.round((s.n / denom) * 1000) / 10;
+      return { ...s, w: `${Math.min(pct, 100)}%`, pct: `${pct}%`, min: s.lbl === 'Hủy / Vắng' ? 40 : undefined };
+    });
+  }, [report]);
+
+  const downloadBlob = (blob, filename) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportCsv = async (kind) => {
+    try {
+      const opts = {
+        fromDate: dateFrom,
+        toDate: dateTo,
+        facilityId: fac === 'all' ? undefined : Number(fac),
+      };
+      const blob = kind === 'summary'
+        ? await adminService.exportReportSummary(opts)
+        : await adminService.exportReportAppointments(opts);
+      downloadBlob(blob, kind === 'summary' ? 'report-summary.csv' : 'report-appointments.csv');
+      showToast('Đã xuất CSV', 'ok');
+    } catch (err) {
+      showToast(err.message || 'Export thất bại', 'error');
+    }
+  };
 
   const applyRange = (r) => {
     setRange(r);
@@ -66,6 +111,10 @@ export default function Reports() {
     <>
       <Topbar title="Báo cáo hệ thống" subtitle="Thứ Ba, 18/08/2026 · analytics" showSearch={false} />
       <div className="content">
+        <div className="toolbar" style={{ marginBottom: 12, gap: 8, display: 'flex', flexWrap: 'wrap' }}>
+          <button type="button" className="btn outline" onClick={() => exportCsv('summary')}>Xuất CSV tổng hợp</button>
+          <button type="button" className="btn outline" onClick={() => exportCsv('appointments')}>Xuất CSV lịch hẹn</button>
+        </div>
         <div className="filter-bar">
           <label>Từ</label>
           <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
@@ -111,7 +160,7 @@ export default function Reports() {
           <div className="kpi c1"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg></span></div><div className="num">{k.appointments ?? 0}</div><div className="lbl">Lịch hẹn</div></div>
           <div className="kpi c2"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6 9 17l-5-5" /></svg></span></div><div className="num">{k.completed ?? 0}</div><div className="lbl">Hoàn thành</div></div>
           <div className="kpi c3"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12h4l2 5 4-14 2 9h6" /></svg></span></div><div className="num">{(k.completionRate ?? 0) + '%'}</div><div className="lbl">Tỷ lệ hoàn thành</div></div>
-          <div className="kpi c4"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg></span></div><div className="num">{'—'}</div><div className="lbl">Doanh thu (₫)</div></div>
+          <div className="kpi c4"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg></span></div><div className="num">{(k.revenue != null ? Number(k.revenue).toLocaleString('vi-VN') + '₫' : '—')}</div><div className="lbl">Doanh thu (₫)</div></div>
           <div className="kpi c1"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 21s-7.5-4.6-10-9.3C.6 8 2.4 4.5 6 4c2.1-.3 4 .8 6 3" /></svg></span></div><div className="num">{report?.openReactions ?? 0}</div><div className="lbl">Phản ứng theo dõi</div></div>
         </section>
 
@@ -149,21 +198,15 @@ export default function Reports() {
             <div className="panel-head">
               <div>
                 <h3>Phễu trạng thái lịch hẹn</h3>
-                <div className="sub">30 ngày · toàn mạng</div>
+                <div className="sub">{dateFrom} → {dateTo} · {fac === 'all' ? 'toàn mạng' : (facilities.find((f) => String(f.id) === String(fac))?.name || 'theo cơ sở')}</div>
               </div>
             </div>
             <div className="funnel">
-              {[
-                { lbl: 'Đặt lịch', w: '100%', bg: 'var(--teal-500)', n: '2,486', pct: '100%' },
-                { lbl: 'Đã xác nhận', w: '92%', bg: 'var(--info-text)', n: '2,287', pct: '92%' },
-                { lbl: 'Check-in', w: '88%', bg: 'var(--teal-700)', n: '2,188', pct: '88%' },
-                { lbl: 'Hoàn thành', w: '85%', bg: 'var(--ok-dot)', n: '2,112', pct: '85%' },
-                { lbl: 'Hủy / Vắng', w: '5%', bg: 'var(--danger-dot)', n: '98', pct: '3.9%', min: 40 },
-              ].map((row) => (
+              {funnelSteps.map((row) => (
                 <div className="funnel-row" key={row.lbl}>
                   <span className="lbl">{row.lbl}</span>
                   <div className="funnel-track">
-                    <div className="funnel-fill" style={{ width: row.w, background: row.bg, minWidth: row.min }}>{row.n}</div>
+                    <div className="funnel-fill" style={{ width: row.w, background: row.bg, minWidth: row.min }}>{row.n.toLocaleString('vi-VN')}</div>
                   </div>
                   <span className="n">{row.pct}</span>
                 </div>
@@ -174,7 +217,7 @@ export default function Reports() {
                 <path d="M12 2v4M12 18v4" />
               </svg>
               <span>
-                Rớt chủ yếu ở <strong>xác nhận → check-in</strong>. Gợi ý: nhắc SMS/Zalo trước 2 giờ.
+                Tỷ lệ hoàn thành kỳ này: <strong>{(k.completionRate ?? 0)}%</strong>. Theo dõi thêm bước có tỷ lệ rớt cao nhất để cải thiện quy trình.
               </span>
             </div>
           </div>
@@ -185,63 +228,65 @@ export default function Reports() {
             <div className="panel-head">
               <div>
                 <h3>Cơ cấu vắc xin</h3>
-                <div className="sub">Theo số mũi · 30 ngày</div>
+                <div className="sub">Theo số mũi · {dateFrom} → {dateTo}</div>
               </div>
             </div>
             <div className="mix-list">
-              {[
-                { name: 'Cúm mùa', pct: 22, color: '#5b8ae0' },
-                { name: 'Viêm gan B', pct: 14, color: '#21b56e' },
-                { name: 'HPV', pct: 12, color: '#6366f1' },
-                { name: 'DTaP', pct: 11, color: '#e0a308' },
-                { name: 'Phế cầu', pct: 10, color: '#e0473a' },
-                { name: 'Khác', pct: 31, color: '#8b9bab' },
-              ].map((m) => (
-                <div className="mix-row" key={m.name}>
-                  <div>
-                    <div className="mix-label">
-                      <span className="mix-dot" style={{ background: m.color }} />
-                      {m.name}
+              {(ranking.length ? ranking : []).map((m, i) => {
+                const palette = ['#5b8ae0', '#21b56e', '#6366f1', '#e0a308', '#e0473a', '#8b9bab', '#0ea5e9', '#a855f7', '#f97316', '#14b8a6'];
+                const color = palette[i % palette.length];
+                return (
+                  <div className="mix-row" key={m.vaccineId ?? m.vaccineName}>
+                    <div>
+                      <div className="mix-label">
+                        <span className="mix-dot" style={{ background: color }} />
+                        {m.vaccineName}
+                      </div>
+                      <div className="mix-track">
+                        <div className="mix-fill" style={{ width: `${m.pct}%`, background: color }} />
+                      </div>
                     </div>
-                    <div className="mix-track">
-                      <div className="mix-fill" style={{ width: `${m.pct}%`, background: m.color }} />
-                    </div>
+                    <div className="mix-pct">{m.pct}%</div>
                   </div>
-                  <div className="mix-pct">{m.pct}%</div>
-                </div>
-              ))}
+                );
+              })}
+              {!ranking.length && <p style={{ color: 'var(--gray-500)' }}>Chưa có dữ liệu trong kỳ này.</p>}
             </div>
           </div>
           <div className="panel">
             <div className="panel-head">
               <div>
                 <h3>Phản ứng sau tiêm</h3>
-                <div className="sub">Phân loại mức độ · 30 ngày</div>
+                <div className="sub">Phân loại mức độ · {dateFrom} → {dateTo}</div>
               </div>
             </div>
             <div className="mix-list">
-              {[
-                { name: 'Không / Tự khỏi', pct: 78, color: 'var(--ok-dot)' },
-                { name: 'Nhẹ', pct: 16, color: 'var(--warn-dot)' },
-                { name: 'Trung bình', pct: 5, color: 'var(--danger-dot)' },
-                { name: 'Nặng', pct: 1, color: '#3b0a0a' },
-              ].map((m) => (
-                <div className="mix-row" key={m.name}>
-                  <div>
-                    <div className="mix-label">
-                      <span className="mix-dot" style={{ background: m.color }} />
-                      {m.name}
+              {(() => {
+                const severityColor = {
+                  NONE: 'var(--ok-dot)',
+                  MILD: 'var(--warn-dot)',
+                  MODERATE: 'var(--danger-dot)',
+                  SEVERE: '#3b0a0a',
+                };
+                return reactionMix.map((m) => (
+                  <div className="mix-row" key={m.severity}>
+                    <div>
+                      <div className="mix-label">
+                        <span className="mix-dot" style={{ background: severityColor[m.severity] || '#8b9bab' }} />
+                        {m.label}
+                      </div>
+                      <div className="mix-track">
+                        <div className="mix-fill" style={{ width: `${m.pct}%`, background: severityColor[m.severity] || '#8b9bab' }} />
+                      </div>
                     </div>
-                    <div className="mix-track">
-                      <div className="mix-fill" style={{ width: `${m.pct}%`, background: m.color }} />
-                    </div>
+                    <div className="mix-pct">{m.pct}%</div>
                   </div>
-                  <div className="mix-pct">{m.pct}%</div>
-                </div>
-              ))}
+                ));
+              })()}
+              {!reactionMix.length && <p style={{ color: 'var(--gray-500)' }}>Chưa có dữ liệu trong kỳ này.</p>}
             </div>
             <div className="insight">
-              <span>28 case đang mở trên các cơ sở. Ưu tiên theo dõi mức Trung bình+.</span>
+              <span><strong>{report?.openReactions ?? 0}</strong> case đang mở trên các cơ sở. Ưu tiên theo dõi mức Trung bình+.</span>
             </div>
           </div>
         </div>
@@ -262,14 +307,14 @@ export default function Reports() {
                 </tr>
               </thead>
               <tbody>
-                {ranking.map((r) => (
-                    <tr key={r.rank}>
-                      <td className="fname">{r.vaccineName}</td>
-                      <td className="mono">{r.shots}</td>
-                      <td className="mono">{r.rank}</td>
-                      <td><span className={`tag ${r.tag === 'info' ? 'ok' : r.tag || 'neutral'}`}>{r.pct}%</span></td>
-                      <td className="mono">—</td>
-                      <td className="mono">—</td>
+                {(facilityStats.length ? facilityStats : []).map((r) => (
+                    <tr key={r.facilityId}>
+                      <td className="fname">{r.facilityName}</td>
+                      <td className="mono">{r.appointments}</td>
+                      <td className="mono">{r.completed}</td>
+                      <td><span className={`tag ${r.completionRate >= 70 ? 'ok' : 'warn'}`}>{r.completionRate}%</span></td>
+                      <td className="mono">{r.revenue != null ? Number(r.revenue).toLocaleString('vi-VN') : '—'}₫</td>
+                      <td className="mono">{r.pending}</td>
                       <td>
                         <div className="row-actions">
                           <button className="row-btn outline" type="button" onClick={() => setDetail(r)}>Chi tiết</button>
@@ -282,48 +327,12 @@ export default function Reports() {
           </div>
         </div>
 
-        <div className="panel">
-          <div className="panel-head">
-            <div>
-              <h3>Top nhân viên theo mũi tiêm</h3>
-              <div className="sub">30 ngày</div>
-            </div>
-          </div>
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>#</th><th>Nhân viên</th><th>Mã</th><th>Cơ sở</th><th>Mũi tiêm</th><th>Check-in</th><th>Phản ứng xử lý</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { rank: 1, name: 'BS. Phạm Quốc Bảo', code: 'STF-NZ-001', fac: 'Nowzone', shots: 210, checkin: 98, rx: 5 },
-                  { rank: 2, name: 'BS. Trần Minh', code: 'STF-PN-001', fac: 'Phú Nhuận', shots: 186, checkin: 94, rx: 8 },
-                  { rank: 3, name: 'BS. Hoàng Đức', code: 'STF-OP-001', fac: 'Oriental', shots: 175, checkin: 82, rx: 3 },
-                  { rank: 4, name: 'BS. Võ Minh Châu', code: 'STF-NZ-002', fac: 'Nowzone', shots: 156, checkin: 71, rx: 4 },
-                  { rank: 5, name: 'BS. Lê Hoàng Anh', code: 'STF-PN-002', fac: 'Phú Nhuận', shots: 142, checkin: 68, rx: 2 },
-                ].map((s) => (
-                  <tr key={s.code}>
-                    <td><strong>{s.rank}</strong></td>
-                    <td className="fname">{s.name}</td>
-                    <td className="mono">{s.code}</td>
-                    <td>{s.fac}</td>
-                    <td className="mono">{s.shots}</td>
-                    <td className="mono">{s.checkin}</td>
-                    <td className="mono">{s.rx}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
       </div>
 
       <Overlay open={!!detail} onClose={() => setDetail(null)} />
       <Modal
         open={!!detail}
-        title={detail ? `VaxCare ${detail.fac}` : 'Chi tiết cơ sở'}
+        title={detail ? `VaxCare ${detail.facilityName}` : 'Chi tiết cơ sở'}
         onClose={() => setDetail(null)}
         footer={
           <>
@@ -334,15 +343,15 @@ export default function Reports() {
       >
         {detail && (
           <>
-            <div className="detail-row"><span className="lbl">Lịch hẹn (kỳ)</span><span className="val">{detail.appt}</span></div>
-            <div className="detail-row"><span className="lbl">Hoàn thành</span><span className="val">{detail.done}</span></div>
-            <div className="detail-row"><span className="lbl">Tỷ lệ</span><span className="val">{Math.round((detail.done / detail.appt) * 100)}%</span></div>
-            <div className="detail-row"><span className="lbl">Doanh thu ước tính</span><span className="val">{detail.rev} triệu ₫</span></div>
-            <div className="detail-row"><span className="lbl">Phản ứng cần theo dõi</span><span className="val">{detail.rx}</span></div>
+            <div className="detail-row"><span className="lbl">Lịch hẹn (kỳ)</span><span className="val">{detail.appointments}</span></div>
+            <div className="detail-row"><span className="lbl">Hoàn thành</span><span className="val">{detail.completed}</span></div>
+            <div className="detail-row"><span className="lbl">Đang chờ</span><span className="val">{detail.pending}</span></div>
+            <div className="detail-row"><span className="lbl">Tỷ lệ hoàn thành</span><span className="val">{detail.completionRate}%</span></div>
+            <div className="detail-row"><span className="lbl">Doanh thu</span><span className="val">{detail.revenue != null ? Number(detail.revenue).toLocaleString('vi-VN') + '₫' : '—'}</span></div>
             <div className="detail-row">
               <span className="lbl">Ghi chú</span>
               <span className="val" style={{ fontWeight: 500, textAlign: 'left', maxWidth: '60%' }}>
-                Dữ liệu demo tổng hợp từ appointments + vaccination_details + payments.
+                Tổng hợp từ appointments trong khoảng {dateFrom} → {dateTo}.
               </span>
             </div>
           </>

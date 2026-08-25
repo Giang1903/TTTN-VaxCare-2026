@@ -5,17 +5,21 @@ import Topbar from '../../components/layout/Topbar';
 import { Overlay, Modal } from '../../components/ui/Modal';
 import { useToast } from '../../components/ui/Toast';
 
-const FAC_NAMES = { 1: 'Phú Nhuận', 2: 'Thủ Đức', 3: 'Nowzone', 6: 'Co.opmart QT', 7: 'Oriental Plaza', 10: 'Tân Định' };
 export default function Staff() {
   const showToast = useToast();
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [facilities, setFacilities] = useState([]);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await adminService.listStaff();
+      const [data, facs] = await Promise.all([
+        adminService.listStaff(),
+        adminService.getFacilitiesAdmin().catch(() => []),
+      ]);
       setList((data || []).map(adminService.mapAccountToUi));
+      setFacilities((facs || []).map(adminService.mapFacilityToUi));
     } catch (err) {
       showToast(err.message || 'Không tải được danh sách', 'error');
       setList([]);
@@ -31,25 +35,26 @@ export default function Staff() {
   const [detail, setDetail] = useState(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editId, setEditId] = useState(null);
-  const [form, setForm] = useState({ name: '', code: '', spec: 'Tiêm chủng', fac: 1, email: '', phone: '', status: 'ACTIVE' });
+  const [form, setForm] = useState({ name: '', code: '', spec: 'Tiêm chủng', fac: '', email: '', phone: '', password: '', status: 'ACTIVE' });
 
   const rows = useMemo(() => {
     const qq = q.trim().toLowerCase();
     return list.filter((s) => {
       if (filterFac !== 'all' && String(s.fac) !== filterFac) return false;
       if (!qq) return true;
-      return (s.name + s.code + s.spec + s.email + (FAC_NAMES[s.fac] || '')).toLowerCase().includes(qq);
+      return (s.name + s.code + s.spec + s.email + ((facilities.find(f=>f.id===s.facilityId||f.id===s.fac)?.name || s.facility || '') || '')).toLowerCase().includes(qq);
     });
-  }, [list, filterFac, q]);
+  }, [list, filterFac, q, facilities]);
 
   const kpiTotal = list.length;
   const kpiActive = list.filter((s) => s.status === 'ACTIVE').length;
+  const kpiPending = list.filter((s) => s.status === 'INACTIVE').length;
 
   const openForm = (s) => {
     setEditId(s ? s.id : null);
     setForm(
       s
-        ? { name: s.name, code: s.code, spec: s.spec, fac: s.fac, email: s.email, phone: s.phone, status: s.status }
+        ? { name: s.name, code: s.staffCode || s.code, spec: s.specialty || s.spec, fac: s.facilityId || s.fac || '', email: s.email, phone: s.phone, password: '', status: s.status }
         : { name: '', code: '', spec: 'Tiêm chủng', fac: 1, email: '', phone: '', status: 'ACTIVE' }
     );
     setDetail(null);
@@ -57,8 +62,39 @@ export default function Staff() {
   };
 
   const save = async () => {
-    showToast('Tạo/sửa nhân viên qua API đang hạn chế — dùng đổi trạng thái tài khoản. Vui lòng seed NV từ BE.', 'warn');
-    setFormOpen(false);
+    if (!form.name?.trim() || !form.code?.trim() || !form.email?.trim()) {
+      showToast('Nhập họ tên, mã NV và email', 'warn');
+      return;
+    }
+    if (!form.password || form.password.length < 6) {
+      showToast('Nhập mật khẩu cho nhân viên (tối thiểu 6 ký tự)', 'warn');
+      return;
+    }
+    if (!form.fac) {
+      showToast('Chọn cơ sở', 'warn');
+      return;
+    }
+    if (editId) {
+      showToast('Sửa hồ sơ NV chưa hỗ trợ API — chỉ tạo mới / khóa TK', 'warn');
+      setFormOpen(false);
+      return;
+    }
+    try {
+      await adminService.createStaff({
+        email: form.email.trim(),
+        password: form.password,
+        phone: form.phone || undefined,
+        fullName: form.name.trim(),
+        staffCode: form.code.trim(),
+        specialty: form.spec || undefined,
+        facilityId: Number(form.fac),
+      });
+      showToast('Đã tạo nhân viên ' + form.name, 'ok');
+      setFormOpen(false);
+      await load();
+    } catch (err) {
+      showToast(err.message || 'Tạo NV thất bại', 'error');
+    }
   };
 
   const lock = async (s) => {
@@ -80,17 +116,14 @@ export default function Staff() {
           <div className="kpi c1"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg></span></div><div className="num">{kpiTotal}</div><div className="lbl">Tổng nhân viên</div></div>
           <div className="kpi c2"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6 9 17l-5-5" /></svg></span></div><div className="num">{kpiActive}</div><div className="lbl">Đang làm việc</div></div>
           <div className="kpi c3"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 21h18M5 21V7l7-4 7 4v14" /></svg></span></div><div className="num">{new Set(list.map((x) => x.facilityId).filter(Boolean)).size}</div><div className="lbl">Cơ sở có NV</div></div>
-          <div className="kpi c4"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg></span></div><div className="num">1</div><div className="lbl">Chờ kích hoạt TK</div></div>
+          <div className="kpi c4"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg></span></div><div className="num">{kpiPending}</div><div className="lbl">Chờ kích hoạt TK</div></div>
         </section>
 
         <div className="toolbar">
           <div className="seg-tabs">
             {[
               { f: 'all', label: 'Tất cả' },
-              { f: '1', label: 'Phú Nhuận' },
-              { f: '3', label: 'Nowzone' },
-              { f: '7', label: 'Oriental' },
-              { f: '2', label: 'Thủ Đức' },
+              ...facilities.slice(0, 6).map((fac) => ({ f: String(fac.id), label: fac.name })),
             ].map((t) => (
               <button key={t.f} type="button" className={filterFac === t.f ? 'active' : ''} onClick={() => setFilterFac(t.f)}>{t.label}</button>
             ))}
@@ -122,25 +155,25 @@ export default function Staff() {
                         <div className="who-av">{s.initials}</div>
                         <div>
                           <div className="who-name">{s.name}</div>
-                          <div className="who-meta">{s.shots} mũi (30 ngày)</div>
+                          <div className="who-meta">{s.spec}</div>
                         </div>
                       </div>
                     </td>
                     <td className="mono">{s.code}</td>
                     <td>{s.spec}</td>
-                    <td>{FAC_NAMES[s.fac] || '—'}</td>
+                    <td>{(facilities.find(f=>f.id===s.facilityId||f.id===s.fac)?.name || s.facility || '') || '—'}</td>
                     <td>
                       <div className="who-meta" style={{ color: 'var(--ink)' }}>{s.email}</div>
                       <div className="who-meta">{s.phone}</div>
                     </td>
                     <td>
-                      <span className={`tag ${s.status === 'ACTIVE' ? 'ok' : s.status === 'LOCKED' ? 'warn' : 'neutral'}`}>{s.status}</span>
+                      <span className={`tag ${s.status === 'ACTIVE' ? 'ok' : s.status === 'SUSPENDED' ? 'warn' : 'neutral'}`}>{s.status}</span>
                     </td>
                     <td>
                       <div className="row-actions">
                         <button className="row-btn outline" type="button" onClick={() => setDetail(s)}>Chi tiết</button>
                         <button className="row-btn solid" type="button" onClick={() => openForm(s)}>Sửa</button>
-                        <button className="row-btn danger" type="button" onClick={() => lock(s)}>{s.status === 'LOCKED' ? 'Mở khóa' : 'Khóa'}</button>
+                        <button className="row-btn danger" type="button" onClick={() => lock(s)}>{s.status === 'SUSPENDED' ? 'Mở khóa' : 'Khóa'}</button>
                       </div>
                     </td>
                   </tr>
@@ -167,10 +200,10 @@ export default function Staff() {
           <>
             <div className="detail-row"><span className="lbl">Mã NV</span><span className="val mono">{detail.code}</span></div>
             <div className="detail-row"><span className="lbl">Chuyên môn</span><span className="val">{detail.spec}</span></div>
-            <div className="detail-row"><span className="lbl">Cơ sở</span><span className="val">{FAC_NAMES[detail.fac]}</span></div>
+            <div className="detail-row"><span className="lbl">Cơ sở</span><span className="val">{(facilities.find(f=>f.id===detail.facilityId||f.id===detail.fac)?.name || detail.facility || '')}</span></div>
             <div className="detail-row"><span className="lbl">Email</span><span className="val">{detail.email}</span></div>
             <div className="detail-row"><span className="lbl">SĐT</span><span className="val">{detail.phone}</span></div>
-            <div className="detail-row"><span className="lbl">Mũi tiêm 30 ngày</span><span className="val">{detail.shots}</span></div>
+            <div className="detail-row"><span className="lbl">Ngày tạo TK</span><span className="val">{detail.createdAt ? String(detail.createdAt).slice(0, 10) : '—'}</span></div>
             <div className="detail-row"><span className="lbl">Trạng thái TK</span><span className="val"><span className={`tag ${detail.status === 'ACTIVE' ? 'ok' : 'neutral'}`}>{detail.status}</span></span></div>
           </>
         )}
@@ -195,16 +228,15 @@ export default function Staff() {
         <div className="field">
           <label>Cơ sở <span className="req">*</span></label>
           <select value={form.fac} onChange={(e) => setForm({ ...form, fac: e.target.value })}>
-            <option value="1">VaxCare Phú Nhuận</option>
-            <option value="2">VaxCare Thủ Đức</option>
-            <option value="3">VaxCare Nowzone</option>
-            <option value="7">VaxCare Oriental Plaza</option>
-            <option value="6">VaxCare Co.opmart QT</option>
-            <option value="10">VaxCare Tân Định</option>
+            <option value="">— Chọn cơ sở —</option>
+            {facilities.map((f) => (
+              <option key={f.id} value={f.id}>{f.name}</option>
+            ))}
           </select>
         </div>
         <div className="field-row">
           <div className="field"><label>Email tài khoản</label><input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="staff@vaxcare.vn" /></div>
+          <div className="field"><label>Mật khẩu <span className="req">*</span></label><input type="password" value={form.password || ''} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Nhập mật khẩu cho nhân viên" autoComplete="new-password" /></div>
           <div className="field"><label>Số điện thoại</label><input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="090…" /></div>
         </div>
         <div className="field">
@@ -212,7 +244,7 @@ export default function Staff() {
           <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
             <option value="ACTIVE">ACTIVE</option>
             <option value="INACTIVE">INACTIVE</option>
-            <option value="LOCKED">LOCKED</option>
+            <option value="SUSPENDED">SUSPENDED</option>
           </select>
         </div>
       </Modal>

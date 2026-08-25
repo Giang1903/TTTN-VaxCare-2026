@@ -75,9 +75,23 @@ export default function Inventory() {
     });
   }, [list, filter, q]);
 
+  const kpiTotalBatches = list.length;
+  const kpiTotalStock = list.reduce((sum, b) => sum + (Number(b.stock) || 0), 0);
+  const kpiAlerts = list.filter((b) => b.low || b.expiring).length;
+  const kpiFacilitiesWithStock = new Set(list.map((b) => b.fac)).size;
+
   const openImport = () => {
     const today = new Date().toISOString().slice(0, 10);
-    setForm({ code: '', vax: 11, fac: 1, qty: 100, stock: 100, mfg: '', exp: '', importDate: today, status: 'AVAILABLE' });
+    setForm({
+      code: '',
+      vax: vaccines[0]?.id || '',
+      fac: facilities[0]?.id || '',
+      qty: 100,
+      mfg: '',
+      exp: '',
+      importDate: today,
+      status: 'AVAILABLE',
+    });
     setImportOpen(true);
   };
 
@@ -112,10 +126,10 @@ export default function Inventory() {
       <Topbar title="Kho & lô toàn mạng" subtitle="Thứ Ba, 18/08/2026 · vaccine_batches" onSearch={setQ} />
       <div className="content">
         <section className="kpi-row">
-          <div className="kpi c1"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 8 12 3 3 8m18 0-9 5" /></svg></span></div><div className="num">48</div><div className="lbl">Lô toàn mạng</div></div>
-          <div className="kpi c2"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6 9 17l-5-5" /></svg></span></div><div className="num">~8.4k</div><div className="lbl">Tổng liều còn</div></div>
-          <div className="kpi c3"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17" /></svg></span></div><div className="num">5</div><div className="lbl">Cảnh báo tồn/HSD</div></div>
-          <div className="kpi c4"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 21h18M5 21V7l7-4 7 4v14" /></svg></span></div><div className="num">12</div><div className="lbl">Cơ sở có kho</div></div>
+          <div className="kpi c1"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 8 12 3 3 8m18 0-9 5" /></svg></span></div><div className="num">{kpiTotalBatches}</div><div className="lbl">Lô toàn mạng</div></div>
+          <div className="kpi c2"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6 9 17l-5-5" /></svg></span></div><div className="num">{kpiTotalStock.toLocaleString('vi-VN')}</div><div className="lbl">Tổng liều còn</div></div>
+          <div className="kpi c3"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17" /></svg></span></div><div className="num">{kpiAlerts}</div><div className="lbl">Cảnh báo tồn/HSD</div></div>
+          <div className="kpi c4"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 21h18M5 21V7l7-4 7 4v14" /></svg></span></div><div className="num">{kpiFacilitiesWithStock}</div><div className="lbl">Cơ sở có kho</div></div>
         </section>
 
         <div className="toolbar">
@@ -220,29 +234,15 @@ export default function Inventory() {
             </select>
           </div>
         </div>
-        <div className="field-row">
-          <div className="field">
-            <label>Số lượng nhập <span className="req">*</span></label>
-            <input type="number" min={1} value={form.qty} onChange={(e) => setForm({ ...form, qty: e.target.value, stock: e.target.value })} />
-          </div>
-          <div className="field">
-            <label>Tồn ban đầu</label>
-            <input type="number" min={0} value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} />
-          </div>
+        <div className="field">
+          <label>Số lượng nhập <span className="req">*</span></label>
+          <input type="number" min={1} value={form.qty} onChange={(e) => setForm({ ...form, qty: e.target.value })} />
         </div>
         <div className="field-row">
           <div className="field"><label>Ngày sản xuất</label><input type="date" value={form.mfg} onChange={(e) => setForm({ ...form, mfg: e.target.value })} /></div>
           <div className="field"><label>Hạn sử dụng <span className="req">*</span></label><input type="date" value={form.exp} onChange={(e) => setForm({ ...form, exp: e.target.value })} /></div>
         </div>
         <div className="field"><label>Ngày nhập kho</label><input type="date" value={form.importDate} onChange={(e) => setForm({ ...form, importDate: e.target.value })} /></div>
-        <div className="field">
-          <label>Trạng thái</label>
-          <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
-            <option value="AVAILABLE">AVAILABLE — Còn hàng</option>
-            <option value="EXPIRED">EXPIRED — Hết hạn</option>
-            <option value="DEPLETED">DEPLETED — Đã hết</option>
-          </select>
-        </div>
       </Modal>
     </>
   );

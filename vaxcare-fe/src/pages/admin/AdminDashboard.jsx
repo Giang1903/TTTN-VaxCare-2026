@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Topbar from "../../components/layout/Topbar";
@@ -10,6 +11,8 @@ export default function Dashboard() {
   const [facilities, setFacilities] = useState([]);
   const [usersCount, setUsersCount] = useState(0);
   const [staffCount, setStaffCount] = useState(0);
+  const [facilityStats, setFacilityStats] = useState([]);
+  const [ranking, setRanking] = useState([]);
 
   const load = useCallback(async () => {
     try {
@@ -30,6 +33,8 @@ export default function Dashboard() {
       setFacilities((facs || []).map(adminService.mapFacilityToUi));
       setUsersCount((users || []).length);
       setStaffCount((staff || []).length);
+      setFacilityStats(report?.facilityStats || []);
+      setRanking((report?.vaccineRanking || []).slice(0, 5));
     } catch (err) {
       showToast(err.message || 'Không tải được dashboard', 'error');
     }
@@ -106,24 +111,23 @@ export default function Dashboard() {
                 <div className="fac-row" style={{ fontSize: '11.5px', color: 'var(--gray-500)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', paddingTop: 0 }}>
                   <span>Cơ sở</span><span>Lịch</span><span>Hoàn thành</span><span>Trạng thái</span>
                 </div>
-                {[
-                  { name: 'VaxCare Phú Nhuận', addr: '198 Hoàng Văn Thụ · capacity 15/slot', bar: 78, appt: 24, done: '14/24', tag: 'warn', tagLabel: 'Cao tải' },
-                  { name: 'VaxCare Nowzone', addr: '235 Nguyễn Văn Cừ · capacity 18/slot', bar: 62, appt: 31, done: '22/31', tag: 'ok', tagLabel: 'Ổn định' },
-                  { name: 'VaxCare Thủ Đức', addr: 'Bình Chiểu · capacity 12/slot', bar: 45, appt: 18, done: '11/18', tag: 'ok', tagLabel: 'Ổn định' },
-                  { name: 'VaxCare Oriental Plaza', addr: '685 Âu Cơ, Tân Phú · capacity 14/slot', bar: 55, appt: 21, done: '15/21', tag: 'ok', tagLabel: 'Ổn định' },
-                  { name: 'VaxCare Hóc Môn', addr: 'Đông Thạnh · capacity 10/slot', bar: 30, appt: 9, done: '6/9', tag: 'info', tagLabel: 'Thấp tải' },
-                ].map((f) => (
-                  <div className="fac-row" key={f.name}>
+                {(facilityStats.length ? facilityStats : []).map((f) => {
+                  const rate = f.completionRate ?? 0;
+                  const bar = Math.min(100, Math.round(rate));
+                  const tag = rate >= 75 ? 'ok' : rate >= 50 ? 'warn' : 'danger';
+                  const tagLabel = rate >= 75 ? 'Ổn định' : rate >= 50 ? 'Theo dõi' : 'Thấp';
+                  return (
+                  <div className="fac-row" key={f.facilityId}>
                     <div>
-                      <div className="fname">{f.name}</div>
-                      <div className="faddr">{f.addr}</div>
-                      <div className="bar-mini"><span style={{ width: `${f.bar}%` }} /></div>
+                      <div className="fname">{f.facilityName}</div>
+                      <div className="faddr">Lịch {f.appointments} · HT {f.completed}</div>
                     </div>
-                    <span className="mono">{f.appt}</span>
-                    <span className="mono">{f.done}</span>
-                    <span className={`tag ${f.tag}`}>{f.tagLabel}</span>
+                    <span className="mono">{f.appointments}</span>
+                    <span className="mono">{f.completed}/{f.appointments}</span>
+                    <span className={`tag ${tag}`}>{tagLabel}</span>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
