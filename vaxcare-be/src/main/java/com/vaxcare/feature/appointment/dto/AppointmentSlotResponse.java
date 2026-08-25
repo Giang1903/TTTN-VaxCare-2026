@@ -16,4 +16,7 @@ public class AppointmentSlotResponse {
     private Integer bookedCount;
     private Integer availableCount;
     private Boolean full;
+    private Double aiOverloadProbability;
+    private Integer aiEstimatedWaitMinutes;
+    private Boolean aiRecommended;
 }

@@ -200,4 +200,21 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             @Param("from") LocalDate from,
             @Param("to") LocalDate to);
 
+    // ===== dùng cho AI 1 (Dispatch) - lịch sử số lượt đặt trung bình theo (thứ trong tuần, khung giờ) =====
+    @Query(value = """
+            SELECT t.dow AS dayOfWeek, t.time_slot AS timeSlot, AVG(t.cnt) AS avgBookings
+            FROM (
+                SELECT WEEKDAY(a.appointment_date) AS dow, a.time_slot, COUNT(*) AS cnt
+                FROM appointments a
+                WHERE a.facility_id = :facilityId
+                  AND a.appointment_date BETWEEN :fromDate AND :toDate
+                  AND a.status NOT IN ('CANCELLED', 'NO_SHOW')
+                GROUP BY a.appointment_date, a.time_slot
+            ) t
+            GROUP BY t.dow, t.time_slot
+            """, nativeQuery = true)
+    List<Object[]> findHistoricalSlotStats(@Param("facilityId") Long facilityId,
+                                            @Param("fromDate") LocalDate fromDate,
+                                            @Param("toDate") LocalDate toDate);
+
 }

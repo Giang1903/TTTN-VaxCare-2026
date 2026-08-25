@@ -26,6 +26,7 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class StaffReportService {
 
     private static final int MAX_RANGE_DAYS = 366;

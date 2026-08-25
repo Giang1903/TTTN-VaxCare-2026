@@ -22,11 +22,11 @@ import com.vaxcare.feature.vaccine.entity.Vaccine;
 import com.vaxcare.feature.vaccine.repository.PriceListRepository;
 import com.vaxcare.feature.vaccine.repository.VaccineRepository;
 import com.vaxcare.feature.notification.service.EmailService;
+import com.vaxcare.feature.ai.service.AiDispatchService;
 import com.vaxcare.utils.QRCodeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.vaxcare.utils.QRCodeUtil;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -52,6 +52,7 @@ public class AppointmentService {
     private final VaccineRepository vaccineRepository;
     private final PriceListRepository priceListRepository;
     private final EmailService emailService;
+    private final AiDispatchService aiDispatchService;
 
     // ===================== KHUNG GIỜ TRỐNG =====================
 
@@ -93,7 +94,7 @@ public class AppointmentService {
             cursor = cursor.plusMinutes(SLOT_DURATION_MINUTES);
         }
 
-        return slots;
+        return aiDispatchService.annotateSlots(facility, date, slots);
     }
 
     // ===================== ĐẶT / XEM LỊCH HẸN =====================
@@ -170,6 +171,13 @@ public class AppointmentService {
                 .build();
 
         Appointment saved = appointmentRepository.save(appointment);
+
+        try {
+            aiDispatchService.applyAiMetadataOnBooking(saved);
+            saved = appointmentRepository.save(saved);
+        } catch (Exception ignored) {
+            // đã log trong AiDispatchService/AiServiceClient nếu có lỗi gọi AI
+        }
 
         // Gửi email xác nhận — không làm fail đặt lịch nếu mail lỗi
         try {
@@ -349,6 +357,7 @@ public class AppointmentService {
                 .staffName(appointment.getStaff() != null ? appointment.getStaff().getFullName() : null)
                 .price(appointment.getPrice())
                 .recommendedByAi(appointment.getRecommendedByAi())
+                .predictionId(appointment.getPredictionId())
                 .appointmentDate(appointment.getAppointmentDate())
                 .timeSlot(appointment.getTimeSlot())
                 .status(appointment.getStatus())

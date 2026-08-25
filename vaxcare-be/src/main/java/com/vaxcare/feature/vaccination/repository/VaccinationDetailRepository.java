@@ -57,4 +57,27 @@ public interface VaccinationDetailRepository extends JpaRepository<VaccinationDe
         """)
     List<VaccinationDetail> findLatestSuccessDetailPerUserAndVaccine();
 
+    @Query("""
+        SELECT d.injectionDate, COUNT(d)
+        FROM VaccinationDetail d
+        WHERE d.vaccine.vaccineId = :vaccineId
+          AND d.appointment.facility.facilityId = :facilityId
+          AND d.result = com.vaxcare.common.enums.VaccinationResult.SUCCESS
+          AND d.injectionDate BETWEEN :fromDate AND :toDate
+        GROUP BY d.injectionDate
+        ORDER BY d.injectionDate ASC
+        """)
+    List<Object[]> findDailyConsumption(@Param("vaccineId") Long vaccineId,
+                                         @Param("facilityId") Long facilityId,
+                                         @Param("fromDate") java.time.LocalDate fromDate,
+                                         @Param("toDate") java.time.LocalDate toDate);
+
+    @Query("""
+        SELECT DISTINCT d.vaccine.vaccineId, d.appointment.facility.facilityId
+        FROM VaccinationDetail d
+        WHERE d.result = com.vaxcare.common.enums.VaccinationResult.SUCCESS
+          AND d.appointment IS NOT NULL
+        """)
+    List<Object[]> findDistinctVaccineFacilityCombos();
+
 }
