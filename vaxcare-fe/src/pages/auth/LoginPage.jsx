@@ -35,7 +35,22 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       const data = await login({ email: form.email, password: form.password });
-      const redirectTo = location.state?.from?.pathname || HOME_BY_ROLE[data.role] || "/";
+      const role = data?.role;
+      const from = location.state?.from?.pathname;
+      let redirectTo = HOME_BY_ROLE[role] || "/";
+      if (from && from !== "/login") {
+        if (role === "ADMIN" && from.startsWith("/admin")) redirectTo = from;
+        else if (role === "MEDICAL_STAFF" && from.startsWith("/staff")) redirectTo = from;
+        else if (
+          role === "USER" &&
+          (from.startsWith("/dashboard") ||
+            from.startsWith("/booking") ||
+            from.startsWith("/appointments") ||
+            from.startsWith("/record"))
+        ) {
+          redirectTo = from;
+        }
+      }
       navigate(redirectTo, { replace: true });
     } catch (err) {
       setError(err.message || "Đăng nhập thất bại, vui lòng thử lại.");
