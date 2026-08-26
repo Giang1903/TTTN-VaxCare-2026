@@ -34,3 +34,17 @@ export function cancelAppointment(id, reason) {
     body: reason ? { reason } : undefined,
   });
 }
+/** POST /api/v1/payments/create-vnpay — tạo URL thanh toán VNPay */
+export function createVnpayPayment(appointmentId) {
+  return apiClient.request("/payments/create-vnpay", {
+    method: "POST",
+    body: { appointmentId: Number(appointmentId) },
+  });
+}
+
+/** GET /api/v1/payments/appointments/{id} */
+export function getPaymentByAppointment(appointmentId) {
+  return apiClient.request(`/payments/appointments/${appointmentId}`, {
+    method: "GET",
+  });
+}
