@@ -48,3 +48,8 @@ export function getPaymentByAppointment(appointmentId) {
     method: "GET",
   });
 }
+
+/** GET /api/v1/appointments/{id}/qr-code → { qrCodeToken, qrCodeImageBase64 } */
+export function getAppointmentQrCode(appointmentId) {
+  return apiClient.request(`/appointments/${appointmentId}/qr-code`, { method: "GET" });
+}
