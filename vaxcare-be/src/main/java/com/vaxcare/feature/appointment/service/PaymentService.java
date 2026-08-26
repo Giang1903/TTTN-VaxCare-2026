@@ -130,7 +130,15 @@ public class PaymentService {
 
     @Transactional
     public String handleReturn(Map<String, String> params) {
-        CallbackResult result = verifyAndProcess(params);
+
+        CallbackResult result;
+        try {
+            result = verifyAndProcess(params);
+        } catch (Exception e) {
+            log.error("Lỗi xử lý VNPay return callback, params={}", params, e);
+            result = new CallbackResult(false, "99", "Có lỗi xảy ra khi xử lý kết quả thanh toán", null);
+        }
+
         String base = vnPayConfig.getFrontendResultUrl();
         StringBuilder redirect = new StringBuilder(base)
                 .append(base.contains("?") ? "&" : "?")
@@ -181,7 +189,11 @@ public class PaymentService {
         }
 
         String txnRef = data.get("vnp_TxnRef");
-        Payment payment = paymentRepository.findByTransactionId(txnRef).orElse(null);
+        if (txnRef == null || txnRef.isBlank()) {
+            return new CallbackResult(false, "01", "Không tìm thấy giao dịch", null);
+        }
+
+        Payment payment = paymentRepository.findByTransactionIdForUpdate(txnRef).orElse(null);
         if (payment == null) {
             return new CallbackResult(false, "01", "Không tìm thấy giao dịch", null);
         }
@@ -193,7 +205,14 @@ public class PaymentService {
 
         long expectedAmount = payment.getAmount().multiply(BigDecimal.valueOf(100)).longValue();
         String vnpAmount = data.get("vnp_Amount");
-        if (vnpAmount == null || expectedAmount != Long.parseLong(vnpAmount)) {
+        long receivedAmount;
+        try {
+            receivedAmount = vnpAmount == null ? -1 : Long.parseLong(vnpAmount);
+        } catch (NumberFormatException e) {
+            // vnp_Amount không parse được thành số -> coi như dữ liệu callback không hợp lệ, không phải lỗi hệ thống.
+            return new CallbackResult(false, "04", "Số tiền không hợp lệ", null);
+        }
+        if (expectedAmount != receivedAmount) {
             return new CallbackResult(false, "04", "Số tiền không hợp lệ", null);
         }
 
@@ -213,6 +232,18 @@ public class PaymentService {
             payment.setStatus(PaymentStatus.SUCCESS);
             payment.setPaymentTime(LocalDateTime.now(ZoneId.of(vnPayConfig.getTimezone())));
             paymentRepository.save(payment);
+
+            if (!PAYABLE_STATUSES.contains(appointment.getStatus())) {
+                log.warn("VNPay báo thanh toán THÀNH CÔNG cho appointment #{} nhưng lịch hẹn đã ở trạng thái {} "
+                                + "(không còn payable) -> KHÔNG cấp QR/confirm lại. Cần đối soát và HOÀN TIỀN thủ "
+                                + "công cho giao dịch txnRef={}, amount={}",
+                        appointment.getAppointmentId(), appointment.getStatus(), txnRef, payment.getAmount());
+
+                return new CallbackResult(true, "00",
+                        "Thanh toán thành công nhưng lịch hẹn đã không còn hiệu lực (" + appointment.getStatus()
+                                + "). Vui lòng liên hệ tổng đài để được hoàn tiền.",
+                        appointment.getAppointmentId());
+            }
 
             if (appointment.getStatus() == AppointmentStatus.PENDING) {
                 appointment.setStatus(AppointmentStatus.CONFIRMED);
