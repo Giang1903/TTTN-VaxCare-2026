@@ -30,7 +30,7 @@ export default function SupportChannels() {
             </div>
             <h4>Email</h4>
             <p>Phản hồi trong vòng 24 giờ làm việc</p>
-            <a href="mailto:support@vaxcare.vn">support@vaxcare.vn</a>
+            <a href="mailto:vaxcare2026@gmail.com">vaxcare2026@gmail.com</a>
           </div>
           <div className="channel-card">
             <div className="ch-icon">

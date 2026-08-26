@@ -6,7 +6,7 @@ import StepFacility from '../../components/booking/StepFacility';
 import StepDateTime from '../../components/booking/StepDateTime';
 import StepConfirm from '../../components/booking/StepConfirm';
 import BookingSummary from '../../components/booking/BookingSummary';
-import { bookAppointment } from '../../services/appointmentService';
+import { bookAppointment, createVnpayPayment } from '../../services/appointmentService';
 
 export default function BookingPage() {
   const [step, setStep] = useState(1);
@@ -52,7 +52,6 @@ export default function BookingPage() {
     setSubmitError('');
     setSubmitting(true);
     try {
-      // API nhận LocalTime — gửi "HH:mm:ss"
       const timeSlot = slot.length === 5 ? `${slot}:00` : slot;
       const result = await bookAppointment({
         facilityId: facility.id,
@@ -60,11 +59,29 @@ export default function BookingPage() {
         appointmentDate: date.iso,
         timeSlot,
       });
+      const appointmentId = result?.appointmentId;
       const code =
         result?.qrCode ||
-        (result?.appointmentId != null ? `VX-${result.appointmentId}` : null) ||
+        (appointmentId != null ? `VX-${appointmentId}` : null) ||
         `VX-${date.iso.replace(/-/g, '')}-${slot.replace(':', '')}`;
       setBookingCode(code);
+
+      // Thanh toán VNPay theo yêu cầu PDF (nếu có appointmentId)
+      if (appointmentId) {
+        try {
+          const pay = await createVnpayPayment(appointmentId);
+          if (pay?.paymentUrl) {
+            window.location.href = pay.paymentUrl;
+            return;
+          }
+        } catch (payErr) {
+          // Đặt lịch đã thành công — cho phép xem lịch nếu thanh toán lỗi
+          setSubmitError(
+            (payErr.message || 'Không tạo được link thanh toán.') +
+              ' Lịch đã được tạo — bạn có thể thanh toán sau trong mục Lịch hẹn.'
+          );
+        }
+      }
       setSuccess(true);
     } catch (err) {
       setSubmitError(err.message || 'Đặt lịch thất bại, vui lòng thử lại.');

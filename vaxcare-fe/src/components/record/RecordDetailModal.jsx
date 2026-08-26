@@ -1,4 +1,5 @@
 import VxModal from './VxModal';
+import { calcBmi, bmiCategory } from './HealthProfileCard';
 
 function formatDob(dob) {
   if (!dob) return '—';
@@ -22,6 +23,7 @@ export default function RecordDetailModal({
   open,
   onClose,
   profile,
+  health,
   stats = [],
   summary = [],
   recordCode,
@@ -67,6 +69,28 @@ export default function RecordDetailModal({
             <span>{s.l}</span>
           </div>
         ))}
+      </div>
+
+
+      <h4 style={{ margin: '18px 0 10px', fontSize: '15px' }}>Hồ sơ sức khỏe</h4>
+      <div style={{ fontSize: 14, color: '#334155', lineHeight: 1.7, marginBottom: 8 }}>
+        {(() => {
+          const h = health || profile;
+          const bmi = calcBmi(h?.height, h?.weight);
+          const cat = bmiCategory(bmi);
+          return (
+            <>
+              <div>Chiều cao: <strong>{h?.height != null ? `${h.height} cm` : '—'}</strong>
+                {' · '}Cân nặng: <strong>{h?.weight != null ? `${h.weight} kg` : '—'}</strong>
+                {' · '}BMI: <strong>{bmi != null ? bmi : '—'}</strong>
+                {cat ? <span style={{ color: cat.color, fontWeight: 700 }}> ({cat.text})</span> : null}
+              </div>
+              <div>Dị ứng: {h?.allergies || '—'}</div>
+              <div>Tiền sử bệnh: {h?.medicalHistory || '—'}</div>
+              <div>Ghi chú: {h?.note || h?.healthNote || '—'}</div>
+            </>
+          );
+        })()}
       </div>
 
       <h4 style={{ margin: '18px 0 10px', fontSize: '15px' }}>Tóm tắt lịch sử tiêm</h4>

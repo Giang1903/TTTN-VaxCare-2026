@@ -7,6 +7,8 @@ import CertificateSidebar from '../../components/record/CertificateSidebar';
 import ShotDetailModal from '../../components/record/ShotDetailModal';
 import RecordDetailModal from '../../components/record/RecordDetailModal';
 import EditProfileModal from '../../components/record/EditProfileModal';
+import HealthProfileCard from '../../components/record/HealthProfileCard';
+import { getMyHealthProfile } from '../../services/healthProfileService';
 import { useAuth } from '../../context/AuthContext';
 import * as vaccinationService from '../../services/vaccinationService';
 import { getMyAppointments } from '../../services/appointmentService';
@@ -20,16 +22,19 @@ export default function RecordPage() {
   const [shotModal, setShotModal] = useState({ open: false, shot: null });
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [health, setHealth] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      const [hist, appts] = await Promise.all([
+      const [hist, appts, hp] = await Promise.all([
         vaccinationService.getMyVaccinationHistory().catch(() => null),
         getMyAppointments().catch(() => []),
+        getMyHealthProfile().catch(() => null),
       ]);
       setHistory(hist);
+      setHealth(hp);
       const up = (appts || []).filter((a) =>
         ['PENDING', 'CONFIRMED', 'CHECKED_IN'].includes(String(a.status || '').toUpperCase()),
       );
@@ -112,6 +117,19 @@ export default function RecordPage() {
           onOpenEdit={() => setEditModalOpen(true)}
         />
 
+        <HealthProfileCard
+          health={
+            health || {
+              height: user?.height,
+              weight: user?.weight,
+              allergies: user?.allergies,
+              medicalHistory: user?.medicalHistory,
+              note: user?.healthNote,
+            }
+          }
+          onEdit={() => setEditModalOpen(true)}
+        />
+
         <ProtocolProgress protocols={protocols} />
 
         <div className="record-layout">
@@ -137,6 +155,15 @@ export default function RecordPage() {
       <RecordDetailModal
         open={detailModalOpen}
         profile={user}
+        health={
+          health || {
+            height: user?.height,
+            weight: user?.weight,
+            allergies: user?.allergies,
+            medicalHistory: user?.medicalHistory,
+            note: user?.healthNote,
+          }
+        }
         stats={stats}
         summary={summary}
         recordCode={recordCode}
@@ -149,6 +176,12 @@ export default function RecordPage() {
         onSaved={async () => {
           setEditModalOpen(false);
           await refreshProfile?.();
+          try {
+            const hp = await getMyHealthProfile();
+            setHealth(hp);
+          } catch {
+            /* ignore */
+          }
         }}
       />
     </>

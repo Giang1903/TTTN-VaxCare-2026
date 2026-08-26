@@ -1,147 +1,139 @@
-function fmt(val, unit = '') {
-  if (val === null || val === undefined || val === '') return '—';
-  return `${val}${unit}`;
-}
-
-function bmi(heightCm, weightKg) {
+// eslint-disable-next-line react-refresh/only-export-components
+export function calcBmi(heightCm, weightKg) {
   const h = Number(heightCm);
   const w = Number(weightKg);
-  if (!h || !w || h <= 0) return null;
+  if (!h || !w || h <= 0 || w <= 0) return null;
   const m = h / 100;
-  const v = w / (m * m);
-  if (!Number.isFinite(v)) return null;
-  return v.toFixed(1);
+  const bmi = w / (m * m);
+  return Math.round(bmi * 10) / 10;
 }
 
-function bmiLabel(bmiVal) {
-  const v = Number(bmiVal);
-  if (!v) return null;
-  if (v < 18.5) return { text: 'Thiếu cân', color: '#0284c7' };
-  if (v < 23) return { text: 'Bình thường', color: '#0d9f6e' };
-  if (v < 25) return { text: 'Thừa cân', color: '#b45309' };
-  return { text: 'Béo phì', color: '#c0392b' };
+// eslint-disable-next-line react-refresh/only-export-components
+export function bmiCategory(bmi) {
+  if (bmi == null) return null;
+  if (bmi < 18.5) return { text: 'Thiếu cân', color: '#0284c7' };
+  if (bmi < 23) return { text: 'Bình thường', color: '#059669' };
+  if (bmi < 25) return { text: 'Thừa cân', color: '#d97706' };
+  if (bmi < 30) return { text: 'Béo phì độ I', color: '#ea580c' };
+  return { text: 'Béo phì độ II+', color: '#dc2626' };
 }
 
-/**
- * Card hiển thị hồ sơ sức khỏe trên trang Record.
- * props.health: { height, weight, medicalHistory, allergies, healthNote|note, updatedAt }
- */
 export default function HealthProfileCard({ health, onEdit }) {
   const height = health?.height;
   const weight = health?.weight;
-  const medicalHistory = health?.medicalHistory;
-  const allergies = health?.allergies;
-  const note = health?.healthNote ?? health?.note;
-  const bmiVal = bmi(height, weight);
-  const label = bmiLabel(bmiVal);
+  const bmi = calcBmi(height, weight);
+  const cat = bmiCategory(bmi);
 
   const hasAny =
-    height != null ||
-    weight != null ||
-    (medicalHistory && String(medicalHistory).trim()) ||
-    (allergies && String(allergies).trim()) ||
-    (note && String(note).trim());
+    height != null && height !== '' ||
+    weight != null && weight !== '' ||
+    health?.allergies ||
+    health?.medicalHistory ||
+    health?.note ||
+    health?.healthNote;
 
   return (
-    <div style={{ marginBottom: '28px' }}>
+    <div
+      style={{
+        background: '#fff',
+        borderRadius: 18,
+        border: '1px solid #e8eef5',
+        boxShadow: '0 6px 20px rgba(15,23,42,0.04)',
+        padding: '22px 24px',
+        marginBottom: 24,
+      }}
+    >
       <div
         style={{
           display: 'flex',
-          alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '12px',
-          marginBottom: '14px',
+          alignItems: 'center',
+          marginBottom: 16,
+          gap: 12,
           flexWrap: 'wrap',
         }}
       >
-        <h2 className="section-title" style={{ marginBottom: 0 }}>
-          <span className="dot-live" aria-hidden />
+        <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0, color: '#0f172a' }}>
           Hồ sơ sức khỏe
         </h2>
-        <button type="button" className="btn btn-ghost btn-sm" onClick={onEdit}>
-          {hasAny ? 'Cập nhật' : 'Thêm hồ sơ sức khỏe'}
-        </button>
+        {onEdit && (
+          <button
+            type="button"
+            onClick={onEdit}
+            style={{
+              fontSize: 13,
+              fontWeight: 700,
+              color: 'var(--teal-600, #0d9488)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            Cập nhật →
+          </button>
+        )}
       </div>
 
       {!hasAny ? (
-        <div
-          className="protocol-card"
-          style={{ padding: '20px 22px' }}
-        >
-          <p style={{ fontSize: '13px', color: 'var(--gray-500)', margin: 0 }}>
-            Chưa có thông tin sức khỏe. Bổ sung chiều cao, cân nặng, dị ứng và tiền sử bệnh để
-            nhân viên y tế hỗ trợ tốt hơn khi tiêm.
-          </p>
-        </div>
+        <p style={{ margin: 0, fontSize: 14, color: '#94a3b8' }}>
+          Chưa có thông tin sức khỏe. Bấm <strong>Chỉnh sửa</strong> để bổ sung chiều cao, cân nặng, dị ứng…
+        </p>
       ) : (
-        <div
-          className="protocol-grid"
-          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}
-        >
-          <div className="protocol-card">
-            <div className="pc-head">
-              <h4>Chỉ số cơ thể</h4>
-            </div>
-            <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-              <div>
-                <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Chiều cao</div>
-                <div style={{ fontSize: '20px', fontWeight: 800 }}>{fmt(height, ' cm')}</div>
-              </div>
-              <div>
-                <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Cân nặng</div>
-                <div style={{ fontSize: '20px', fontWeight: 800 }}>{fmt(weight, ' kg')}</div>
-              </div>
-              {bmiVal && (
-                <div>
-                  <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>BMI</div>
-                  <div style={{ fontSize: '20px', fontWeight: 800 }}>
-                    {bmiVal}
-                    {label && (
-                      <span
-                        style={{
-                          marginLeft: '8px',
-                          fontSize: '12px',
-                          fontWeight: 700,
-                          color: label.color,
-                        }}
-                      >
-                        {label.text}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
+        <>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
+              gap: 12,
+              marginBottom: 16,
+            }}
+          >
+            <Metric label="Chiều cao" value={height != null && height !== '' ? `${height} cm` : '—'} />
+            <Metric label="Cân nặng" value={weight != null && weight !== '' ? `${weight} kg` : '—'} />
+            <Metric
+              label="BMI"
+              value={bmi != null ? String(bmi) : '—'}
+              sub={cat ? cat.text : null}
+              subColor={cat?.color}
+            />
           </div>
+          <div style={{ display: 'grid', gap: 10, fontSize: 14 }}>
+            <Row label="Dị ứng" value={health?.allergies || '—'} />
+            <Row label="Tiền sử bệnh" value={health?.medicalHistory || '—'} />
+            <Row label="Ghi chú" value={health?.note || health?.healthNote || '—'} />
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
-          <div className="protocol-card">
-            <div className="pc-head">
-              <h4>Dị ứng</h4>
-            </div>
-            <p className="pc-sub" style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
-              {(allergies && String(allergies).trim()) || 'Không ghi nhận'}
-            </p>
-          </div>
-
-          <div className="protocol-card">
-            <div className="pc-head">
-              <h4>Tiền sử bệnh</h4>
-            </div>
-            <p className="pc-sub" style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
-              {(medicalHistory && String(medicalHistory).trim()) || 'Không ghi nhận'}
-            </p>
-          </div>
-
-          <div className="protocol-card">
-            <div className="pc-head">
-              <h4>Ghi chú sức khỏe</h4>
-            </div>
-            <p className="pc-sub" style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
-              {(note && String(note).trim()) || '—'}
-            </p>
-          </div>
+function Metric({ label, value, sub, subColor }) {
+  return (
+    <div
+      style={{
+        background: '#f8fafc',
+        borderRadius: 12,
+        padding: '12px 14px',
+        border: '1px solid #eef2f7',
+      }}
+    >
+      <div style={{ fontSize: 12, color: '#64748b', fontWeight: 600, marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 18, fontWeight: 800, color: '#0f172a' }}>{value}</div>
+      {sub && (
+        <div style={{ fontSize: 12, fontWeight: 700, color: subColor || '#64748b', marginTop: 2 }}>
+          {sub}
         </div>
       )}
+    </div>
+  );
+}
+
+function Row({ label, value }) {
+  return (
+    <div style={{ display: 'flex', gap: 12, borderTop: '1px solid #f1f5f9', paddingTop: 10 }}>
+      <span style={{ width: 110, flexShrink: 0, color: '#64748b', fontWeight: 600 }}>{label}</span>
+      <span style={{ color: '#334155', fontWeight: 500 }}>{value}</span>
     </div>
   );
 }

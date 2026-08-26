@@ -19,12 +19,15 @@ import VaccinesPage from "../pages/vaccines/VaccinesPage";
 import VaccineDetailPage from "../pages/vaccine-detail/VaccineDetailPage";
 import AboutPage from "../pages/about/AboutPage";
 import SupportPage from "../pages/support/SupportPage";
+import PaymentResultPage from "../pages/payment/PaymentResultPage";
 
 // ===== USER =====
 import DashboardPage from "../pages/dashboard/DashboardPage";
 import AppointmentsPage from "../pages/appointments/AppointmentsPage";
 import RecordPage from "../pages/record/RecordPage";
 import BookingPage from "../pages/booking/BookingPage";
+import ReactionsPage from "../pages/reactions/ReactionsPage";
+import NotificationsPage from "../pages/notifications/NotificationsPage";
 
 // ===== STAFF =====
 import StaffDashboardPage from "../pages/staff/StaffDashboardPage";
@@ -57,6 +60,7 @@ export default function AppRoutes() {
         <Route path="/vaccines/:id" element={<VaccineDetailPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/support" element={<SupportPage />} />
+        <Route path="/payment-result" element={<PaymentResultPage />} />
       </Route>
 
       {/* USER SAU ĐĂNG NHẬP */}
@@ -66,6 +70,8 @@ export default function AppRoutes() {
           <Route path="/appointments" element={<AppointmentsPage />} />
           <Route path="/record" element={<RecordPage />} />
           <Route path="/booking" element={<BookingPage />} />
+          <Route path="/reactions" element={<ReactionsPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
         </Route>
       </Route>
 
