@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { getVaccineCategories, searchVaccines } from '../../services/vaccineService';
 import { formatCurrency } from '../../utils/format';
 
@@ -7,6 +7,7 @@ const PAGE_SIZE = 10;
 
 // ============ VACCINE CATALOG (search bar + filter toolbar + grid + pagination) ============
 export default function VaccineCatalog() {
+  const [searchParams] = useSearchParams();
   const [categories, setCategories] = useState([]);
   const [activeCategoryId, setActiveCategoryId] = useState(null); // null = "Tất cả"
   const [keywordInput, setKeywordInput] = useState('');
@@ -17,12 +18,27 @@ export default function VaccineCatalog() {
   const [error, setError] = useState('');
   const [page, setPage] = useState(1);
 
-  // Danh mục dùng cho các nút filter — chỉ tải một lần
+  // Danh mục dùng cho các nút filter + áp ?category= từ Home
   useEffect(() => {
     getVaccineCategories()
-      .then((data) => setCategories(data || []))
+      .then((data) => {
+        const cats = data || [];
+        setCategories(cats);
+        const byId = searchParams.get('categoryId');
+        const byName = searchParams.get('category');
+        if (byId) {
+          const id = Number(byId);
+          if (!Number.isNaN(id)) setActiveCategoryId(id);
+        } else if (byName) {
+          const q = byName.trim().toLowerCase();
+          const found = cats.find((c) =>
+            String(c.categoryName || '').toLowerCase().includes(q)
+          );
+          if (found) setActiveCategoryId(found.categoryId);
+        }
+      })
       .catch(() => setCategories([]));
-  }, []);
+  }, [searchParams]);
 
   // Danh sách vắc xin — tải lại mỗi khi đổi danh mục hoặc tìm kiếm
   useEffect(() => {

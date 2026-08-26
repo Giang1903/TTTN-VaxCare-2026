@@ -519,9 +519,26 @@ h4 {
 }
 .qb-grid {
   display: grid;
-  grid-template-columns: 1.2fr 1.2fr 1fr 1fr auto;
-  gap: 14px;
-  align-items: end;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+  gap: 16px;
+  align-items: start;
+}
+
+.qb-grid .field {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.qb-grid .qb-submit {
+  height: 48px;
+  margin-top: 28px;
+  padding: 0 28px;
+  white-space: nowrap;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .field label {
   display: block;
@@ -529,6 +546,8 @@ h4 {
   font-weight: 700;
   color: var(--gray-700);
   margin-bottom: 8px;
+  line-height: 1.2;
+  min-height: 1.2em;
 }
 .field .field-input {
   display: flex;
@@ -536,11 +555,17 @@ h4 {
   gap: 9px;
   border: 1.5px solid var(--gray-300);
   border-radius: var(--radius-sm);
-  padding: 13px 14px;
+  padding: 0 14px;
+  height: 48px;
+  box-sizing: border-box;
+  width: 100%;
   font-size: 14.5px;
   color: var(--gray-700);
   background: var(--gray-50);
   transition: border-color 0.15s;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .field .field-input:hover {
   border-color: var(--teal-500);
@@ -826,6 +851,18 @@ h4 {
 .fac-card:hover {
   transform: translateY(-8px);
   box-shadow: var(--shadow-lg);
+}
+.fac-card.fac-card-clickable {
+  cursor: pointer;
+}
+.cat-card.cat-card-link {
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+.cat-card.cat-card-link:hover {
+  transform: translateY(-4px);
 }
 .fac-media {
   height: 150px;
