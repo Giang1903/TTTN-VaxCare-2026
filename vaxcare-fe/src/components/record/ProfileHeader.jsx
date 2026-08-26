@@ -91,15 +91,12 @@ export default function ProfileHeader({
           </button>
         </div>
       </div>
-
-      <div className="profile-stats">
+      <div className="profile-stats-panel">
         {stats.map((s, i) => (
-          <div className="profile-stat" key={s.l}>
-            <div className="profile-stat-icon">{STAT_ICONS[i % STAT_ICONS.length]}</div>
-            <div>
-              <div className="n">{s.n}</div>
-              <div className="l">{s.l}</div>
-            </div>
+          <div className="pstat" key={s.l}>
+            <div className="ico">{STAT_ICONS[i % STAT_ICONS.length]}</div>
+            <div className="n">{s.n}</div>
+            <div className="l">{s.l}</div>
           </div>
         ))}
       </div>

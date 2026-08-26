@@ -37,18 +37,9 @@ export default function RecordDetailModal({
       title="Hồ sơ tiêm chủng chi tiết"
       large
       footer={
-        <>
-          <button type="button" className="btn btn-ghost" onClick={onClose}>
-            Đóng
-          </button>
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={() => alert('Tính năng tải PDF sẽ sớm có.')}
-          >
-            Tải PDF tổng hợp
-          </button>
-        </>
+        <button type="button" className="btn btn-primary" onClick={onClose}>
+          Đóng
+        </button>
       }
     >
       <div className="record-detail-header">
