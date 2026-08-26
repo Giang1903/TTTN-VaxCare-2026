@@ -27,6 +27,7 @@ import AppointmentsPage from "../pages/appointments/AppointmentsPage";
 import RecordPage from "../pages/record/RecordPage";
 import BookingPage from "../pages/booking/BookingPage";
 import ReactionsPage from "../pages/reactions/ReactionsPage";
+import NotificationsPage from "../pages/notifications/NotificationsPage";
 
 // ===== STAFF =====
 import StaffDashboardPage from "../pages/staff/StaffDashboardPage";
@@ -70,6 +71,7 @@ export default function AppRoutes() {
           <Route path="/record" element={<RecordPage />} />
           <Route path="/booking" element={<BookingPage />} />
           <Route path="/reactions" element={<ReactionsPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
         </Route>
       </Route>
 
