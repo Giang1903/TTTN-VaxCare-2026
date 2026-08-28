@@ -4,6 +4,7 @@ import StaffTopbar from '../../components/staff/StaffTopbar';
 import useStaffToast from '../../hooks/useStaffToast';
 import { useAuth } from '../../context/AuthContext';
 import * as staffService from '../../services/staffService';
+import QrCameraScanner from '../../components/staff/QrCameraScanner';
 
 const STATUS_LABEL = {
   pending: 'Chờ xác nhận',
@@ -95,6 +96,7 @@ export default function StaffAppointmentsPage() {
   const [date, setDate] = useState(today);
   const [drawer, setDrawer] = useState({ open: false, mode: 'view', apptId: null });
   const [manualQr, setManualQr] = useState('');
+  const [cameraOn, setCameraOn] = useState(false);
   const [noteDraft, setNoteDraft] = useState('');
 
   const loadAppointments = useCallback(async () => {
@@ -164,10 +166,14 @@ export default function StaffAppointmentsPage() {
 
   const openScan = () => {
     setManualQr('');
+    setCameraOn(true);
     setDrawer({ open: true, mode: 'scan', apptId: null });
   };
 
-  const closeDrawer = () => setDrawer({ open: false, mode: 'view', apptId: null });
+  const closeDrawer = () => {
+    setCameraOn(false);
+    setDrawer({ open: false, mode: 'view', apptId: null });
+  };
 
   const handleAction = async (appt, action) => {
     if (action === 'view') {
@@ -182,16 +188,27 @@ export default function StaffAppointmentsPage() {
         return;
       }
       if (action === 'checkin') {
-        if (appt.qr) {
-          await staffService.checkin(appt.qr);
+        // BE chỉ cho check-in khi CONFIRMED + có QR + đúng ngày hôm nay
+        let qr = (appt.qr || '').trim();
+        if (appt.status === 'pending') {
+          await staffService.confirmAppointment(appt.id);
+          updateLocal(appt.id, 'confirmed');
         }
-        updateLocal(appt.id, 'checkedin');
-        showToast(`Check-in thành công: ${appt.name}`, 'ok');
+        if (!qr) {
+          setManualQr('');
+          setDrawer({ open: true, mode: 'scan', apptId: appt.id });
+          showToast('Nhập/quét mã QR để check-in (lịch chưa có mã trên danh sách).', 'warn');
+          return;
+        }
+        const res = await staffService.checkin(qr);
+        const mapped = staffService.mapAppointmentToUi(res || { ...appt._raw, status: 'CHECKED_IN' });
+        setAppts((list) =>
+          list.map((a) => (a.id === appt.id ? { ...mapped, highlight: true } : a)),
+        );
+        showToast(`Check-in thành công: ${mapped.name || appt.name}`, 'ok');
         return;
       }
       if (action === 'cancel') {
-        // Dùng ghi chú nhân viên đã nhập (nếu có, và cùng lịch hẹn đang mở) làm lý do hủy;
-        // nếu không có thì dùng lý do mặc định — đồng bộ với ô "Ghi chú" trên drawer chi tiết.
         const reason =
           drawer.apptId === appt.id && noteDraft.trim() ? noteDraft.trim() : 'Từ chối bởi nhân viên';
         await staffService.cancelAppointment(appt.id, reason);
@@ -200,9 +217,8 @@ export default function StaffAppointmentsPage() {
         return;
       }
       if (action === 'vaccinate') {
-        await staffService.completeVaccination(appt.id);
-        updateLocal(appt.id, 'completed');
-        showToast(`Đã ghi nhận tiêm cho ${appt.name}`, 'ok');
+        // Chuyển sang trang ghi nhận tiêm chi tiết (PDF chứng nhận)
+        navigate(`/staff/vaccination?id=${appt.id}`);
         return;
       }
     } catch (err) {
@@ -447,8 +463,20 @@ export default function StaffAppointmentsPage() {
         </div>
       </div>
 
-      <div className={`overlay${drawer.open ? ' open' : ''}`} onClick={closeDrawer} />
-      <aside className={`drawer${drawer.open ? ' open' : ''}`} role="dialog">
+      <div
+        className={`overlay${drawer.open ? ' open' : ''}`}
+        onClick={closeDrawer}
+        style={{ zIndex: 400 }}
+        aria-hidden={!drawer.open}
+      />
+      <aside
+        className={`drawer${drawer.open ? ' open' : ''}`}
+        role="dialog"
+        aria-modal="true"
+        style={{ zIndex: 410, pointerEvents: drawer.open ? 'auto' : undefined }}
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
         <div className="drawer-head">
           <div>
             <h3>{drawer.mode === 'scan' ? 'Quét QR Check-in' : 'Chi tiết lịch hẹn'}</h3>
@@ -470,28 +498,58 @@ export default function StaffAppointmentsPage() {
         {drawer.mode === 'scan' && (
           <>
             <div className="drawer-body">
-              <div className="scan-zone">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-                  <rect x="3" y="3" width="7" height="7" />
-                  <rect x="14" y="3" width="7" height="7" />
-                  <rect x="3" y="14" width="7" height="7" />
-                  <path d="M14 14h3v3h-3zM20 14v6M14 20h6" />
-                </svg>
-                <p>
-                  <strong>Đưa mã QR trên điện thoại / phiếu hẹn</strong>
-                  <br />
-                  vào vùng camera (demo: nhập mã thủ công bên dưới)
-                </p>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  className={`btn ${cameraOn ? 'primary' : 'outline'} btn-sm`}
+                  onClick={() => setCameraOn((v) => !v)}
+                >
+                  {cameraOn ? 'Tắt camera' : 'Bật camera quét QR'}
+                </button>
               </div>
+
+              {cameraOn && (
+                <QrCameraScanner
+                  active={drawer.open && drawer.mode === 'scan' && cameraOn}
+                  onDetected={(code) => {
+                    setManualQr(code);
+                    showToast(`Đã quét được: ${code}`, 'ok');
+                  }}
+                />
+              )}
+
+              {!cameraOn && (
+                <div className="scan-zone">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                    <path d="M14 14h3v3h-3zM20 14v6M14 20h6" />
+                  </svg>
+                  <p>
+                    <strong>Bật camera</strong> để quét QR tự động, hoặc nhập mã thủ công bên dưới
+                  </p>
+                </div>
+              )}
+
               <div className="drawer-section">
-                <h4>Nhập mã QR</h4>
+                <h4>Mã QR (nhập tay hoặc tự điền khi quét)</h4>
                 <input
                   type="text"
                   className="note-box"
-                  style={{ minHeight: 'auto', height: 44 }}
-                  placeholder="Ví dụ: VXC-20260817-005"
+                  name="manualQr"
+                  autoComplete="off"
+                  autoFocus={drawer.mode === 'scan' && drawer.open && !cameraOn}
+                  style={{ minHeight: 'auto', height: 44, width: '100%', pointerEvents: 'auto' }}
+                  placeholder="Ví dụ: VX-XXXXXXXXXXXX"
                   value={manualQr}
                   onChange={(e) => setManualQr(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      doScan();
+                    }
+                  }}
                 />
               </div>
             </div>

@@ -2370,12 +2370,17 @@
       .overlay {
         position: fixed; inset: 0;
         background: rgba(14, 31, 28, 0.45);
-        z-index: 100;
+        z-index: 400;
         opacity: 0;
         visibility: hidden;
         transition: opacity 0.2s, visibility 0.2s;
+        pointer-events: none;
       }
-      .overlay.open { opacity: 1; visibility: visible; }
+      .overlay.open {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+      }
 
       .drawer {
         position: fixed;
@@ -2383,12 +2388,13 @@
         width: min(440px, 100%);
         height: 100vh;
         background: #fff;
-        z-index: 110;
+        z-index: 410;
         box-shadow: var(--shadow-lg);
         transform: translateX(100%);
         transition: transform 0.25s ease;
         display: flex;
         flex-direction: column;
+        pointer-events: auto;
       }
       .drawer.open { transform: translateX(0); }
       .drawer-head {

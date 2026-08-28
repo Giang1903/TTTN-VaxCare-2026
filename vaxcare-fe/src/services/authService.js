@@ -44,3 +44,20 @@ export function resendVerification(email) {
     body: { email },
   });
 }
+/** POST /auth/forgot-password { email } */
+export function forgotPassword(email) {
+  return apiClient.request("/auth/forgot-password", {
+    method: "POST",
+    auth: false,
+    body: { email },
+  });
+}
+
+/** POST /auth/reset-password { token, newPassword } */
+export function resetPassword({ token, newPassword }) {
+  return apiClient.request("/auth/reset-password", {
+    method: "POST",
+    auth: false,
+    body: { token, newPassword },
+  });
+}

@@ -23,6 +23,8 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 
     Optional<Account> findByVerificationToken(String verificationToken);
 
+    Optional<Account> findByPasswordResetToken(String passwordResetToken);
+
     @Query("""
         SELECT a FROM Account a
         LEFT JOIN FETCH a.user u
