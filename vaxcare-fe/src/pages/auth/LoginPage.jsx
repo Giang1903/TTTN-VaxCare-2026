@@ -362,7 +362,7 @@ export default function LoginPage() {
                 />
                 Ghi nhớ đăng nhập
               </label>
-              {/* <Link to="/forgot-password" className="link-teal">Quên mật khẩu?</Link> */}
+              <Link to="/forgot-password" className="link-teal">Quên mật khẩu?</Link>
             </div>
 
             {error && <p className="form-error">{error}</p>}

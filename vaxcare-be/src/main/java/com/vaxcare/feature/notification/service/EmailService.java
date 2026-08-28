@@ -43,7 +43,18 @@ public class EmailService {
 
         send(toEmail, "[VaxCare] Xác nhận tài khoản của bạn", body, "verification " + link);
     }
+    public void sendPasswordResetEmail(String toEmail, String fullName, String token) {
+        String link = frontendUrl + "/reset-password?token=" + token;
+         String body =
+            "Xin chào " + safe(fullName) + ",\n\n"
+                    + "Chúng tôi nhận được yêu cầu đặt lại mật khẩu tài khoản VaxCare của bạn.\n"
+                    + "Bấm vào liên kết sau để tạo mật khẩu mới (hiệu lực trong 1 giờ):\n\n"
+                    + link + "\n\n"
+                    + "Nếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua email này.\n\n"
+                    + "— Đội ngũ VaxCare";
 
+    send(toEmail, "[VaxCare] Đặt lại mật khẩu", body, "password-reset " + link);
+        }
     public void sendAppointmentConfirmationEmail(
             String toEmail,
             String fullName,

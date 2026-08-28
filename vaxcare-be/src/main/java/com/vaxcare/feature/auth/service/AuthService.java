@@ -4,6 +4,8 @@ import com.vaxcare.common.enums.AccountStatus;
 import com.vaxcare.common.enums.Role;
 import com.vaxcare.common.exception.BadRequestException;
 import com.vaxcare.common.exception.ResourceNotFoundException;
+import com.vaxcare.feature.auth.dto.ForgotPasswordRequest;
+import com.vaxcare.feature.auth.dto.ResetPasswordRequest;
 import com.vaxcare.feature.auth.dto.*;
 import com.vaxcare.feature.auth.entity.Account;
 import com.vaxcare.feature.auth.entity.HealthProfile;
@@ -25,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -333,4 +336,76 @@ public class AuthService {
         accountRepository.save(account);
         return getProfile(userId);
     }
+
+    // ===================== QUÊN / ĐẶT LẠI MẬT KHẨU =====================
+
+    /**
+     * Luôn trả về thành công (không lộ email có tồn tại hay không).
+     * Chỉ gửi mail khi tài khoản ACTIVE và có email hợp lệ.
+     */
+    @Transactional
+    public void forgotPassword(String email) {
+        if (email == null || email.isBlank()) {
+            return;
+        }
+        Optional<Account> opt = accountRepository.findByEmail(email.trim().toLowerCase());
+        if (opt.isEmpty()) {
+            // thử email đúng như user nhập (case)
+            opt = accountRepository.findByEmail(email.trim());
+        }
+        if (opt.isEmpty()) {
+            return;
+        }
+        Account account = opt.get();
+        if (account.getStatus() != AccountStatus.ACTIVE) {
+            return;
+        }
+        String token = UUID.randomUUID().toString().replace("-", "");
+        account.setPasswordResetToken(token);
+        account.setPasswordResetTokenExpiresAt(LocalDateTime.now().plusHours(1));
+        accountRepository.save(account);
+
+        String fullName = account.getEmail();
+        try {
+            emailService.sendPasswordResetEmail(account.getEmail(), fullName, token);
+        } catch (Exception e) {
+            // không phá API; log trong EmailService
+        }
+    }
+
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        if (token == null || token.isBlank()) {
+            throw new BadRequestException("Token đặt lại mật khẩu không hợp lệ.");
+        }
+        if (newPassword == null || newPassword.length() < 6) {
+            throw new BadRequestException("Mật khẩu mới phải có ít nhất 6 ký tự.");
+        }
+        Account account = accountRepository.findByPasswordResetToken(token)
+                .orElseThrow(() -> new BadRequestException("Link đặt lại mật khẩu không hợp lệ hoặc đã được sử dụng."));
+
+        if (account.getPasswordResetTokenExpiresAt() != null
+                && account.getPasswordResetTokenExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Link đặt lại mật khẩu đã hết hạn. Vui lòng yêu cầu lại.");
+        }
+
+        account.setPasswordHash(passwordEncoder.encode(newPassword));
+        account.setPasswordResetToken(null);
+        account.setPasswordResetTokenExpiresAt(null);
+        accountRepository.save(account);
+    }
+
+    private String resolveDisplayName(Account account) {
+        if (account.getUser() != null && account.getUser().getFullName() != null) {
+            return account.getUser().getFullName();
+        }
+        if (account.getMedicalStaff() != null && account.getMedicalStaff().getFullName() != null) {
+            return account.getMedicalStaff().getFullName();
+        }
+        if (account.getAdmin() != null && account.getAdmin().getFullName() != null) {
+            return account.getAdmin().getFullName();
+        }
+        return account.getEmail();
+    }
+
 }

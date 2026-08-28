@@ -51,6 +51,13 @@ public class Account {
     @Column(name = "verification_token_expires_at")
     private LocalDateTime verificationTokenExpiresAt;
 
+    /** Token đặt lại mật khẩu (null khi không có yêu cầu reset) */
+    @Column(name = "password_reset_token", length = 64)
+    private String passwordResetToken;
+
+    @Column(name = "password_reset_token_expires_at")
+    private LocalDateTime passwordResetTokenExpiresAt;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

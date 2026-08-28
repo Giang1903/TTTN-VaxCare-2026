@@ -1,6 +1,8 @@
 package com.vaxcare.feature.auth.controller;
 
 import com.vaxcare.common.dto.ApiResponse;
+import com.vaxcare.feature.auth.dto.ForgotPasswordRequest;
+import com.vaxcare.feature.auth.dto.ResetPasswordRequest;
 import com.vaxcare.feature.auth.dto.*;
 import com.vaxcare.feature.auth.service.AuthService;
 import com.vaxcare.security.UserPrincipal;
@@ -54,6 +56,24 @@ public class AuthController {
                 null
         );
     }
+
+    @PostMapping("/forgot-password")
+    @Operation(summary = "Yêu cầu đặt lại mật khẩu — gửi email chứa token")
+    public ApiResponse<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.forgotPassword(request.getEmail());
+        return ApiResponse.success(
+                "Nếu email tồn tại trong hệ thống, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu.",
+                null
+        );
+    }
+
+    @PostMapping("/reset-password")
+    @Operation(summary = "Đặt mật khẩu mới bằng token trong email")
+    public ApiResponse<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request.getToken(), request.getNewPassword());
+        return ApiResponse.success("Đặt lại mật khẩu thành công. Bạn có thể đăng nhập.", null);
+    }
+
 
     @PostMapping("/refresh")
     public ApiResponse<TokenRefreshResponse> refresh(@Valid @RequestBody TokenRefreshRequest request) {

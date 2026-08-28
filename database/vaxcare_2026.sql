@@ -458,6 +458,9 @@ CREATE TABLE `vaccination_histories` (
   `user_id` bigint NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+ALTER TABLE `accounts`
+  ADD COLUMN `password_reset_token` varchar(64) DEFAULT NULL,
+  ADD COLUMN `password_reset_token_expires_at` datetime DEFAULT NULL;
 --
 -- Đang đổ dữ liệu cho bảng `vaccination_histories`
 --
