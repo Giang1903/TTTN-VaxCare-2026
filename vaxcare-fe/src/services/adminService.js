@@ -131,6 +131,14 @@ export function updateAccountStatus(id, status) {
   });
 }
 
+/** PATCH /admin/accounts/{id}/password — admin đặt mật khẩu mới */
+export function setAccountPassword(id, newPassword) {
+  return apiClient.request(`/admin/accounts/${id}/password`, {
+    method: "PATCH",
+    body: { newPassword },
+  });
+}
+
 export function mapAccountToUi(a) {
   const name = a.fullName || a.email || "—";
   const initials =
@@ -248,6 +256,14 @@ export function saveConfigsBatch(items) {
 // ---- Create staff ----
 export function createStaff(body) {
   return apiClient.request("/admin/accounts/staff", { method: "POST", body });
+}
+
+/** PATCH /admin/users/staff/{staffId}/facility */
+export function updateStaffFacility(staffId, facilityId) {
+  return apiClient.request(`/admin/users/staff/${staffId}/facility`, {
+    method: "PATCH",
+    body: { facilityId: Number(facilityId) },
+  });
 }
 
 // ---- Report export (admin uses staff endpoints) ----

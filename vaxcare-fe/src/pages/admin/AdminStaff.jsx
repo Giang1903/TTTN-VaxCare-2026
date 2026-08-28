@@ -71,11 +71,14 @@ export default function Staff() {
       showToast('Nhập họ tên, mã NV và email', 'warn');
       return;
     }
-    if (!form.password || String(form.password).length < 6) {
-      showToast('Nhập mật khẩu (tối thiểu 6 ký tự)', 'warn');
-      return;
+    // Chỉ bắt mật khẩu khi TẠO MỚI (sửa: bỏ qua autofill trình duyệt)
+    if (!editId) {
+      if (!form.password || String(form.password).length < 6) {
+        showToast('Nhập mật khẩu (tối thiểu 6 ký tự)', 'warn');
+        return;
+      }
     }
-    if (!form.fac && form.fac !== 0) {
+    if (form.fac === '' || form.fac == null) {
       showToast('Chọn cơ sở làm việc', 'warn');
       return;
     }
@@ -84,23 +87,44 @@ export default function Staff() {
       showToast('Cơ sở không hợp lệ', 'warn');
       return;
     }
-    if (editId) {
-      showToast('Sửa hồ sơ NV chưa hỗ trợ API — dùng khóa/mở khóa TK', 'warn');
-      return;
-    }
     setSaving(true);
     try {
-      await adminService.createStaff({
-        email: form.email.trim(),
-        password: String(form.password),
-        phone: form.phone?.trim() || undefined,
-        fullName: form.name.trim(),
-        staffCode: form.code.trim(),
-        specialty: form.spec?.trim() || undefined,
-        facilityId,
-      });
-      showToast('Đã tạo nhân viên ' + form.name, 'ok');
+      if (editId) {
+        const jobs = [];
+        jobs.push(adminService.updateStaffFacility(editId, facilityId));
+        if (form.status) {
+          jobs.push(adminService.updateAccountStatus(editId, form.status));
+        }
+        const pwd = String(form.password || '').trim();
+        if (pwd) {
+          if (pwd.length < 6) {
+            showToast('Mật khẩu mới phải có ít nhất 6 ký tự', 'warn');
+            setSaving(false);
+            return;
+          }
+          jobs.push(adminService.setAccountPassword(editId, pwd));
+        }
+        await Promise.all(jobs);
+        showToast(
+          pwd
+            ? 'Đã lưu thay đổi và đặt mật khẩu mới cho ' + form.name
+            : 'Đã lưu thay đổi nhân viên ' + form.name,
+          'ok',
+        );
+      } else {
+        await adminService.createStaff({
+          email: form.email.trim(),
+          password: String(form.password),
+          phone: form.phone?.trim() || undefined,
+          fullName: form.name.trim(),
+          staffCode: form.code.trim(),
+          specialty: form.spec?.trim() || undefined,
+          facilityId,
+        });
+        showToast('Đã tạo nhân viên ' + form.name, 'ok');
+      }
       setFormOpen(false);
+      setEditId(null);
       setForm({ name: '', code: '', spec: 'Tiêm chủng', fac: '', email: '', phone: '', password: '', status: 'ACTIVE' });
       await load();
     } catch (err) {
@@ -108,7 +132,7 @@ export default function Staff() {
       const detail = fe
         ? Object.values(fe).flat().filter(Boolean).join('; ')
         : null;
-      showToast(detail || err.message || 'Tạo NV thất bại', 'error');
+      showToast(detail || err.message || (editId ? 'Cập nhật NV thất bại' : 'Tạo NV thất bại'), 'error');
     } finally {
       setSaving(false);
     }
@@ -251,9 +275,28 @@ export default function Staff() {
           </select>
         </div>
         <div className="field-row">
-          <div className="field"><label>Email tài khoản</label><input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="staff@vaxcare.vn" /></div>
-          <div className="field"><label>Mật khẩu <span className="req">*</span></label><input type="password" value={form.password || ''} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Nhập mật khẩu cho nhân viên" autoComplete="new-password" /></div>
-          <div className="field"><label>Số điện thoại</label><input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="090…" /></div>
+          <div className="field">
+            <label>Email tài khoản</label>
+            <input
+              type="email"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              placeholder="staff@vaxcare.vn"
+              disabled={!!editId}
+              readOnly={!!editId}
+            />
+          </div>
+          <div className="field">
+            <label>Mật khẩu {!editId && <span className="req">*</span>}</label>
+            <input
+              type="password"
+              value={form.password || ''}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              placeholder={'Để trống nếu không đổi'}
+              autoComplete="new-password"
+            />
+          </div>
+          <div className="field"><label>Số điện thoại</label><input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="090…" disabled={!!editId} /></div>
         </div>
         <div className="field">
           <label>Trạng thái tài khoản</label>

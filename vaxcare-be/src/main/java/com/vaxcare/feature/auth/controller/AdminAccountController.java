@@ -4,6 +4,7 @@ import com.vaxcare.common.dto.ApiResponse;
 import com.vaxcare.common.enums.AccountStatus;
 import com.vaxcare.common.enums.Role;
 import com.vaxcare.feature.auth.dto.AdminAccountItemResponse;
+import com.vaxcare.feature.auth.dto.AdminSetPasswordRequest;
 import com.vaxcare.feature.auth.dto.CreateStaffRequest;
 import jakarta.validation.Valid;
 import com.vaxcare.feature.auth.service.AdminAccountService;
@@ -51,5 +52,13 @@ public class AdminAccountController {
         AccountStatus status = AccountStatus.valueOf(body.get("status"));
         return ApiResponse.success("Cập nhật trạng thái tài khoản thành công",
                 adminAccountService.updateStatus(id, status));
+    }
+
+    @PatchMapping("/{id}/password")
+    public ApiResponse<Void> setPassword(
+            @PathVariable Long id,
+            @Valid @RequestBody AdminSetPasswordRequest request) {
+        adminAccountService.setPassword(id, request.getNewPassword());
+        return ApiResponse.success("Đã đặt mật khẩu mới cho tài khoản", null);
     }
 }

@@ -113,8 +113,6 @@ public class AdminAccountService {
         } catch (Exception ignored) {
             // ignore
         }
-
-        // Dùng entity vừa save (đã có medicalStaff) — tránh query lại gây lỗi lazy/tx
         return map(saved);
     }
 
@@ -148,4 +146,20 @@ public class AdminAccountService {
         }
         return b.build();
     }
+
+    @Transactional
+    public void setPassword(Long accountId, String newPassword) {
+        if (newPassword == null || newPassword.length() < 6) {
+            throw new BadRequestException("Mật khẩu phải có ít nhất 6 ký tự");
+        }
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tài khoản ID: " + accountId));
+        account.setPasswordHash(passwordEncoder.encode(newPassword));
+        // hủy token reset nếu có
+        account.setPasswordResetToken(null);
+        account.setPasswordResetTokenExpiresAt(null);
+        accountRepository.save(account);
+        auditLogWriter.write("SET_PASSWORD", "ACCOUNT", accountId, null, "admin_set");
+    }
+
 }
