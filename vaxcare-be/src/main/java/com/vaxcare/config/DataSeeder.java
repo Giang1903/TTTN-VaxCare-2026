@@ -57,7 +57,7 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@Component
+//@Component
 @RequiredArgsConstructor
 @SuppressWarnings("null")
 public class DataSeeder implements CommandLineRunner {
