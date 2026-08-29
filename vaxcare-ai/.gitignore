@@ -16,6 +16,9 @@ models/*
 !models/.gitkeep
 data/*
 !data/.gitkeep
+!data/appointment_waittime.csv
+!data/vaccine_demand.csv
+!data/.ipynb
 
 # Notebook checkpoints
 .ipynb_checkpoints/
