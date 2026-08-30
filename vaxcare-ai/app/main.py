@@ -1,12 +1,16 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import schedule
+from app.routers import schedule, demand
 
 app = FastAPI(
-    title="VaxCare AI Service – Schedule Coordination",
-    description="Gợi ý và xếp hạng khung giờ tiêm dựa trên dự đoán thời gian chờ và nguy cơ quá tải.",
-    version="1.0.0",
+    title="VaxCare AI Service",
+    description=(
+        "AI Service cho VaxCare:\n"
+        "- AI1: Gợi ý / xếp hạng khung giờ tiêm (schedule coordination)\n"
+        "- AI2: Dự báo nhu cầu vắc xin (vaccine demand forecast)"
+    ),
+    version="1.1.0",
 )
 
 app.add_middleware(
@@ -18,6 +22,7 @@ app.add_middleware(
 )
 
 app.include_router(schedule.router)
+app.include_router(demand.router)
 
 
 @app.get("/", tags=["Health"])
@@ -25,5 +30,9 @@ def health():
     return {
         "status": "UP",
         "service": "vaxcare-ai-service",
-        "module": "schedule-coordination",
+        "modules": ["schedule-coordination", "vaccine-demand-forecast"],
+        "endpoints": {
+            "AI1": "POST /api/v1/ai/schedule  (alias /api/v1/ai/dispatch)",
+            "AI2": "POST /api/v1/ai/forecast",
+        },
     }

@@ -16,7 +16,7 @@ def schedule_rank(request: ScheduleRequest) -> ScheduleResponse:
 @router.post(
     "/dispatch",
     response_model=ScheduleResponse,
-    summary="Alias /dispatch (tương thích backend)",
+    summary="Alias /dispatch",
 )
 def dispatch_alias(request: ScheduleRequest) -> ScheduleResponse:
     return rank_slots(request)
