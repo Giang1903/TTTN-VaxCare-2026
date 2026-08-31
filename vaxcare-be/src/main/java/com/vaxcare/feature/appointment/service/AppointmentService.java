@@ -21,6 +21,7 @@ import com.vaxcare.feature.vaccine.entity.PriceList;
 import com.vaxcare.feature.vaccine.entity.Vaccine;
 import com.vaxcare.feature.vaccine.repository.PriceListRepository;
 import com.vaxcare.feature.vaccine.repository.VaccineRepository;
+import com.vaxcare.feature.inventory.repository.VaccineBatchRepository;
 import com.vaxcare.feature.notification.service.EmailService;
 import com.vaxcare.feature.ai.service.AiDispatchService;
 import com.vaxcare.utils.QRCodeUtil;
@@ -53,6 +54,7 @@ public class AppointmentService {
     private final PriceListRepository priceListRepository;
     private final EmailService emailService;
     private final AiDispatchService aiDispatchService;
+    private final VaccineBatchRepository vaccineBatchRepository;
 
     // ===================== KHUNG GIỜ TRỐNG =====================
 
@@ -157,6 +159,7 @@ public class AppointmentService {
         Vaccine vaccine = findVaccineOrThrow(request.getVaccineId());
 
         validateFacilityAndVaccineActive(facility, vaccine);
+        ensureVaccineInStockAtFacility(facility.getFacilityId(), vaccine.getVaccineId());
         validateSlotWithinWorkingHours(facility, request.getAppointmentDate(), request.getTimeSlot());
         ensureSlotHasCapacity(facility, request.getAppointmentDate(), request.getTimeSlot(), null);
 
@@ -274,6 +277,15 @@ public class AppointmentService {
         int capacity = facility.getCapacityPerSlot() != null ? facility.getCapacityPerSlot() : 0;
         if (booked >= capacity) {
             throw new BadRequestException("Khung giờ này đã hết chỗ, vui lòng chọn khung giờ khác");
+        }
+    }
+
+
+    private void ensureVaccineInStockAtFacility(Long facilityId, Long vaccineId) {
+        Integer stock = vaccineBatchRepository.sumStockByFacilityAndVaccine(facilityId, vaccineId);
+        if (stock == null || stock <= 0) {
+            throw new BadRequestException(
+                    "Cơ sở này hiện không còn tồn kho vắc xin đã chọn. Vui lòng chọn cơ sở khác hoặc vắc xin khác.");
         }
     }
 

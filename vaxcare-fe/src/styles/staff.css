@@ -2514,3 +2514,139 @@
   .page-toolbar { flex-direction: column; align-items: stretch; }
   .seg-tabs { overflow-x: auto; }
 }
+
+
+/* ===== Reactions detail: spacious layout ===== */
+.rx-layout {
+  grid-template-columns: minmax(300px, 0.9fr) minmax(420px, 1.35fr);
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 1100px) {
+  .rx-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rx-detail-panel .detail-head {
+  padding: 24px 28px;
+  gap: 18px;
+}
+.rx-detail-panel .detail-head .av {
+  width: 56px;
+  height: 56px;
+  font-size: 18px;
+}
+.rx-detail-panel .detail-head .n {
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+.rx-detail-panel .detail-head .m {
+  font-size: 13.5px;
+  color: var(--gray-500);
+  line-height: 1.4;
+}
+.rx-detail-panel .detail-badges {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rx-detail-panel .detail-body {
+  padding: 24px 28px 12px;
+}
+.rx-detail-panel .section-title {
+  margin-top: 8px;
+  margin-bottom: 14px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+.rx-detail-panel .section-title:not(:first-child) {
+  margin-top: 28px;
+}
+
+.rx-info-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+.rx-detail-panel .detail-row {
+  padding: 14px 4px;
+  gap: 24px;
+  font-size: 14.5px;
+}
+.rx-detail-panel .detail-row .lbl {
+  flex: 0 0 150px;
+}
+.rx-detail-panel .detail-row .val {
+  flex: 1;
+  text-align: right;
+  word-break: break-word;
+}
+
+.rx-symptoms-box {
+  padding: 16px 18px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-100);
+  border-radius: 12px;
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: var(--gray-800);
+  min-height: 56px;
+}
+
+.rx-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 20px;
+}
+.rx-form-grid .field {
+  margin-bottom: 0;
+}
+.rx-form-grid .field-full {
+  grid-column: 1 / -1;
+}
+.rx-detail-panel .field label {
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+.rx-detail-panel .field input,
+.rx-detail-panel .field select,
+.rx-detail-panel .field textarea {
+  padding: 12px 14px;
+  font-size: 14.5px;
+  border-radius: 10px;
+}
+.rx-note,
+.rx-detail-panel .note-box.rx-note {
+  min-height: 120px;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.rx-detail-foot,
+.rx-detail-panel .detail-foot {
+  padding: 18px 28px 24px;
+  gap: 12px;
+  background: #fafbfc;
+}
+.rx-detail-panel .detail-foot .btn {
+  flex: 1;
+  justify-content: center;
+  min-height: 44px;
+  padding: 12px 16px;
+  font-size: 14px;
+}
+@media (max-width: 640px) {
+  .rx-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .rx-detail-panel .detail-foot {
+    flex-direction: column;
+  }
+  .rx-detail-panel .detail-foot .btn {
+    width: 100%;
+  }
+}

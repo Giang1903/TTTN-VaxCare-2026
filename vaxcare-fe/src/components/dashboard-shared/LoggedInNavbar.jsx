@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { getMyNotifications } from "../../services/notificationService";
+import { getUnreadCount } from "../../services/notificationService";
 
 // ============ NAVBAR (LOGGED IN) ============
 export default function LoggedInNavbar({ onOpenMobileNav }) {
@@ -13,19 +13,17 @@ export default function LoggedInNavbar({ onOpenMobileNav }) {
 
   useEffect(() => {
     let cancelled = false;
-    getMyNotifications()
-      .then((list) => {
-        if (cancelled) return;
-        const arr = Array.isArray(list) ? list : [];
-        const n = arr.filter(
-          (x) =>
-            x && (x.isRead === false || x.isRead === 0 || x.isRead == null),
-        ).length;
-        // chỉ đếm chưa đọc nếu BE trả isRead; nếu không có field thì 0
-        const hasReadFlag = arr.some(
-          (x) => x && typeof x.isRead !== "undefined" && x.isRead !== null,
-        );
-        setUnread(hasReadFlag ? n : 0);
+    // Khi đang ở trang /notifications, số chưa đọc đã được mark-all → 0
+    if (pathname === "/notifications") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setUnread(0);
+      return () => {
+        cancelled = true;
+      };
+    }
+    getUnreadCount()
+      .then((n) => {
+        if (!cancelled) setUnread(Number(n) || 0);
       })
       .catch(() => {
         if (!cancelled) setUnread(0);

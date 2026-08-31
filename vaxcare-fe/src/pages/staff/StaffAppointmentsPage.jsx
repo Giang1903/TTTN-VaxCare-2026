@@ -92,7 +92,13 @@ export default function StaffAppointmentsPage() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('all');
   const [q, setQ] = useState('');
-  const today = new Date().toISOString().slice(0, 10);
+  const toLocalDateString = (d = new Date()) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+  const today = toLocalDateString();
   const [date, setDate] = useState(today);
   const [drawer, setDrawer] = useState({ open: false, mode: 'view', apptId: null });
   const [manualQr, setManualQr] = useState('');
