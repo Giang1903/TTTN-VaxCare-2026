@@ -74,6 +74,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/vaccines/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/price-lists").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/protocols/**").permitAll()
+                        // Tra cứu khung giờ trống + AI gợi ý: public (FE gọi khi đặt lịch, không bắt buộc token)
                         .requestMatchers(HttpMethod.GET, "/api/v1/appointments/available-slots").permitAll()
                         .anyRequest().authenticated()
                 );

@@ -5,9 +5,10 @@ export function getAvailableSlots(facilityId, date) {
     facilityId: String(facilityId),
     date: date, // yyyy-MM-dd
   });
+  // Public endpoint (BE permitAll) — vẫn gửi token nếu đã login để đồng bộ session
   return apiClient.request(`/appointments/available-slots?${params}`, {
     method: "GET",
-    auth: false,
+    auth: true,
   });
 }
 export function getMyAppointments() {
