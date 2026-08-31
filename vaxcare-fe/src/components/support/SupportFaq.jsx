@@ -7,7 +7,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Tôi có thể hủy hoặc đổi lịch tiêm không?',
-    a: 'Có. Vào mục "Lịch tiêm của tôi", chọn lịch cần hủy/đổi. Hủy trước ít nhất 2 giờ so với giờ hẹn để giải phóng chỗ cho người khác. Đổi lịch sẽ đưa bạn về bước chọn khung giờ mới tại cùng cơ sở hoặc cơ sở khác.',
+    a: 'Có. Vào mục "Lịch tiêm của tôi", chọn lịch và bấm Đổi ngày/giờ. Chỉ được đổi ngày và khung giờ; vắc xin và cơ sở giữ nguyên. Hệ thống không hỗ trợ hủy lịch — liên hệ cơ sở nếu cần hỗ trợ đặc biệt.',
   },
   {
     q: 'Hồ sơ tiêm điện tử có được công nhận không?',

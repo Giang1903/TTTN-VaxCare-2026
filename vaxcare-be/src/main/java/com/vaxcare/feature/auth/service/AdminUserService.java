@@ -110,6 +110,48 @@ public class AdminUserService {
         return mapToDetailResponse(findAccountWithProfilesOrThrow(staffId));
     }
 
+    // ===================== CẬP NHẬT THÔNG TIN NHÂN VIÊN =====================
+
+    @Transactional
+    public AdminAccountDetailResponse updateStaff(Long staffId, UpdateStaffRequest request) {
+        MedicalStaff staff = medicalStaffRepository.findById(staffId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên y tế với ID: " + staffId));
+
+        Account account = staff.getAccount();
+        if (account == null || account.getRole() != Role.MEDICAL_STAFF) {
+            throw new BadRequestException("Tài khoản không phải nhân viên y tế");
+        }
+
+        String newCode = request.getStaffCode().trim();
+        if (!newCode.equalsIgnoreCase(staff.getStaffCode())
+                && (medicalStaffRepository.existsByStaffCode(newCode)
+                    || medicalStaffRepository.findByStaffCode(newCode).isPresent())) {
+            throw new BadRequestException("Mã nhân viên đã tồn tại: " + newCode);
+        }
+
+        staff.setFullName(request.getFullName().trim());
+        staff.setStaffCode(newCode);
+        staff.setSpecialty(request.getSpecialty() != null && !request.getSpecialty().isBlank()
+                ? request.getSpecialty().trim() : null);
+
+        if (request.getPhone() != null) {
+            String phone = request.getPhone().trim();
+            account.setPhone(phone.isEmpty() ? null : phone);
+        }
+
+        if (request.getFacilityId() != null) {
+            VaccinationFacility facility = facilityRepository.findById(request.getFacilityId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Không tìm thấy cơ sở tiêm chủng với ID: " + request.getFacilityId()));
+            staff.setFacility(facility);
+        }
+
+        medicalStaffRepository.save(staff);
+        accountRepository.save(account);
+
+        return mapToDetailResponse(findAccountWithProfilesOrThrow(account.getAccountId()));
+    }
+
     // ===================== TẠO TÀI KHOẢN ADMIN =====================
 
     @Transactional

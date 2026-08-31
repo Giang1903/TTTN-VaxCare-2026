@@ -42,10 +42,12 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
           AND a.appointmentDate = :date
           AND a.timeSlot = :timeSlot
           AND a.status NOT IN ('CANCELLED', 'NO_SHOW')
+          AND a.appointmentId <> COALESCE(:excludeId, -1L)
         """)
     long countBookingsInSlot(@Param("facilityId") Long facilityId,
                              @Param("date") LocalDate date,
-                             @Param("timeSlot") LocalTime timeSlot);
+                             @Param("timeSlot") LocalTime timeSlot,
+                             @Param("excludeId") Long excludeId);
 
     List<Appointment> findByStatusAndAppointmentDateBefore(AppointmentStatus status, LocalDate date);
 

@@ -72,16 +72,23 @@ public class EmailService {
         String priceStr = price != null
                 ? String.format("%,.0f", price).replace(',', '.') + "₫"
                 : "Liên hệ cơ sở";
-        String code = (qrCode != null && !qrCode.isBlank())
+        boolean hasQr = qrCode != null && !qrCode.isBlank();
+        String code = hasQr
                 ? qrCode
-                : (appointmentId != null ? "VX-" + appointmentId : "—");
+                : (appointmentId != null ? "#" + appointmentId : "—");
         String appointmentsLink = frontendUrl + "/appointments";
+        String qrLine = hasQr
+                ? "Mã QR check-in: " + code + "\n"
+                : "Mã lịch: " + code + " (mã QR sẽ được cấp sau khi thanh toán thành công)\n";
+        String qrHint = hasQr
+                ? "Vui lòng mang theo mã QR khi đến tiêm.\n"
+                : "Vui lòng hoàn tất thanh toán để nhận mã QR check-in, sau đó mang theo khi đến tiêm.\n";
 
         String body =
                 "Xin chào " + safe(fullName) + ",\n\n"
                         + "Bạn đã đặt lịch tiêm chủng thành công trên VaxCare.\n\n"
                         + "===== THÔNG TIN LỊCH HẸN =====\n"
-                        + "Mã lịch / QR: " + code + "\n"
+                        + qrLine
                         + "Vắc xin: " + safe(vaccineName) + "\n"
                         + "Cơ sở: " + safe(facilityName) + "\n"
                         + (facilityAddress != null && !facilityAddress.isBlank()
@@ -89,9 +96,9 @@ public class EmailService {
                         + "Ngày: " + dateStr + "\n"
                         + "Giờ: " + timeStr + "\n"
                         + "Tạm tính: " + priceStr + "\n"
-                        + "Trạng thái: Chờ xác nhận\n\n"
-                        + "Vui lòng mang theo mã QR / mã lịch khi đến tiêm.\n"
-                        + "Xem hoặc hủy lịch tại: " + appointmentsLink + "\n\n"
+                        + "Trạng thái: Chờ xác nhận / thanh toán\n\n"
+                        + qrHint
+                        + "Xem lịch tại: " + appointmentsLink + "\n\n"
                         + "— Đội ngũ VaxCare";
 
         send(toEmail, "[VaxCare] Xác nhận đặt lịch tiêm – " + code, body, "appointment " + code);

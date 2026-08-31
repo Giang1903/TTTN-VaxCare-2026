@@ -199,7 +199,7 @@ export default function StaffReactionsPage() {
           </div>
         </div>
 
-        <div className="layout-2">
+        <div className="layout-2 rx-layout">
           <div className="panel">
             <div className="panel-head">
               <div>
@@ -235,13 +235,13 @@ export default function StaffReactionsPage() {
           </div>
 
           {d && (
-            <div className="panel detail-panel">
+            <div className="panel detail-panel rx-detail-panel">
               <div className="detail-head">
                 <div className="av">{d.av}</div>
                 <div>
                   <div className="n">{d.name}</div>
                   <div className="m">{d.meta}</div>
-                  <div style={{ marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  <div className="detail-badges">
                     <span className={`sev ${d.sev}`}>{d.sevLabel}</span>
                     <span className={`proc ${d.proc}`}>{d.procLabel}</span>
                   </div>
@@ -249,56 +249,63 @@ export default function StaffReactionsPage() {
               </div>
               <div className="detail-body">
                 <div className="section-title">Thông tin tiêm</div>
-                <div className="detail-row">
-                  <span className="lbl">Vắc xin</span>
-                  <span className="val">{d.vax}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="lbl">Ngày tiêm</span>
-                  <span className="val">{d.inj}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="lbl">Lô vắc xin</span>
-                  <span className="val">{d.batch}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="lbl">Thời điểm báo cáo</span>
-                  <span className="val">{d.report}</span>
+                <div className="rx-info-grid">
+                  <div className="detail-row">
+                    <span className="lbl">Vắc xin</span>
+                    <span className="val">{d.vax || '—'}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="lbl">Ngày tiêm</span>
+                    <span className="val">{d.inj || '—'}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="lbl">Lô vắc xin</span>
+                    <span className="val">{d.batch || '—'}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="lbl">Thời điểm báo cáo</span>
+                    <span className="val">{d.report || '—'}</span>
+                  </div>
                 </div>
 
                 <div className="section-title">Triệu chứng</div>
-                <p style={{ fontSize: 14, lineHeight: 1.55, marginBottom: 4 }}>{d.symptoms}</p>
+                <div className="rx-symptoms-box">
+                  {d.symptoms || 'Không có mô tả triệu chứng.'}
+                </div>
 
                 <div className="section-title">Xử lý</div>
-                <div className="field">
-                  <label>Mức độ (do người khai báo ghi nhận)</label>
-                  <select value={severity} disabled>
-                    <option value="NONE">Không có</option>
-                    <option value="MILD">Nhẹ</option>
-                    <option value="MODERATE">Trung bình</option>
-                    <option value="SEVERE">Nặng</option>
-                  </select>
-                </div>
-                <div className="field">
-                  <label>Trạng thái xử lý</label>
-                  <select value={status} onChange={(e) => setStatus(e.target.value)}>
-                    <option value="PENDING">Chờ xử lý</option>
-                    <option value="REVIEWED">Đã xem xét</option>
-                    <option value="CONTACTED">Đã liên hệ</option>
-                    <option value="RESOLVED">Đã giải quyết</option>
-                  </select>
-                </div>
-                <div className="field">
-                  <label>Ghi chú nhân viên</label>
-                  <textarea
-                    className="note-box"
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    placeholder="Nội dung tư vấn, hướng dẫn, kết quả liên hệ..."
-                  />
+                <div className="rx-form-grid">
+                  <div className="field">
+                    <label>Mức độ (do người khai báo ghi nhận)</label>
+                    <select value={severity} disabled>
+                      <option value="NONE">Không có</option>
+                      <option value="MILD">Nhẹ</option>
+                      <option value="MODERATE">Trung bình</option>
+                      <option value="SEVERE">Nặng</option>
+                    </select>
+                  </div>
+                  <div className="field">
+                    <label>Trạng thái xử lý</label>
+                    <select value={status} onChange={(e) => setStatus(e.target.value)}>
+                      <option value="PENDING">Chờ xử lý</option>
+                      <option value="REVIEWED">Đã xem xét</option>
+                      <option value="CONTACTED">Đã liên hệ</option>
+                      <option value="RESOLVED">Đã giải quyết</option>
+                    </select>
+                  </div>
+                  <div className="field field-full">
+                    <label>Ghi chú nhân viên</label>
+                    <textarea
+                      className="note-box rx-note"
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      placeholder="Nội dung tư vấn, hướng dẫn, kết quả liên hệ..."
+                      rows={5}
+                    />
+                  </div>
                 </div>
               </div>
-              <div className="detail-foot">
+              <div className="detail-foot rx-detail-foot">
                 <button
                   type="button"
                   className="btn warn"

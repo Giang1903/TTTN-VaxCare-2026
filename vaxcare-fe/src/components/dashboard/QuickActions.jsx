@@ -20,7 +20,7 @@ const items = [
   {
     to: '/appointments',
     title: 'Lịch của tôi',
-    desc: 'Hủy / đổi lịch hẹn',
+    desc: 'Xem / đổi ngày-giờ lịch hẹn',
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
     ),

@@ -41,9 +41,16 @@ export default function Staff() {
   const rows = useMemo(() => {
     const qq = q.trim().toLowerCase();
     return list.filter((s) => {
-      if (filterFac !== 'all' && String(s.fac) !== filterFac) return false;
+      const facId = s.facilityId ?? s.fac;
+      if (filterFac !== 'all' && String(facId ?? '') !== String(filterFac)) return false;
       if (!qq) return true;
-      return (s.name + s.code + s.spec + s.email + ((facilities.find(f=>f.id===s.facilityId||f.id===s.fac)?.name || s.facility || '') || '')).toLowerCase().includes(qq);
+      const facName =
+        facilities.find((f) => String(f.id) === String(facId))?.name || s.facility || '';
+      const hay = [s.name, s.staffCode || s.code, s.specialty || s.spec, s.email, s.phone, facName]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      return hay.includes(qq);
     });
   }, [list, filterFac, q, facilities]);
 
@@ -91,7 +98,15 @@ export default function Staff() {
     try {
       if (editId) {
         const jobs = [];
-        jobs.push(adminService.updateStaffFacility(editId, facilityId));
+        jobs.push(
+          adminService.updateStaff(editId, {
+            fullName: form.name.trim(),
+            staffCode: form.code.trim(),
+            specialty: form.spec?.trim() || undefined,
+            phone: form.phone?.trim() || undefined,
+            facilityId,
+          }),
+        );
         if (form.status) {
           jobs.push(adminService.updateAccountStatus(editId, form.status));
         }
@@ -160,16 +175,39 @@ export default function Staff() {
           <div className="kpi c4"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg></span></div><div className="num">{kpiPending}</div><div className="lbl">Chờ kích hoạt TK</div></div>
         </section>
 
-        <div className="toolbar">
-          <div className="seg-tabs">
-            {[
-              { f: 'all', label: 'Tất cả' },
-              ...facilities.slice(0, 6).map((fac) => ({ f: String(fac.id), label: fac.name })),
-            ].map((t) => (
-              <button key={t.f} type="button" className={filterFac === t.f ? 'active' : ''} onClick={() => setFilterFac(t.f)}>{t.label}</button>
-            ))}
+        <div className="toolbar" style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: '1 1 240px', minWidth: 0 }}>
+            <label htmlFor="staff-fac-filter" style={{ fontSize: 14, fontWeight: 700, color: 'var(--gray-600)', whiteSpace: 'nowrap' }}>
+              Cơ sở
+            </label>
+            <select
+              id="staff-fac-filter"
+              value={filterFac}
+              onChange={(e) => setFilterFac(e.target.value)}
+              style={{
+                flex: '1 1 auto',
+                minWidth: 180,
+                maxWidth: 420,
+                padding: '10px 14px',
+                borderRadius: 999,
+                border: '1px solid var(--gray-100)',
+                background: 'var(--gray-50)',
+                fontSize: 14,
+                fontWeight: 700,
+                color: 'var(--ink)',
+                fontFamily: 'inherit',
+                cursor: 'pointer',
+              }}
+            >
+              <option value="all">Tất cả cơ sở ({facilities.length})</option>
+              {facilities.map((fac) => (
+                <option key={fac.id} value={String(fac.id)}>
+                  {fac.name}
+                </option>
+              ))}
+            </select>
           </div>
-          <div className="toolbar-right">
+          <div className="toolbar-right" style={{ marginLeft: 0 }}>
             <button className="btn primary" type="button" onClick={() => openForm(null)}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 5v14M5 12h14" /></svg>
               Thêm nhân viên
@@ -195,13 +233,13 @@ export default function Staff() {
                         <div className="who-av">{s.initials}</div>
                         <div>
                           <div className="who-name">{s.name}</div>
-                          <div className="who-meta">{s.spec}</div>
+                          <div className="who-meta">{s.specialty || s.spec || ''}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="mono">{s.code}</td>
-                    <td>{s.spec}</td>
-                    <td>{(facilities.find(f=>f.id===s.facilityId||f.id===s.fac)?.name || s.facility || '') || '—'}</td>
+                    <td className="mono">{s.staffCode || s.code || '—'}</td>
+                    <td>{s.specialty || s.spec || '—'}</td>
+                    <td>{(facilities.find(f => String(f.id) === String(s.facilityId ?? s.fac))?.name || s.facility || '') || '—'}</td>
                     <td>
                       <div className="who-meta" style={{ color: 'var(--ink)' }}>{s.email}</div>
                       <div className="who-meta">{s.phone}</div>
@@ -238,7 +276,7 @@ export default function Staff() {
       >
         {detail && (
           <>
-            <div className="detail-row"><span className="lbl">Mã NV</span><span className="val mono">{detail.code}</span></div>
+            <div className="detail-row"><span className="lbl">Mã NV</span><span className="val mono">{detail.staffCode || detail.code}</span></div>
             <div className="detail-row"><span className="lbl">Chuyên môn</span><span className="val">{detail.spec}</span></div>
             <div className="detail-row"><span className="lbl">Cơ sở</span><span className="val">{(facilities.find(f=>f.id===detail.facilityId||f.id===detail.fac)?.name || detail.facility || '')}</span></div>
             <div className="detail-row"><span className="lbl">Email</span><span className="val">{detail.email}</span></div>
@@ -296,7 +334,7 @@ export default function Staff() {
               autoComplete="new-password"
             />
           </div>
-          <div className="field"><label>Số điện thoại</label><input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="090…" disabled={!!editId} /></div>
+          <div className="field"><label>Số điện thoại</label><input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="090…" /></div>
         </div>
         <div className="field">
           <label>Trạng thái tài khoản</label>

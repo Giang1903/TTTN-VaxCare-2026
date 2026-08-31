@@ -28,45 +28,77 @@ export default function StaffVaccinationPage() {
   const [q, setQ] = useState('');
   const [loading, setLoading] = useState(true);
 
+  const toLocalDateString = (d = new Date()) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
+  const mapQueueItem = (a) => {
+    const ui = staffService.mapAppointmentToUi(a);
+    return {
+      id: ui.id,
+      time: ui.time,
+      name: ui.name,
+      initials: ui.initials,
+      age: ui.age || '',
+      phone: ui.phone,
+      vaccine: ui.vaccine,
+      vaccineId: a.vaccineId,
+      dose: ui.dose || '',
+      doseNum: undefined,
+      qr: ui.qr,
+      checkedInAt: ui.time,
+      batches: [],
+      history: [],
+      protocolNote: a.note || '',
+      userId: a.userId,
+      _raw: a,
+    };
+  };
+
   const loadQueue = useCallback(async () => {
     setLoading(true);
     try {
-      const today = new Date().toISOString().slice(0, 10);
-      const list = await staffService.searchAppointments({ date: today, status: 'CHECKED_IN' });
-      const mapped = (list || []).map((a) => {
-        const ui = staffService.mapAppointmentToUi(a);
-        return {
-          id: ui.id,
-          time: ui.time,
-          name: ui.name,
-          initials: ui.initials,
-          age: ui.age || '',
-          phone: ui.phone,
-          vaccine: ui.vaccine,
-          vaccineId: a.vaccineId,
-          dose: ui.dose || '',
-          doseNum: undefined,
-          qr: ui.qr,
-          checkedInAt: ui.time,
-          batches: [],
-          history: [],
-          protocolNote: a.note || '',
-          userId: a.userId,
-          _raw: a,
-        };
-      });
-      setQueue(mapped);
+      // Ngày theo máy local (VN) — tránh lệch UTC của toISOString()
+      const today = toLocalDateString();
       const qid = searchParams.get('id');
+
+      let list =
+        (await staffService.searchAppointments({
+          date: today,
+          status: 'CHECKED_IN',
+        })) || [];
+
+      // Vào từ Lịch hẹn với ?id= — nếu không có trong hàng chờ hôm nay thì tìm rộng hơn
+      if (qid && !list.some((a) => String(a.appointmentId) === String(qid))) {
+        const broader =
+          (await staffService.searchAppointments({ status: 'CHECKED_IN' })) || [];
+        const found = broader.find((a) => String(a.appointmentId) === String(qid));
+        if (found) {
+          list = [found, ...list.filter((a) => String(a.appointmentId) !== String(qid))];
+        }
+      }
+
+      const mapped = list.map(mapQueueItem);
+      setQueue(mapped);
+
       let pick = mapped[0]?.id ?? null;
       if (qid) {
-        const found = mapped.find((p) => String(p.id) === String(qid));
-        if (found) pick = found.id;
+        const found = mapped.find((item) => String(item.id) === String(qid));
+        if (found) {
+          pick = found.id;
+        } else if (mapped.length === 0) {
+          showToast('Không tìm thấy lịch đã check-in với mã này trong hàng chờ.', 'warn');
+        }
       }
       setCurrentId(pick);
     } catch (err) {
       console.error(err);
       showToast(err.message || 'Không tải hàng chờ tiêm', 'warn');
       setQueue([]);
+      setCurrentId(null);
     } finally {
       setLoading(false);
     }

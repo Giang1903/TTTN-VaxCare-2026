@@ -1,8 +1,13 @@
 package com.vaxcare.feature.inventory.service;
 
 import com.vaxcare.common.enums.BatchStatus;
+import com.vaxcare.common.enums.Role;
 import com.vaxcare.common.exception.BadRequestException;
 import com.vaxcare.common.exception.ResourceNotFoundException;
+import com.vaxcare.common.exception.UnauthorizedException;
+import com.vaxcare.feature.auth.entity.Account;
+import com.vaxcare.feature.auth.entity.MedicalStaff;
+import com.vaxcare.feature.auth.repository.AccountRepository;
 import com.vaxcare.feature.facility.entity.VaccinationFacility;
 import com.vaxcare.feature.facility.repository.VaccinationFacilityRepository;
 import com.vaxcare.feature.inventory.dto.AlertThresholdRequest;
@@ -32,11 +37,13 @@ public class InventoryService {
     private final VaccineBatchRepository batchRepository;
     private final VaccinationFacilityRepository facilityRepository;
     private final VaccineRepository vaccineRepository;
+    private final AccountRepository accountRepository;
 
     // ===================== NHẬP LÔ VẮC XIN =====================
 
     @Transactional
-    public VaccineBatchResponse importBatch(VaccineBatchRequest request) {
+    public VaccineBatchResponse importBatch(VaccineBatchRequest request, Long currentAccountId) {
+        assertFacilityAccess(currentAccountId, request.getFacilityId());
         VaccinationFacility facility = findFacilityOrThrow(request.getFacilityId());
         Vaccine vaccine = findVaccineOrThrow(request.getVaccineId());
 
@@ -68,7 +75,8 @@ public class InventoryService {
     // ===================== XEM DANH SÁCH LÔ =====================
 
     @Transactional
-    public List<VaccineBatchResponse> getBatches(Long facilityId, Long vaccineId, BatchStatus status) {
+    public List<VaccineBatchResponse> getBatches(Long facilityId, Long vaccineId, BatchStatus status, Long currentAccountId) {
+        assertFacilityAccess(currentAccountId, facilityId);
         findFacilityOrThrow(facilityId);
         syncExpiredBatches();
         return batchRepository.searchBatches(facilityId, vaccineId, status).stream()
@@ -77,14 +85,17 @@ public class InventoryService {
     }
 
     @Transactional(readOnly = true)
-    public VaccineBatchResponse getBatchById(Long batchId) {
-        return mapBatchToResponse(findBatchOrThrow(batchId));
+    public VaccineBatchResponse getBatchById(Long batchId, Long currentAccountId) {
+        VaccineBatch batch = findBatchOrThrow(batchId);
+        assertFacilityAccess(currentAccountId, batch.getInventory().getFacility().getFacilityId());
+        return mapBatchToResponse(batch);
     }
 
     // ===================== TỒN KHO & CẢNH BÁO =====================
 
     @Transactional
-    public List<StockSummaryResponse> getStockSummary(Long facilityId) {
+    public List<StockSummaryResponse> getStockSummary(Long facilityId, Long currentAccountId) {
+        assertFacilityAccess(currentAccountId, facilityId);
         VaccinationFacility facility = findFacilityOrThrow(facilityId);
         syncExpiredBatches();
 
@@ -120,14 +131,15 @@ public class InventoryService {
     }
 
     @Transactional
-    public List<StockSummaryResponse> getLowStockAlerts(Long facilityId) {
-        return getStockSummary(facilityId).stream()
+    public List<StockSummaryResponse> getLowStockAlerts(Long facilityId, Long currentAccountId) {
+        return getStockSummary(facilityId, currentAccountId).stream()
                 .filter(StockSummaryResponse::getIsLowStock)
                 .toList();
     }
 
     @Transactional
-    public List<VaccineBatchResponse> getExpiringSoon(Long facilityId, int withinDays) {
+    public List<VaccineBatchResponse> getExpiringSoon(Long facilityId, int withinDays, Long currentAccountId) {
+        assertFacilityAccess(currentAccountId, facilityId);
         findFacilityOrThrow(facilityId);
         syncExpiredBatches();
 
@@ -144,7 +156,8 @@ public class InventoryService {
     }
 
     @Transactional
-    public void updateAlertThreshold(Long facilityId, AlertThresholdRequest request) {
+    public void updateAlertThreshold(Long facilityId, AlertThresholdRequest request, Long currentAccountId) {
+        assertFacilityAccess(currentAccountId, facilityId);
         VaccinationFacility facility = findFacilityOrThrow(facilityId);
         VaccineInventory inventory = getOrCreateInventory(facility);
         inventory.setAlertThreshold(request.getAlertThreshold());
@@ -186,6 +199,34 @@ public class InventoryService {
 
         batchRepository.saveAll(batches);
         return primaryBatch;
+    }
+
+
+    // ===================== PHÂN QUYỀN THEO CƠ SỞ =====================
+
+    /**
+     * Staff chỉ được thao tác kho của cơ sở mình được phân công.
+     * Admin được thao tác mọi cơ sở.
+     */
+    private void assertFacilityAccess(Long currentAccountId, Long facilityId) {
+        if (currentAccountId == null || facilityId == null) {
+            throw new UnauthorizedException("Không xác định được tài khoản hoặc cơ sở tiêm chủng");
+        }
+        Account account = accountRepository.findById(currentAccountId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tài khoản với ID: " + currentAccountId));
+        if (account.getRole() == Role.ADMIN) {
+            return;
+        }
+        if (account.getRole() != Role.MEDICAL_STAFF) {
+            throw new UnauthorizedException("Bạn không có quyền quản lý kho vắc xin");
+        }
+        MedicalStaff staff = account.getMedicalStaff();
+        if (staff == null || staff.getFacility() == null) {
+            throw new UnauthorizedException("Tài khoản nhân viên chưa được gán cơ sở tiêm chủng");
+        }
+        if (!staff.getFacility().getFacilityId().equals(facilityId)) {
+            throw new UnauthorizedException("Bạn chỉ được quản lý kho vắc xin của cơ sở mình được phân công");
+        }
     }
 
     // ===================== HELPERS =====================

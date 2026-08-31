@@ -29,10 +29,15 @@ export function bookAppointment({ facilityId, vaccineId, appointmentDate, timeSl
     },
   });
 }
-export function cancelAppointment(id, reason) {
-  return apiClient.request(`/appointments/${id}/cancel`, {
-    method: "PATCH",
-    body: reason ? { reason } : undefined,
+/** PUT /appointments/{id} — chỉ đổi ngày + khung giờ */
+export function rescheduleAppointment(id, { appointmentDate, timeSlot }) {
+  const slot = timeSlot && String(timeSlot).length === 5 ? `${timeSlot}:00` : timeSlot;
+  return apiClient.request(`/appointments/${id}`, {
+    method: "PUT",
+    body: {
+      appointmentDate, // yyyy-MM-dd
+      timeSlot: slot,
+    },
   });
 }
 /** POST /api/v1/payments/create-vnpay — tạo URL thanh toán VNPay */

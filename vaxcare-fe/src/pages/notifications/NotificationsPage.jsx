@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import SlimPageHero from '../../components/dashboard-shared/SlimPageHero';
-import { getMyNotifications } from '../../services/notificationService';
+import { getMyNotifications, markAllNotificationsRead } from '../../services/notificationService';
 
 function formatDt(d) {
   if (!d) return '';
@@ -26,16 +26,20 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const load = useCallback(() => {
+  const load = useCallback(async () => {
     setLoading(true);
     setError('');
-    getMyNotifications()
-      .then((data) => setItems(Array.isArray(data) ? data : []))
-      .catch((err) => {
-        setError(err.message || 'Không tải được thông báo.');
-        setItems([]);
-      })
-      .finally(() => setLoading(false));
+    try {
+      // Vào trang xem = đánh dấu đã đọc → badge chuông về 0
+      await markAllNotificationsRead();
+      const data = await getMyNotifications();
+      setItems(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError(err.message || 'Không tải được thông báo.');
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {

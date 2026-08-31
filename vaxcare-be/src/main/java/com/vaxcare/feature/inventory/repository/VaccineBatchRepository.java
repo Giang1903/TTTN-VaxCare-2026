@@ -95,6 +95,8 @@ public interface VaccineBatchRepository extends JpaRepository<VaccineBatch, Long
         WHERE b.inventory.facility.facilityId = :facilityId
           AND b.vaccine.vaccineId = :vaccineId
           AND b.status = 'AVAILABLE'
+          AND b.stockQuantity > 0
+          AND b.expiryDate >= CURRENT_DATE
         """)
     Integer sumStockByFacilityAndVaccine(@Param("facilityId") Long facilityId,
                                          @Param("vaccineId") Long vaccineId);
