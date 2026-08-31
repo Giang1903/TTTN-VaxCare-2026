@@ -62,6 +62,14 @@ public class AdminUserController {
                 adminUserService.updateStaffFacility(staffId, request.getFacilityId()));
     }
 
+    @PutMapping("/staff/{staffId}")
+    public ApiResponse<AdminAccountDetailResponse> updateStaff(
+            @PathVariable Long staffId,
+            @Valid @RequestBody UpdateStaffRequest request) {
+        return ApiResponse.success("Cập nhật thông tin nhân viên thành công",
+                adminUserService.updateStaff(staffId, request));
+    }
+
     @PostMapping("/admin")
     public ApiResponse<AccountResponse> createAdminAccount(@Valid @RequestBody CreateAdminAccountRequest request) {
         return ApiResponse.success("Tạo tài khoản quản trị viên thành công",

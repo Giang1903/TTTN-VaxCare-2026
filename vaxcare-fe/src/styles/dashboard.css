@@ -286,7 +286,7 @@
 .dashboard-area .protocol-grid,
 .dashboard-area .timeline-record,
 .dashboard-area .cert-sticky {
-  position: relative;
+  /* position: relative; */
   z-index: 2;
 }
 .navbar {

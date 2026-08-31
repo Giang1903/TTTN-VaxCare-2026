@@ -3,7 +3,6 @@ package com.vaxcare.feature.appointment.controller;
 import com.vaxcare.common.dto.ApiResponse;
 import com.vaxcare.common.enums.AppointmentStatus;
 import com.vaxcare.feature.appointment.dto.AppointmentResponse;
-import com.vaxcare.feature.appointment.dto.CancelAppointmentRequest;
 import com.vaxcare.feature.appointment.service.StaffAppointmentService;
 import com.vaxcare.security.UserPrincipal;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -21,7 +20,7 @@ import java.util.List;
 @RequestMapping("/api/v1/staff/appointments")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('MEDICAL_STAFF', 'ADMIN')")
-@Tag(name = "14. Staff - Appointment Management", description = "Staff/Admin xem, lọc, xác nhận, hủy lịch hẹn")
+@Tag(name = "14. Staff - Appointment Management", description = "Staff/Admin xem, lọc, xác nhận lịch hẹn và hoàn tất tiêm")
 public class StaffAppointmentController {
 
     private final StaffAppointmentService staffAppointmentService;
@@ -45,15 +44,6 @@ public class StaffAppointmentController {
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
         return ApiResponse.success("Xác nhận lịch hẹn thành công",
                 staffAppointmentService.confirmAppointment(id, userPrincipal.getId()));
-    }
-
-    @PatchMapping("/{id}/cancel")
-    public ApiResponse<AppointmentResponse> cancelAppointment(
-            @PathVariable Long id,
-            @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @RequestBody CancelAppointmentRequest request) {
-        return ApiResponse.success("Hủy lịch hẹn thành công",
-                staffAppointmentService.cancelAppointment(id, userPrincipal.getId(), request));
     }
 
     @Parameter(description = "Chuyển lịch hẹn (đang CHECKED_IN) sang COMPLETED và tự động trừ kho 1 liều vắc xin tương ứng")

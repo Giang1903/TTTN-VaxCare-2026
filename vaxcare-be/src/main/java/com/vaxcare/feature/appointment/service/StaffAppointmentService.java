@@ -1,12 +1,13 @@
 package com.vaxcare.feature.appointment.service;
 
+import com.vaxcare.utils.QRCodeUtil;
+
 import com.vaxcare.common.enums.AppointmentStatus;
 import com.vaxcare.common.enums.Role;
 import com.vaxcare.common.exception.BadRequestException;
 import com.vaxcare.common.exception.ResourceNotFoundException;
 import com.vaxcare.common.exception.UnauthorizedException;
 import com.vaxcare.feature.appointment.dto.AppointmentResponse;
-import com.vaxcare.feature.appointment.dto.CancelAppointmentRequest;
 import com.vaxcare.feature.appointment.entity.Appointment;
 import com.vaxcare.feature.appointment.repository.AppointmentRepository;
 import com.vaxcare.feature.auth.entity.Account;
@@ -26,9 +27,6 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 public class StaffAppointmentService {
-
-    private static final Set<AppointmentStatus> CANCELLABLE_STATUSES =
-            Set.of(AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED);
 
     private final AppointmentRepository appointmentRepository;
     private final AccountRepository accountRepository;
@@ -59,32 +57,16 @@ public class StaffAppointmentService {
         }
 
         appointment.setStatus(AppointmentStatus.CONFIRMED);
+        // Lịch miễn phí / confirm bởi staff: sinh QR nếu chưa có (QR chuẩn sau thanh toán VNPay)
+        if (appointment.getQrCode() == null || appointment.getQrCode().isBlank()) {
+            appointment.setQrCode(QRCodeUtil.generateToken());
+        }
         assignStaffIfPossible(account, appointment);
 
         return appointmentService.mapToResponse(appointmentRepository.save(appointment));
     }
 
-    @Transactional
-    public AppointmentResponse cancelAppointment(Long appointmentId, Long currentAccountId, CancelAppointmentRequest request) {
-        Account account = findAccountOrThrow(currentAccountId);
-        Appointment appointment = findAppointmentOrThrow(appointmentId);
-        checkFacilityScope(account, appointment);
-
-        if (!CANCELLABLE_STATUSES.contains(appointment.getStatus())) {
-            throw new BadRequestException(
-                    "Không thể hủy lịch hẹn đang ở trạng thái " + appointment.getStatus());
-        }
-        if (request == null || request.getReason() == null || request.getReason().isBlank()) {
-            throw new BadRequestException("Vui lòng nhập lý do hủy lịch hẹn");
-        }
-
-        appointment.setStatus(AppointmentStatus.CANCELLED);
-        appointment.setCancelledAt(LocalDateTime.now());
-        appointment.setCancellationReason(request.getReason());
-        assignStaffIfPossible(account, appointment);
-
-        return appointmentService.mapToResponse(appointmentRepository.save(appointment));
-    }
+    
 
     // ===================== CHECK-IN BẰNG QR CODE =====================
 

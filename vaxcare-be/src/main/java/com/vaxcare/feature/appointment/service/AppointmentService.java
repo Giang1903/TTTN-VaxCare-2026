@@ -8,8 +8,8 @@ import com.vaxcare.common.exception.UnauthorizedException;
 import com.vaxcare.feature.appointment.dto.AppointmentRequest;
 import com.vaxcare.feature.appointment.dto.AppointmentResponse;
 import com.vaxcare.feature.appointment.dto.AppointmentSlotResponse;
-import com.vaxcare.feature.appointment.dto.CancelAppointmentRequest;
 import com.vaxcare.feature.appointment.dto.QrCodeResponse;
+import com.vaxcare.feature.appointment.dto.RescheduleRequest;
 import com.vaxcare.feature.appointment.entity.Appointment;
 import com.vaxcare.feature.appointment.repository.AppointmentRepository;
 import com.vaxcare.feature.auth.entity.Account;
@@ -79,7 +79,7 @@ public class AppointmentService {
         while (cursor.isBefore(facility.getClosingTime())) {
             // Bỏ qua các khung giờ đã trôi qua nếu đang tra cứu cho hôm nay
             if (!isToday || cursor.isAfter(now)) {
-                long booked = appointmentRepository.countBookingsInSlot(facilityId, date, cursor);
+                long booked = appointmentRepository.countBookingsInSlot(facilityId, date, cursor, null);
                 int capacity = facility.getCapacityPerSlot();
                 int available = (int) Math.max(0, capacity - booked);
 
@@ -94,7 +94,12 @@ public class AppointmentService {
             cursor = cursor.plusMinutes(SLOT_DURATION_MINUTES);
         }
 
-        return aiDispatchService.annotateSlots(facility, date, slots);
+        // AI annotate lỗi không làm fail tra cứu slot (tránh UnexpectedRollbackException)
+        try {
+            return aiDispatchService.annotateSlots(facility, date, slots);
+        } catch (Exception ex) {
+            return slots;
+        }
     }
 
     // ===================== ĐẶT / XEM LỊCH HẸN =====================
@@ -155,9 +160,7 @@ public class AppointmentService {
         validateSlotWithinWorkingHours(facility, request.getAppointmentDate(), request.getTimeSlot());
         ensureSlotHasCapacity(facility, request.getAppointmentDate(), request.getTimeSlot(), null);
 
-        // Mã QR / mã lịch đơn giản để check-in và gửi email
-        String qrCode = "VX-" + java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();
-
+        // QR chỉ sinh sau khi thanh toán VNPay thành công (PaymentService)
         Appointment appointment = Appointment.builder()
                 .user(user)
                 .facility(facility)
@@ -166,7 +169,7 @@ public class AppointmentService {
                 .appointmentDate(request.getAppointmentDate())
                 .timeSlot(request.getTimeSlot())
                 .status(AppointmentStatus.PENDING)
-                .qrCode(qrCode)
+                .qrCode(null)
                 .note(request.getNote())
                 .build();
 
@@ -202,63 +205,44 @@ public class AppointmentService {
     }
 
     @Transactional
-    public AppointmentResponse rescheduleAppointment(Long appointmentId, Long currentUserId, AppointmentRequest request) {
+    public AppointmentResponse rescheduleAppointment(Long appointmentId, Long currentUserId, RescheduleRequest request) {
         Appointment appointment = findAppointmentOrThrow(appointmentId);
         checkOwnership(appointment, currentUserId);
         ensureModifiable(appointment, "đổi lịch hẹn");
 
-        VaccinationFacility facility = request.getFacilityId() != null
-                ? findFacilityOrThrow(request.getFacilityId())
-                : appointment.getFacility();
-        Vaccine vaccine = request.getVaccineId() != null
-                ? findVaccineOrThrow(request.getVaccineId())
-                : appointment.getVaccine();
-        LocalDate newDate = request.getAppointmentDate() != null
-                ? request.getAppointmentDate()
-                : appointment.getAppointmentDate();
-        LocalTime newTimeSlot = request.getTimeSlot() != null
-                ? request.getTimeSlot()
-                : appointment.getTimeSlot();
+        if (request.getAppointmentDate() == null) {
+            throw new BadRequestException("Ngày hẹn không được để trống");
+        }
+        if (request.getTimeSlot() == null) {
+            throw new BadRequestException("Khung giờ không được để trống");
+        }
+
+        // Chỉ đổi ngày + giờ; giữ nguyên cơ sở, vắc xin, giá, QR, trạng thái thanh toán
+        VaccinationFacility facility = appointment.getFacility();
+        Vaccine vaccine = appointment.getVaccine();
+        LocalDate newDate = request.getAppointmentDate();
+        LocalTime newTimeSlot = request.getTimeSlot();
+
+        if (newDate.isBefore(LocalDate.now())) {
+            throw new BadRequestException("Không thể đổi lịch sang ngày trong quá khứ");
+        }
 
         validateFacilityAndVaccineActive(facility, vaccine);
         validateSlotWithinWorkingHours(facility, newDate, newTimeSlot);
 
-        boolean slotUnchanged = facility.getFacilityId().equals(appointment.getFacility().getFacilityId())
-                && newDate.isEqual(appointment.getAppointmentDate())
+        boolean slotUnchanged = newDate.isEqual(appointment.getAppointmentDate())
                 && newTimeSlot.equals(appointment.getTimeSlot());
-
         if (!slotUnchanged) {
-            ensureSlotHasCapacity(facility, newDate, newTimeSlot, null);
+            ensureSlotHasCapacity(facility, newDate, newTimeSlot, appointment.getAppointmentId());
         }
 
-        appointment.setFacility(facility);
-        appointment.setVaccine(vaccine);
         appointment.setAppointmentDate(newDate);
         appointment.setTimeSlot(newTimeSlot);
-        appointment.setPrice(resolveCurrentPrice(vaccine.getVaccineId(), facility.getFacilityId()));
-        if (request.getNote() != null) {
-            appointment.setNote(request.getNote());
-        }
-        // Đổi lịch thì cần Staff xác nhận lại từ đầu
-        appointment.setStatus(AppointmentStatus.PENDING);
+        // Không đổi facility / vaccine / price / qrCode / status (giữ CONFIRMED nếu đã thanh toán)
 
         return mapToResponse(appointmentRepository.save(appointment));
     }
 
-    @Transactional
-    public AppointmentResponse cancelAppointment(Long appointmentId, Long currentUserId, CancelAppointmentRequest request) {
-        Appointment appointment = findAppointmentOrThrow(appointmentId);
-        checkOwnership(appointment, currentUserId);
-        ensureModifiable(appointment, "hủy lịch hẹn");
-
-        appointment.setStatus(AppointmentStatus.CANCELLED);
-        appointment.setCancelledAt(LocalDateTime.now());
-        appointment.setCancellationReason(request != null ? request.getReason() : null);
-
-        return mapToResponse(appointmentRepository.save(appointment));
-    }
-
-    // ===================== HELPERS =====================
 
     private void validateFacilityAndVaccineActive(VaccinationFacility facility, Vaccine vaccine) {
         if (facility.getStatus() != ActiveStatus.ACTIVE) {
@@ -285,7 +269,8 @@ public class AppointmentService {
     }
 
     private void ensureSlotHasCapacity(VaccinationFacility facility, LocalDate date, LocalTime timeSlot, Long excludeAppointmentId) {
-        long booked = appointmentRepository.countBookingsInSlot(facility.getFacilityId(), date, timeSlot);
+        long booked = appointmentRepository.countBookingsInSlot(
+                facility.getFacilityId(), date, timeSlot, excludeAppointmentId);
         int capacity = facility.getCapacityPerSlot() != null ? facility.getCapacityPerSlot() : 0;
         if (booked >= capacity) {
             throw new BadRequestException("Khung giờ này đã hết chỗ, vui lòng chọn khung giờ khác");

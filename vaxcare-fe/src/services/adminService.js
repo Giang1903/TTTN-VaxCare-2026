@@ -167,7 +167,11 @@ export function mapAccountToUi(a) {
     status: String(a.status || "ACTIVE").toUpperCase(),
     staffCode: a.staffCode || "",
     specialty: a.specialty || "",
-    facilityId: a.facilityId,
+    // alias dùng trong bảng / filter AdminStaff
+    code: a.staffCode || "",
+    spec: a.specialty || "",
+    facilityId: a.facilityId != null ? a.facilityId : null,
+    fac: a.facilityId != null ? a.facilityId : null,
     facility: a.facilityName || "",
     role: a.role,
     createdAt: a.createdAt,
@@ -256,6 +260,20 @@ export function saveConfigsBatch(items) {
 // ---- Create staff ----
 export function createStaff(body) {
   return apiClient.request("/admin/accounts/staff", { method: "POST", body });
+}
+
+/** PUT /admin/users/staff/{staffId} — cập nhật họ tên, mã NV, chuyên môn, SĐT (+ optional facility) */
+export function updateStaff(staffId, body) {
+  return apiClient.request(`/admin/users/staff/${staffId}`, {
+    method: "PUT",
+    body: {
+      fullName: body.fullName,
+      staffCode: body.staffCode,
+      specialty: body.specialty || undefined,
+      phone: body.phone || undefined,
+      facilityId: body.facilityId != null ? Number(body.facilityId) : undefined,
+    },
+  });
 }
 
 /** PATCH /admin/users/staff/{staffId}/facility */

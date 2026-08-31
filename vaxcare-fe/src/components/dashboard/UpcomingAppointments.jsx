@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 
 // ============ UPCOMING APPOINTMENTS (dash-card) ============
-export default function UpcomingAppointments({ items = [], loading, onCancel, cancellingId }) {
+export default function UpcomingAppointments({ items = [], loading }) {
   return (
     <div className="dash-card">
       <div className="dash-card-head">
@@ -37,17 +37,7 @@ export default function UpcomingAppointments({ items = [], loading, onCancel, ca
                 <span className={`appt-badge ${a.badge.type}`}>{a.badge.text}</span>
               </div>
               <div className="appt-actions">
-                <Link to="/appointments">Chi tiết</Link>
-                {a.cancelable && (
-                  <button
-                    type="button"
-                    className="cancel"
-                    disabled={cancellingId === a.appointmentId}
-                    onClick={() => onCancel?.(a.appointmentId)}
-                  >
-                    {cancellingId === a.appointmentId ? 'Đang hủy…' : 'Hủy lịch'}
-                  </button>
-                )}
+                <Link to="/appointments">Chi tiết / Đổi ngày-giờ</Link>
               </div>
             </div>
           ))}

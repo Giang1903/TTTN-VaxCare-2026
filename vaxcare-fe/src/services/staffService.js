@@ -98,13 +98,6 @@ export function confirmAppointment(id) {
   });
 }
 
-/** PATCH /staff/appointments/{id}/cancel */
-export function cancelAppointment(id, reason) {
-  return apiClient.request(`/staff/appointments/${id}/cancel`, {
-    method: "PATCH",
-    body: { reason: reason || "Hủy bởi nhân viên" },
-  });
-}
 
 /** PATCH /staff/appointments/{id}/complete */
 export function completeVaccination(id) {

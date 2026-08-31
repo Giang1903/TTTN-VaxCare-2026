@@ -6,7 +6,7 @@ import QuickActions from '../../components/dashboard/QuickActions';
 import UpcomingAppointments from '../../components/dashboard/UpcomingAppointments';
 import RecentRecords from '../../components/dashboard/RecentRecords';
 import { useAuth } from '../../context/AuthContext';
-import { getMyAppointments, cancelAppointment } from '../../services/appointmentService';
+import { getMyAppointments } from '../../services/appointmentService';
 import { formatTime } from '../../utils/format';
 
 const MONTHS = ['Th1', 'Th2', 'Th3', 'Th4', 'Th5', 'Th6', 'Th7', 'Th8', 'Th9', 'Th10', 'Th11', 'Th12'];
@@ -36,7 +36,6 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [cancellingId, setCancellingId] = useState(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -104,23 +103,6 @@ export default function DashboardPage() {
     };
   }, [appointments]);
 
-  async function handleCancel(appointmentId) {
-    if (!appointmentId) return;
-    if (!confirm('Bạn chắc chắn muốn hủy lịch tiêm này?')) return;
-    setCancellingId(appointmentId);
-    try {
-      await cancelAppointment(appointmentId);
-      setAppointments((prev) =>
-        prev.map((a) =>
-          a.appointmentId === appointmentId ? { ...a, status: 'CANCELLED' } : a,
-        ),
-      );
-    } catch (err) {
-      alert(err.message || 'Hủy lịch thất bại.');
-    } finally {
-      setCancellingId(null);
-    }
-  }
 
   const displayName = user?.fullName || user?.email || 'bạn';
 
@@ -143,8 +125,6 @@ export default function DashboardPage() {
           <UpcomingAppointments
             items={upcomingCards}
             loading={loading}
-            onCancel={handleCancel}
-            cancellingId={cancellingId}
           />
           <RecentRecords items={recentCards} loading={loading} />
         </div>

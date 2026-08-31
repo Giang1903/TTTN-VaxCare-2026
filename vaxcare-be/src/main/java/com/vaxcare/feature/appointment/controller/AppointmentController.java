@@ -2,9 +2,9 @@ package com.vaxcare.feature.appointment.controller;
 
 import com.vaxcare.common.dto.ApiResponse;
 import com.vaxcare.feature.appointment.dto.AppointmentRequest;
+import com.vaxcare.feature.appointment.dto.RescheduleRequest;
 import com.vaxcare.feature.appointment.dto.AppointmentResponse;
 import com.vaxcare.feature.appointment.dto.AppointmentSlotResponse;
-import com.vaxcare.feature.appointment.dto.CancelAppointmentRequest;
 import com.vaxcare.feature.appointment.dto.QrCodeResponse;
 import com.vaxcare.feature.appointment.service.AppointmentService;
 import com.vaxcare.security.UserPrincipal;
@@ -22,7 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/appointments")
 @RequiredArgsConstructor
-@Tag(name = "12. Appointment", description = "Đặt / hủy / đổi lịch hẹn tiêm chủng và tra cứu khung giờ trống")
+@Tag(name = "12. Appointment", description = "Đặt / đổi lịch hẹn tiêm chủng (đổi ngày-giờ) và tra cứu khung giờ trống")
 public class AppointmentController {
 
     private final AppointmentService appointmentService;
@@ -70,17 +70,9 @@ public class AppointmentController {
     public ApiResponse<AppointmentResponse> rescheduleAppointment(
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @Valid @RequestBody AppointmentRequest request) {
+            @Valid @RequestBody RescheduleRequest request) {
         return ApiResponse.success("Đổi lịch hẹn thành công",
                 appointmentService.rescheduleAppointment(id, userPrincipal.getId(), request));
     }
 
-    @PatchMapping("/{id}/cancel")
-    public ApiResponse<AppointmentResponse> cancelAppointment(
-            @PathVariable Long id,
-            @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @RequestBody(required = false) CancelAppointmentRequest request) {
-        return ApiResponse.success("Hủy lịch hẹn thành công",
-                appointmentService.cancelAppointment(id, userPrincipal.getId(), request));
-    }
 }

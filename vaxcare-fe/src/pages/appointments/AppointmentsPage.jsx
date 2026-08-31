@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import SlimPageHero from '../../components/dashboard-shared/SlimPageHero';
 import AppointmentFilter from '../../components/appointments/AppointmentFilter';
 import AppointmentCard from '../../components/appointments/AppointmentCard';
-import { getMyAppointments, cancelAppointment } from '../../services/appointmentService';
+import { getMyAppointments } from '../../services/appointmentService';
 import { formatTime } from '../../utils/format';
 
 const MONTHS = ['Th1', 'Th2', 'Th3', 'Th4', 'Th5', 'Th6', 'Th7', 'Th8', 'Th9', 'Th10', 'Th11', 'Th12'];
@@ -88,8 +88,13 @@ function mapAppointment(raw) {
     dayStyle: ui.dayStyle,
     monthStyle: ui.monthStyle,
     title: raw.vaccineName || 'Lịch tiêm',
+    meta: line2 ? `${line1} · ${line2}` : line1,
     line1,
     line2,
+    time: timeLabel,
+    facility: facilityPart,
+    facilityId: raw.facilityId,
+    vaccineId: raw.vaccineId,
     cancelledNote: ui.status === 'cancelled' ? null : null,
     rawStatus: raw.status,
     appointmentDate: raw.appointmentDate,
@@ -102,7 +107,6 @@ export default function AppointmentsPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [cancellingId, setCancellingId] = useState(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -138,31 +142,18 @@ export default function AppointmentsPage() {
     [filter, items],
   );
 
-  async function handleCancel(appointmentId) {
-    setCancellingId(appointmentId);
-    try {
-      await cancelAppointment(appointmentId);
-      // Cập nhật local để UX mượt, rồi reload
-      setItems((prev) =>
-        prev.map((a) =>
-          a.appointmentId === appointmentId
-            ? {
-                ...a,
-                status: 'cancelled',
-                statusLabel: 'Đã hủy',
-                dateStyle: { background: '#fef2f2' },
-                dayStyle: { color: '#c0392b' },
-                monthStyle: { color: '#c0392b' },
-              }
-            : a,
-        ),
-      );
-    } catch (err) {
-      alert(err.message || 'Hủy lịch thất bại, vui lòng thử lại.');
-    } finally {
-      setCancellingId(null);
+  function handleRescheduled(updated) {
+    if (!updated) {
+      load();
+      return;
     }
+    setItems((prev) =>
+      prev.map((a) =>
+        a.appointmentId === updated.appointmentId ? mapAppointment(updated) : a,
+      ),
+    );
   }
+
 
   return (
     <>
@@ -173,7 +164,7 @@ export default function AppointmentsPage() {
           <div>
             <h1 className="appt-title">Lịch tiêm của tôi</h1>
             <p className="appt-sub">
-              Xem, hủy hoặc đổi lịch hẹn. Hủy trước ít nhất 2 giờ so với giờ tiêm.
+              Xem lịch hẹn và đổi ngày/giờ nếu cần. Vắc xin và cơ sở giữ nguyên khi đổi lịch.
             </p>
           </div>
           <Link to="/booking" className="btn btn-primary btn-sm">
@@ -218,8 +209,7 @@ export default function AppointmentsPage() {
             <AppointmentCard
               key={a.appointmentId ?? `${a.title}-${a.appointmentDate}-${a.timeSlot}`}
               appt={a}
-              onCancel={handleCancel}
-              cancellingId={cancellingId}
+              onRescheduled={handleRescheduled}
             />
           ))}
       </div>

@@ -3,7 +3,7 @@ export function formatCurrency(value) {
   if (value === null || value === undefined) return "Liên hệ";
   const num = Number(value);
   if (Number.isNaN(num)) return "Liên hệ";
-  return `${Math.round(num).toLocaleString("vi-VN")}₫`;
+  return `${Math.round(num).toLocaleString("vi-VN")} đ`;
 }
 
 const WARD_TO_AREA = [

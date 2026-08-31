@@ -33,8 +33,8 @@ function RowActions({ status, onAction }) {
         <button type="button" className="row-action solid" onClick={() => onAction('confirm')}>
           Xác nhận
         </button>
-        <button type="button" className="row-action danger" onClick={() => onAction('cancel')}>
-          Từ chối
+        <button type="button" className="row-action outline" onClick={() => onAction('view')}>
+          Chi tiết
         </button>
       </div>
     );
@@ -208,14 +208,7 @@ export default function StaffAppointmentsPage() {
         showToast(`Check-in thành công: ${mapped.name || appt.name}`, 'ok');
         return;
       }
-      if (action === 'cancel') {
-        const reason =
-          drawer.apptId === appt.id && noteDraft.trim() ? noteDraft.trim() : 'Từ chối bởi nhân viên';
-        await staffService.cancelAppointment(appt.id, reason);
-        updateLocal(appt.id, 'cancelled');
-        showToast(`Đã từ chối / hủy lịch của ${appt.name}`, 'warn');
-        return;
-      }
+
       if (action === 'vaccinate') {
         // Chuyển sang trang ghi nhận tiêm chi tiết (PDF chứng nhận)
         navigate(`/staff/vaccination?id=${appt.id}`);
@@ -626,15 +619,8 @@ export default function StaffAppointmentsPage() {
             <div className="drawer-foot">
               {drawerAppt.status === 'pending' && (
                 <>
-                  <button
-                    type="button"
-                    className="btn outline"
-                    onClick={() => {
-                      handleAction(drawerAppt, 'cancel');
-                      closeDrawer();
-                    }}
-                  >
-                    Từ chối
+                  <button type="button" className="btn outline" onClick={closeDrawer}>
+                    Đóng
                   </button>
                   <button
                     type="button"
