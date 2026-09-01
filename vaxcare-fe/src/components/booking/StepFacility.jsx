@@ -2,8 +2,15 @@ import { useEffect, useState } from 'react';
 import { getFacilities } from '../../services/facilityService';
 import { formatTime } from '../../utils/format';
 
-// ============ STEP 2: FACILITY ============
-export default function StepFacility({ active, selectedId, onSelect, onBack, onNext }) {
+// ============ STEP 2: FACILITY (lọc theo vắc xin đã chọn) ============
+export default function StepFacility({
+  active,
+  vaccineId,
+  selectedId,
+  onSelect,
+  onBack,
+  onNext,
+}) {
   const [facilities, setFacilities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -13,10 +20,24 @@ export default function StepFacility({ active, selectedId, onSelect, onBack, onN
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError('');
-    getFacilities()
+
+    if (!vaccineId) {
+      setFacilities([]);
+      setLoading(false);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    getFacilities(vaccineId)
       .then((data) => {
         if (cancelled) return;
-        setFacilities(data || []);
+        const list = data || [];
+        setFacilities(list);
+        // Nếu cơ sở đã chọn không còn trong danh sách (đổi vắc xin) → bỏ chọn
+        if (selectedId && !list.some((f) => f.facilityId === selectedId)) {
+          onSelect(null);
+        }
       })
       .catch((err) => {
         if (cancelled) return;
@@ -26,10 +47,13 @@ export default function StepFacility({ active, selectedId, onSelect, onBack, onN
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
+
     return () => {
       cancelled = true;
     };
-  }, []);
+    // selectedId / onSelect không đưa vào deps để tránh loop; chỉ reload khi vaccineId đổi
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vaccineId]);
 
   function buildDesc(f) {
     const parts = [];
@@ -47,9 +71,14 @@ export default function StepFacility({ active, selectedId, onSelect, onBack, onN
     <div className={`book-step${active ? ' active' : ''}`} data-step="2">
       <div className="book-panel-head">Chọn cơ sở tiêm chủng</div>
       <div className="book-panel-body">
-        {loading && (
+        {!vaccineId && (
           <p style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '12px' }}>
-            Đang tải danh sách cơ sở…
+            Vui lòng chọn vắc xin trước để xem cơ sở còn loại vắc xin đó.
+          </p>
+        )}
+        {vaccineId && loading && (
+          <p style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '12px' }}>
+            Đang tải danh sách cơ sở còn vắc xin đã chọn…
           </p>
         )}
         {error && (
@@ -57,9 +86,9 @@ export default function StepFacility({ active, selectedId, onSelect, onBack, onN
             {error}
           </p>
         )}
-        {!loading && !error && facilities.length === 0 && (
+        {vaccineId && !loading && !error && facilities.length === 0 && (
           <p style={{ fontSize: '13px', color: 'var(--gray-500)' }}>
-            Hiện chưa có cơ sở nào khả dụng.
+            Hiện không có cơ sở nào còn tồn kho vắc xin này. Vui lòng chọn vắc xin khác hoặc quay lại sau.
           </p>
         )}
         <div className="opt-grid" id="facilityOptions">

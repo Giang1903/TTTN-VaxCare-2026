@@ -27,6 +27,10 @@ export default function BookingPage() {
 
   function handleSelectVaccine(v) {
     setVaccine(v);
+    // Đổi vắc xin → bỏ chọn cơ sở/ngày/giờ cũ (có thể không còn phù hợp)
+    setFacility(null);
+    setDate(null);
+    setSlot(null);
   }
 
   function handleSelectFacility(f) {
@@ -114,8 +118,17 @@ export default function BookingPage() {
             />
             <StepFacility
               active={step === 2}
+              vaccineId={vaccine?.id}
               selectedId={facility?.id}
-              onSelect={handleSelectFacility}
+              onSelect={(f) => {
+                if (f == null) {
+                  setFacility(null);
+                  setDate(null);
+                  setSlot(null);
+                  return;
+                }
+                handleSelectFacility(f);
+              }}
               onBack={() => goStep(1)}
               onNext={() => goStep(3)}
             />

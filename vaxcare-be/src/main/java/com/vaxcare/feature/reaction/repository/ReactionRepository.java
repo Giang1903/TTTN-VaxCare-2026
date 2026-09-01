@@ -74,4 +74,7 @@ public interface ReactionRepository extends JpaRepository<PostVaccinationReactio
           )
         """)
     long countOpenForStaff(@Param("facilityId") Long facilityId);
+
+    boolean existsByDetail_DetailId(Long detailId);
+
 }

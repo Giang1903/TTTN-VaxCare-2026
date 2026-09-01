@@ -157,6 +157,68 @@ public class EmailService {
                 "reminder " + safe(vaccineName) + " dose" + nextDoseNumber);
     }
 
+
+    public void sendOverdueDoseReminderEmail(
+            String toEmail,
+            String fullName,
+            String vaccineName,
+            int nextDoseNumber,
+            LocalDate nextDoseDate,
+            long daysOverdue
+    ) {
+        String dateStr = nextDoseDate != null ? nextDoseDate.format(DATE_FMT) : "—";
+        String bookingLink = frontendUrl + "/booking";
+
+        String body =
+                "Xin chào " + safe(fullName) + ",\n\n"
+                        + "CẢNH BÁO: Bạn đã QUÁ HẠN tiêm mũi tiếp theo trong phác đồ vắc xin "
+                        + safe(vaccineName) + ".\n\n"
+                        + "===== THÔNG TIN =====\n"
+                        + "Vắc xin: " + safe(vaccineName) + "\n"
+                        + "Mũi số: " + nextDoseNumber + "\n"
+                        + "Ngày dự kiến: " + dateStr + "\n"
+                        + "Số ngày quá hạn: " + daysOverdue + " ngày\n\n"
+                        + "Việc trì hoãn có thể ảnh hưởng hiệu quả phòng bệnh. "
+                        + "Vui lòng đặt lịch tiêm sớm:\n"
+                        + bookingLink + "\n\n"
+                        + "— Đội ngũ VaxCare";
+
+        send(toEmail,
+                "[VaxCare] Cảnh báo quá hạn tiêm – " + safe(vaccineName) + " mũi " + nextDoseNumber,
+                body,
+                "overdue " + safe(vaccineName) + " dose" + nextDoseNumber);
+    }
+
+    public void sendPostVaccinationSurveyEmail(
+            String toEmail,
+            String fullName,
+            String vaccineName,
+            int doseNumber,
+            LocalDate injectionDate
+    ) {
+        String dateStr = injectionDate != null ? injectionDate.format(DATE_FMT) : "—";
+        String surveyLink = frontendUrl + "/records";
+
+        String body =
+                "Xin chào " + safe(fullName) + ",\n\n"
+                        + "Cảm ơn bạn đã hoàn thành mũi tiêm tại VaxCare.\n\n"
+                        + "===== THEO DÕI SAU TIÊM (24–72 GIỜ) =====\n"
+                        + "Vắc xin: " + safe(vaccineName) + "\n"
+                        + "Mũi số: " + doseNumber + "\n"
+                        + "Ngày tiêm: " + dateStr + "\n\n"
+                        + "Trong 24–72 giờ đầu, hãy theo dõi sức khỏe (sốt, sưng đỏ tại chỗ tiêm, "
+                        + "mệt mỏi, phản ứng khác). Nếu có triệu chứng, vào ứng dụng VaxCare để "
+                        + "khai báo phản ứng sau tiêm để nhân viên y tế theo dõi kịp thời:\n"
+                        + surveyLink + "\n\n"
+                        + "Nếu tình trạng nghiêm trọng, hãy đến cơ sở y tế gần nhất.\n\n"
+                        + "— Đội ngũ VaxCare";
+
+        send(toEmail,
+                "[VaxCare] Theo dõi sau tiêm – " + safe(vaccineName),
+                body,
+                "post-vaccination-survey " + safe(vaccineName));
+    }
+
     private void send(String toEmail, String subject, String body, String fallbackHint) {
         if (toEmail == null || toEmail.isBlank()) {
             log.warn("Skip email: empty recipient ({})", fallbackHint);

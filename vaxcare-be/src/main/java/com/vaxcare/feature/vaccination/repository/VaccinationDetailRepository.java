@@ -80,4 +80,21 @@ public interface VaccinationDetailRepository extends JpaRepository<VaccinationDe
         """)
     List<Object[]> findDistinctVaccineFacilityCombos();
 
+
+    @Query("""
+        SELECT d FROM VaccinationDetail d
+        JOIN FETCH d.vaccine
+        JOIN FETCH d.history h
+        JOIN FETCH h.user u
+        JOIN FETCH u.account
+        WHERE d.result IN (
+              com.vaxcare.common.enums.VaccinationResult.SUCCESS,
+              com.vaxcare.common.enums.VaccinationResult.PARTIAL
+          )
+          AND d.injectionDate BETWEEN :fromDate AND :toDate
+        """)
+    List<VaccinationDetail> findSuccessfulInjectionsBetween(
+            @Param("fromDate") java.time.LocalDate fromDate,
+            @Param("toDate") java.time.LocalDate toDate);
+
 }

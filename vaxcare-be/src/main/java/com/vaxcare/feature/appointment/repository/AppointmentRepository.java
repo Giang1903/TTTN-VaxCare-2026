@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
@@ -218,5 +219,48 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<Object[]> findHistoricalSlotStats(@Param("facilityId") Long facilityId,
                                             @Param("fromDate") LocalDate fromDate,
                                             @Param("toDate") LocalDate toDate);
+
+
+    /**
+     * Lịch PENDING/CONFIRMED có ngày hẹn trước {@code date} (đã qua ngày).
+     */
+    @Query("""
+        SELECT a FROM Appointment a
+        WHERE a.status IN (
+              com.vaxcare.common.enums.AppointmentStatus.PENDING,
+              com.vaxcare.common.enums.AppointmentStatus.CONFIRMED
+          )
+          AND a.appointmentDate < :date
+        """)
+    List<Appointment> findExpirableBeforeDate(@Param("date") LocalDate date);
+
+    /**
+     * Lịch PENDING/CONFIRMED trong ngày {@code date} có time_slot <= {@code timeSlotUpper}
+     * (gọi với now - SLOT_DURATION để lấy các slot đã kết thúc).
+     */
+    @Query("""
+        SELECT a FROM Appointment a
+        WHERE a.status IN (
+              com.vaxcare.common.enums.AppointmentStatus.PENDING,
+              com.vaxcare.common.enums.AppointmentStatus.CONFIRMED
+          )
+          AND a.appointmentDate = :date
+          AND a.timeSlot <= :timeSlotUpper
+        """)
+    List<Appointment> findExpirableOnDateBeforeTime(
+            @Param("date") LocalDate date,
+            @Param("timeSlotUpper") LocalTime timeSlotUpper);
+
+
+    /**
+     * Lịch PENDING tạo trước {@code cutoff} (chưa thanh toán / giữ chỗ quá hạn).
+     * Dùng để hủy sau 30 phút không thanh toán và trả capacity.
+     */
+    @Query("""
+        SELECT a FROM Appointment a
+        WHERE a.status = com.vaxcare.common.enums.AppointmentStatus.PENDING
+          AND a.createdAt < :cutoff
+        """)
+    List<Appointment> findUnpaidPendingCreatedBefore(@Param("cutoff") LocalDateTime cutoff);
 
 }
