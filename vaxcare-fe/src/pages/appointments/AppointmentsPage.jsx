@@ -164,7 +164,7 @@ export default function AppointmentsPage() {
           <div>
             <h1 className="appt-title">Lịch tiêm của tôi</h1>
             <p className="appt-sub">
-              Xem lịch hẹn và đổi ngày/giờ nếu cần. Vắc xin và cơ sở giữ nguyên khi đổi lịch.
+              Xem lịch hẹn và đổi lịch hẹn nếu cần.
             </p>
           </div>
           <Link to="/booking" className="btn btn-primary btn-sm">

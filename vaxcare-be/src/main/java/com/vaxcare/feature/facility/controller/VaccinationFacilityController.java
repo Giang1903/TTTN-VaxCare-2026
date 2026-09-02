@@ -21,7 +21,14 @@ public class VaccinationFacilityController {
     private final VaccinationFacilityService facilityService;
 
     @GetMapping
-    public ApiResponse<List<FacilityResponse>> getAllFacilities() {
+    public ApiResponse<List<FacilityResponse>> getAllFacilities(
+            @RequestParam(required = false) Long vaccineId) {
+        // Có vaccineId → chỉ trả cơ sở ACTIVE còn tồn kho vắc xin đó (bước đặt lịch)
+        if (vaccineId != null) {
+            return ApiResponse.success(
+                    "Lấy danh sách cơ sở còn vắc xin thành công",
+                    facilityService.getActiveFacilitiesWithVaccine(vaccineId));
+        }
         return ApiResponse.success("Lấy danh sách cơ sở tiêm chủng thành công", facilityService.getActiveFacilities());
     }
 

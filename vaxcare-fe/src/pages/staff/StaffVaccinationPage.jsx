@@ -121,16 +121,31 @@ export default function StaffVaccinationPage() {
     let cancelled = false;
     (async () => {
       try {
-        const list = await staffService.getBatches(facilityId, { vaccineId: patient.vaccineId });
+        // Chỉ lấy lô còn dùng được; backend order FEFO (HSD tăng dần)
+        const list = await staffService.getBatches(facilityId, {
+          vaccineId: patient.vaccineId,
+          status: 'AVAILABLE',
+        });
         if (cancelled) return;
-        const mapped = (list || []).map((b) => ({
-          id: b.batchId || b.id,
-          number: b.batchNumber || b.lotNumber || '',
-          expiry: b.expiryDate ? String(b.expiryDate).split('-').reverse().join('/') : '',
-          importDate: b.importDate ? String(b.importDate).split('-').reverse().join('/') : '',
-          stock: b.remainingQuantity ?? b.quantity ?? 0,
-          expiring: false,
-        }));
+        const mapped = (list || [])
+          .map((b) => {
+            const stock = b.stockQuantity ?? b.remainingQuantity ?? b.quantity ?? 0;
+            let expiring = false;
+            if (b.expiryDate) {
+              const days = (new Date(b.expiryDate) - new Date()) / (1000 * 60 * 60 * 24);
+              expiring = days >= 0 && days <= 90;
+            }
+            return {
+              id: b.batchId || b.id,
+              number: b.batchNumber || b.lotNumber || '',
+              expiry: b.expiryDate ? String(b.expiryDate).split('-').reverse().join('/') : '',
+              importDate: b.importDate ? String(b.importDate).split('-').reverse().join('/') : '',
+              stock,
+              expiring,
+            };
+          })
+          // Ẩn lô hết hàng khỏi form ghi nhận tiêm
+          .filter((b) => b.stock > 0);
         setBatches(mapped);
         setSelectedBatchId(mapped[0]?.id ?? null);
       } catch (err) {

@@ -56,10 +56,6 @@ export default function NotificationsPage() {
           <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8, color: '#0f172a' }}>
             Thông báo & nhắc lịch
           </h1>
-          <p style={{ color: '#64748b', fontSize: 14.5, lineHeight: 1.6 }}>
-            Hệ thống tự gửi <strong style={{ color: '#1e293b' }}>email nhắc mũi tiêm</strong> (cron 8:00 mỗi
-            ngày, trước ngày tiêm theo phác đồ). Dưới đây là thông báo trong ứng dụng.
-          </p>
         </div>
 
         {error && (

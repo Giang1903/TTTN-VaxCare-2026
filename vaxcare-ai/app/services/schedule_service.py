@@ -150,24 +150,36 @@ def rank_slots(req: ScheduleRequest) -> ScheduleResponse:
                 occupancy_rate=occ,
                 estimated_wait_minutes=wait,
                 overload_probability=overload,
-                recommended=overload < settings.recommend_overload_threshold,
+                recommended=False,
                 rank=0,
             )
         )
 
-    # rank: ít chờ trước (wait, rồi overload)
-    ordered = sorted(ranked, key=lambda s: (s.estimated_wait_minutes, s.overload_probability))
+    # Xếp hạng: chờ ít → quá tải thấp → giờ sớm hơn (ổn định khi bằng nhau)
+    ordered = sorted(
+        ranked,
+        key=lambda s: (s.estimated_wait_minutes, s.overload_probability, s.time_slot),
+    )
     for i, s in enumerate(ordered, start=1):
         s.rank = i
 
+    # Chỉ TOP N slot tốt nhất (và không quá tải nặng) mới được recommended.
+    # Tránh mọi khung trống đều dính badge AI + gợi ý không khớp thời gian chờ.
+    max_rec = settings.max_recommendations
+    threshold = settings.recommend_overload_threshold
+    eligible = [s for s in ordered if s.overload_probability < threshold]
+    if not eligible and ordered:
+        eligible = [ordered[0]]
+    else:
+        eligible = eligible[:max_rec]
+
+    for s in eligible:
+        s.recommended = True
+
+    recommended = [s.time_slot for s in eligible]
+
     # response slots theo giờ trong ngày
     by_time = sorted(ordered, key=lambda s: s.time_slot)
-    recommended = [
-        s.time_slot for s in ordered if s.recommended
-    ][: settings.max_recommendations]
-    if not recommended and ordered:
-        recommended = [ordered[0].time_slot]
-
     most_busy = max(ordered, key=lambda s: s.overload_probability).time_slot if ordered else None
 
     return ScheduleResponse(

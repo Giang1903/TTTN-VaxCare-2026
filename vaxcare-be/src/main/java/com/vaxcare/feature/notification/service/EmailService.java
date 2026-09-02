@@ -1,13 +1,15 @@
 package com.vaxcare.feature.notification.service;
 
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -31,6 +33,8 @@ public class EmailService {
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
+    // ===================== AUTH =====================
+
     public void sendVerificationEmail(String toEmail, String fullName, String token) {
         String link = frontendUrl + "/verify-email?token=" + token;
         String body =
@@ -40,69 +44,22 @@ public class EmailService {
                         + link + "\n\n"
                         + "Nếu bạn không thực hiện đăng ký, hãy bỏ qua email này.\n\n"
                         + "— Đội ngũ VaxCare";
-
-        send(toEmail, "[VaxCare] Xác nhận tài khoản của bạn", body, "verification " + link);
+        send(toEmail, "[VaxCare] Xác nhận tài khoản của bạn", body, "verification");
     }
+
     public void sendPasswordResetEmail(String toEmail, String fullName, String token) {
         String link = frontendUrl + "/reset-password?token=" + token;
-         String body =
-            "Xin chào " + safe(fullName) + ",\n\n"
-                    + "Chúng tôi nhận được yêu cầu đặt lại mật khẩu tài khoản VaxCare của bạn.\n"
-                    + "Bấm vào liên kết sau để tạo mật khẩu mới (hiệu lực trong 1 giờ):\n\n"
-                    + link + "\n\n"
-                    + "Nếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua email này.\n\n"
-                    + "— Đội ngũ VaxCare";
-
-    send(toEmail, "[VaxCare] Đặt lại mật khẩu", body, "password-reset " + link);
-        }
-    public void sendAppointmentConfirmationEmail(
-            String toEmail,
-            String fullName,
-            Long appointmentId,
-            String vaccineName,
-            String facilityName,
-            String facilityAddress,
-            LocalDate appointmentDate,
-            LocalTime timeSlot,
-            BigDecimal price,
-            String qrCode
-    ) {
-        String dateStr = appointmentDate != null ? appointmentDate.format(DATE_FMT) : "—";
-        String timeStr = timeSlot != null ? timeSlot.format(TIME_FMT) : "—";
-        String priceStr = price != null
-                ? String.format("%,.0f", price).replace(',', '.') + "₫"
-                : "Liên hệ cơ sở";
-        boolean hasQr = qrCode != null && !qrCode.isBlank();
-        String code = hasQr
-                ? qrCode
-                : (appointmentId != null ? "#" + appointmentId : "—");
-        String appointmentsLink = frontendUrl + "/appointments";
-        String qrLine = hasQr
-                ? "Mã QR check-in: " + code + "\n"
-                : "Mã lịch: " + code + " (mã QR sẽ được cấp sau khi thanh toán thành công)\n";
-        String qrHint = hasQr
-                ? "Vui lòng mang theo mã QR khi đến tiêm.\n"
-                : "Vui lòng hoàn tất thanh toán để nhận mã QR check-in, sau đó mang theo khi đến tiêm.\n";
-
         String body =
                 "Xin chào " + safe(fullName) + ",\n\n"
-                        + "Bạn đã đặt lịch tiêm chủng thành công trên VaxCare.\n\n"
-                        + "===== THÔNG TIN LỊCH HẸN =====\n"
-                        + qrLine
-                        + "Vắc xin: " + safe(vaccineName) + "\n"
-                        + "Cơ sở: " + safe(facilityName) + "\n"
-                        + (facilityAddress != null && !facilityAddress.isBlank()
-                                ? "Địa chỉ: " + facilityAddress + "\n" : "")
-                        + "Ngày: " + dateStr + "\n"
-                        + "Giờ: " + timeStr + "\n"
-                        + "Tạm tính: " + priceStr + "\n"
-                        + "Trạng thái: Chờ xác nhận / thanh toán\n\n"
-                        + qrHint
-                        + "Xem lịch tại: " + appointmentsLink + "\n\n"
+                        + "Chúng tôi nhận được yêu cầu đặt lại mật khẩu tài khoản VaxCare của bạn.\n"
+                        + "Bấm vào liên kết sau để tạo mật khẩu mới (hiệu lực trong 1 giờ):\n\n"
+                        + link + "\n\n"
+                        + "Nếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua email này.\n\n"
                         + "— Đội ngũ VaxCare";
-
-        send(toEmail, "[VaxCare] Xác nhận đặt lịch tiêm – " + code, body, "appointment " + code);
+        send(toEmail, "[VaxCare] Đặt lại mật khẩu", body, "password-reset");
     }
+
+    // ===================== APPOINTMENT / PAYMENT =====================
 
     public void sendPaymentConfirmationEmail(
             String toEmail,
@@ -115,6 +72,7 @@ public class EmailService {
         String amountStr = amount != null
                 ? String.format("%,.0f", amount).replace(',', '.') + "₫"
                 : "—";
+        String appointmentsLink = frontendUrl + "/appointments";
 
         String body =
                 "Xin chào " + safe(fullName) + ",\n\n"
@@ -125,12 +83,16 @@ public class EmailService {
                         + "Số tiền: " + amountStr + "\n"
                         + "Mã giao dịch VNPay: " + safe(transactionId) + "\n"
                         + "Trạng thái: Thanh toán thành công\n\n"
-                        + "Lịch hẹn của bạn đã được xác nhận. Vui lòng mang theo mã QR khi đến tiêm.\n\n"
+                        + "Lịch hẹn của bạn đã được xác nhận. Vui lòng mang theo mã QR khi đến tiêm.\n"
+                        + "Xem lịch / mã QR tại: " + appointmentsLink + "\n\n"
                         + "— Đội ngũ VaxCare";
-
-        send(toEmail, "[VaxCare] Thanh toán thành công – Lịch hẹn #" + appointmentId, body,
-                "payment appointment#" + appointmentId);
+        send(toEmail,
+                "[VaxCare] Thanh toán thành công – Lịch hẹn #" + appointmentId,
+                body,
+                "payment#" + appointmentId);
     }
+
+    // ===================== REMINDER =====================
 
     public void sendNextDoseReminderEmail(
             String toEmail,
@@ -140,8 +102,7 @@ public class EmailService {
             LocalDate nextDoseDate
     ) {
         String dateStr = nextDoseDate != null ? nextDoseDate.format(DATE_FMT) : "—";
-        String bookingLink = frontendUrl + "/appointments/new";
-
+        String bookingLink = frontendUrl + "/booking";
         String body =
                 "Xin chào " + safe(fullName) + ",\n\n"
                         + "Đã đến lúc bạn tiêm mũi tiếp theo trong phác đồ vắc xin " + safe(vaccineName) + ".\n\n"
@@ -149,34 +110,100 @@ public class EmailService {
                         + "Vắc xin: " + safe(vaccineName) + "\n"
                         + "Mũi số: " + nextDoseNumber + "\n"
                         + "Ngày dự kiến: " + dateStr + "\n\n"
-                        + "Vui lòng đặt lịch sớm để đảm bảo hiệu quả phòng bệnh tối ưu:\n"
-                        + bookingLink + "\n\n"
+                        + "Vui lòng đặt lịch sớm:\n" + bookingLink + "\n\n"
                         + "— Đội ngũ VaxCare";
-
-        send(toEmail, "[VaxCare] Nhắc lịch tiêm – " + safe(vaccineName) + " mũi " + nextDoseNumber, body,
-                "reminder " + safe(vaccineName) + " dose" + nextDoseNumber);
+        send(toEmail,
+                "[VaxCare] Nhắc lịch tiêm – " + safe(vaccineName) + " mũi " + nextDoseNumber,
+                body,
+                "reminder-dose" + nextDoseNumber);
     }
 
+    public void sendOverdueDoseReminderEmail(
+            String toEmail,
+            String fullName,
+            String vaccineName,
+            int nextDoseNumber,
+            LocalDate nextDoseDate,
+            long daysOverdue
+    ) {
+        String dateStr = nextDoseDate != null ? nextDoseDate.format(DATE_FMT) : "—";
+        String bookingLink = frontendUrl + "/booking";
+        String body =
+                "Xin chào " + safe(fullName) + ",\n\n"
+                        + "CẢNH BÁO: Bạn đã QUÁ HẠN tiêm mũi tiếp theo vắc xin " + safe(vaccineName) + ".\n\n"
+                        + "===== THÔNG TIN =====\n"
+                        + "Vắc xin: " + safe(vaccineName) + "\n"
+                        + "Mũi số: " + nextDoseNumber + "\n"
+                        + "Ngày dự kiến: " + dateStr + "\n"
+                        + "Số ngày quá hạn: " + daysOverdue + " ngày\n\n"
+                        + "Vui lòng đặt lịch sớm:\n" + bookingLink + "\n\n"
+                        + "— Đội ngũ VaxCare";
+        send(toEmail,
+                "[VaxCare] Cảnh báo quá hạn tiêm – " + safe(vaccineName) + " mũi " + nextDoseNumber,
+                body,
+                "overdue-dose" + nextDoseNumber);
+    }
+
+    public void sendPostVaccinationSurveyEmail(
+            String toEmail,
+            String fullName,
+            String vaccineName,
+            int doseNumber,
+            LocalDate injectionDate
+    ) {
+        String dateStr = injectionDate != null ? injectionDate.format(DATE_FMT) : "—";
+        String surveyLink = frontendUrl + "/records";
+        String body =
+                "Xin chào " + safe(fullName) + ",\n\n"
+                        + "Cảm ơn bạn đã hoàn thành mũi tiêm tại VaxCare.\n\n"
+                        + "===== THEO DÕI SAU TIÊM (24–72 GIỜ) =====\n"
+                        + "Vắc xin: " + safe(vaccineName) + "\n"
+                        + "Mũi số: " + doseNumber + "\n"
+                        + "Ngày tiêm: " + dateStr + "\n\n"
+                        + "Trong 24–72 giờ đầu, hãy theo dõi sức khỏe. Nếu có triệu chứng, vào VaxCare "
+                        + "khai báo phản ứng sau tiêm:\n" + surveyLink + "\n\n"
+                        + "Nếu nghiêm trọng, hãy đến cơ sở y tế gần nhất.\n\n"
+                        + "— Đội ngũ VaxCare";
+        send(toEmail,
+                "[VaxCare] Theo dõi sau tiêm – " + safe(vaccineName),
+                body,
+                "post-vax-survey");
+    }
+
+    // ===================== CORE: MimeMessage UTF-8 =====================
+
+    /**
+     * Gửi email qua SMTP (Gmail). Dùng MimeMessage + UTF-8 để tránh lỗi encoding
+     * và tương thích tốt hơn SimpleMailMessage.
+     */
     private void send(String toEmail, String subject, String body, String fallbackHint) {
         if (toEmail == null || toEmail.isBlank()) {
-            log.warn("Skip email: empty recipient ({})", fallbackHint);
+            log.warn("[MAIL] Skip: empty recipient ({})", fallbackHint);
             return;
         }
         if (!mailEnabled) {
-            log.warn("[MAIL DISABLED] To={} | {} | body preview:\n{}", toEmail, fallbackHint, body);
+            log.warn("[MAIL] DISABLED – would send to={} subject={} ({})", toEmail, subject, fallbackHint);
             return;
         }
+        if (from == null || from.isBlank()) {
+            log.error("[MAIL] spring.mail.username (from) is empty – cannot send ({})", fallbackHint);
+            return;
+        }
+
+        String recipient = toEmail.trim();
         try {
-            SimpleMailMessage msg = new SimpleMailMessage();
-            msg.setFrom(from);
-            msg.setTo(toEmail);
-            msg.setSubject(subject);
-            msg.setText(body);
-            mailSender.send(msg);
-            log.info("Email sent to {} ({})", toEmail, fallbackHint);
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, false, StandardCharsets.UTF_8.name());
+            helper.setFrom(from);
+            helper.setTo(recipient);
+            helper.setSubject(subject);
+            helper.setText(body, false);
+
+            mailSender.send(message);
+            log.info("[MAIL] SENT OK to={} from={} subject={} ({})", recipient, from, subject, fallbackHint);
         } catch (Exception e) {
-            log.error("Failed to send email to {} ({}): {}", toEmail, fallbackHint, e.getMessage());
-            log.warn("[FALLBACK] {}", fallbackHint);
+            log.error("[MAIL] FAILED to={} from={} subject={} ({}): {}",
+                    recipient, from, subject, fallbackHint, e.getMessage(), e);
         }
     }
 

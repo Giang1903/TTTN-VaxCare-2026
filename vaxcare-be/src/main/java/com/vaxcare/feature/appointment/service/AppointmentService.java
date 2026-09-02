@@ -22,8 +22,8 @@ import com.vaxcare.feature.vaccine.entity.Vaccine;
 import com.vaxcare.feature.vaccine.repository.PriceListRepository;
 import com.vaxcare.feature.vaccine.repository.VaccineRepository;
 import com.vaxcare.feature.inventory.repository.VaccineBatchRepository;
-import com.vaxcare.feature.notification.service.EmailService;
 import com.vaxcare.feature.ai.service.AiDispatchService;
+import com.vaxcare.feature.vaccination.repository.VaccinationDetailRepository;
 import com.vaxcare.utils.QRCodeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,6 +33,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -52,9 +53,9 @@ public class AppointmentService {
     private final VaccinationFacilityRepository facilityRepository;
     private final VaccineRepository vaccineRepository;
     private final PriceListRepository priceListRepository;
-    private final EmailService emailService;
     private final AiDispatchService aiDispatchService;
     private final VaccineBatchRepository vaccineBatchRepository;
+    private final VaccinationDetailRepository vaccinationDetailRepository;
 
     // ===================== KHUNG GIỜ TRỐNG =====================
 
@@ -162,13 +163,22 @@ public class AppointmentService {
         ensureVaccineInStockAtFacility(facility.getFacilityId(), vaccine.getVaccineId());
         validateSlotWithinWorkingHours(facility, request.getAppointmentDate(), request.getTimeSlot());
         ensureSlotHasCapacity(facility, request.getAppointmentDate(), request.getTimeSlot(), null);
+        enforceProtocolLimits(user.getUserId(), vaccine, request.getAppointmentDate());
+
+        // Chặn đặt lịch ngay nếu không có giá hiệu lực (tránh PENDING treo chỗ rồi fail lúc thanh toán)
+        java.math.BigDecimal price = resolveCurrentPrice(vaccine.getVaccineId(), facility.getFacilityId());
+        if (price == null || price.compareTo(java.math.BigDecimal.ZERO) <= 0) {
+            throw new BadRequestException(
+                    "Vắc xin này chưa có bảng giá hiệu lực tại cơ sở đã chọn. "
+                            + "Vui lòng chọn vắc xin/cơ sở khác hoặc liên hệ quản trị để cập nhật giá.");
+        }
 
         // QR chỉ sinh sau khi thanh toán VNPay thành công (PaymentService)
         Appointment appointment = Appointment.builder()
                 .user(user)
                 .facility(facility)
                 .vaccine(vaccine)
-                .price(resolveCurrentPrice(vaccine.getVaccineId(), facility.getFacilityId()))
+                .price(price)
                 .appointmentDate(request.getAppointmentDate())
                 .timeSlot(request.getTimeSlot())
                 .status(AppointmentStatus.PENDING)
@@ -185,25 +195,7 @@ public class AppointmentService {
             // đã log trong AiDispatchService/AiServiceClient nếu có lỗi gọi AI
         }
 
-        // Gửi email xác nhận — không làm fail đặt lịch nếu mail lỗi
-        try {
-            String email = user.getAccount() != null ? user.getAccount().getEmail() : null;
-            emailService.sendAppointmentConfirmationEmail(
-                    email,
-                    user.getFullName(),
-                    saved.getAppointmentId(),
-                    vaccine.getVaccineName(),
-                    facility.getFacilityName(),
-                    facility.getAddress(),
-                    saved.getAppointmentDate(),
-                    saved.getTimeSlot(),
-                    saved.getPrice(),
-                    saved.getQrCode()
-            );
-        } catch (Exception ignored) {
-            // đã log trong EmailService
-        }
-
+        // Không gửi email lúc đặt lịch — chỉ gửi khi thanh toán thành công (PaymentService)
         return mapToResponse(saved);
     }
 
@@ -286,6 +278,53 @@ public class AppointmentService {
         if (stock == null || stock <= 0) {
             throw new BadRequestException(
                     "Cơ sở này hiện không còn tồn kho vắc xin đã chọn. Vui lòng chọn cơ sở khác hoặc vắc xin khác.");
+        }
+    }
+
+    /**
+     * Giới hạn đặt lịch theo phác đồ:
+     * - Không đặt thêm nếu đã tiêm đủ required_doses
+     * - Không đặt thêm nếu số mũi đã tiêm + lịch đang mở >= required_doses
+     * - Tôn trọng khoảng cách giữa các mũi (dose_interval_days) nếu có
+     */
+    private void enforceProtocolLimits(Long userId, Vaccine vaccine, LocalDate appointmentDate) {
+        int required = vaccine.getRequiredDoses() != null && vaccine.getRequiredDoses() > 0
+                ? vaccine.getRequiredDoses()
+                : 1;
+
+        long administered = vaccinationDetailRepository.countAdministeredDoses(userId, vaccine.getVaccineId());
+        if (administered >= required) {
+            throw new BadRequestException(
+                    "Bạn đã hoàn thành đủ " + required + " mũi theo phác đồ của \""
+                            + vaccine.getVaccineName()
+                            + "\". Không thể đặt thêm lịch cho loại vắc xin này.");
+        }
+
+        long activeOpen = appointmentRepository.countByUserAndVaccineAndStatusIn(
+                userId, vaccine.getVaccineId(), ACTIVE_STATUSES);
+        if (administered + activeOpen >= required) {
+            throw new BadRequestException(
+                    "Bạn đang có lịch hẹn đang mở cho \"" + vaccine.getVaccineName()
+                            + "\". Phác đồ tối đa " + required + " mũi (đã tiêm "
+                            + administered + ", đang chờ " + activeOpen
+                            + "). Vui lòng hoàn tất hoặc hủy lịch hiện có trước khi đặt thêm.");
+        }
+
+        Integer intervalDays = vaccine.getDoseIntervalDays();
+        if (intervalDays != null && intervalDays > 0 && administered > 0) {
+            LocalDate lastInjection = vaccinationDetailRepository.findLastInjectionDate(
+                    userId, vaccine.getVaccineId());
+            if (lastInjection != null) {
+                long daysSince = ChronoUnit.DAYS.between(lastInjection, appointmentDate);
+                if (daysSince < intervalDays) {
+                    LocalDate earliest = lastInjection.plusDays(intervalDays);
+                    throw new BadRequestException(
+                            "Chưa đủ khoảng cách giữa các mũi của \"" + vaccine.getVaccineName()
+                                    + "\". Cần cách tối thiểu " + intervalDays
+                                    + " ngày sau mũi gần nhất (" + lastInjection
+                                    + "). Ngày sớm nhất có thể đặt: " + earliest + ".");
+                }
+            }
         }
     }
 

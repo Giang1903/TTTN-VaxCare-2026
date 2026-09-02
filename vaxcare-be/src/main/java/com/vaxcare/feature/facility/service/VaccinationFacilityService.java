@@ -36,6 +36,21 @@ public class VaccinationFacilityService {
                 .toList();
     }
 
+
+    /**
+     * Cơ sở đang hoạt động và còn tồn kho vắc xin chỉ định (dùng bước chọn cơ sở khi đặt lịch).
+     */
+    @Transactional(readOnly = true)
+    public List<FacilityResponse> getActiveFacilitiesWithVaccine(Long vaccineId) {
+        if (vaccineId == null) {
+            throw new BadRequestException("vaccineId không được để trống");
+        }
+        return facilityRepository.findActiveWithVaccineInStock(vaccineId).stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+
     @Transactional(readOnly = true)
     public FacilityResponse getFacilityById(Long facilityId) {
         VaccinationFacility facility = findFacilityOrThrow(facilityId);

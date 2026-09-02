@@ -106,6 +106,14 @@ export function completeVaccination(id) {
   });
 }
 
+/** PATCH /staff/appointments/{id}/note — lưu ghi chú nhân viên trên lịch hẹn */
+export function updateAppointmentNote(id, note) {
+  return apiClient.request(`/staff/appointments/${id}/note`, {
+    method: "PATCH",
+    body: { note: note ?? "" },
+  });
+}
+
 /** POST /staff/checkin { qrCode } */
 export function checkin(qrCode) {
   return apiClient.request(`/staff/checkin`, {

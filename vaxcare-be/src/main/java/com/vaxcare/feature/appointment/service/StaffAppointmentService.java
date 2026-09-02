@@ -70,6 +70,9 @@ public class StaffAppointmentService {
 
     // ===================== CHECK-IN BẰNG QR CODE =====================
 
+    /** Độ dài khung giờ tiêm (phút) — khớp AppointmentService.SLOT_DURATION_MINUTES */
+    private static final int SLOT_DURATION_MINUTES = 30;
+
     @Transactional
     public AppointmentResponse checkin(String qrCode, Long currentAccountId) {
         Account account = findAccountOrThrow(currentAccountId);
@@ -81,19 +84,51 @@ public class StaffAppointmentService {
         if (appointment.getStatus() == AppointmentStatus.CHECKED_IN) {
             throw new BadRequestException("Lịch hẹn này đã được check-in trước đó");
         }
+        if (appointment.getStatus() == AppointmentStatus.CANCELLED
+                || appointment.getStatus() == AppointmentStatus.NO_SHOW) {
+            throw new BadRequestException("Lịch hẹn này đã bị hủy / không đến, không thể check-in");
+        }
         if (appointment.getStatus() != AppointmentStatus.CONFIRMED) {
             throw new BadRequestException(
-                    "Chỉ có thể check-in lịch hẹn đang ở trạng thái CONFIRMED (hiện tại: " + appointment.getStatus() + ")");
+                    "Chỉ có thể check-in lịch hẹn đang ở trạng thái CONFIRMED (hiện tại: "
+                            + appointment.getStatus() + ")");
         }
-        if (!appointment.getAppointmentDate().isEqual(LocalDate.now())) {
-            throw new BadRequestException(
-                    "Lịch hẹn này không phải của hôm nay (ngày hẹn: " + appointment.getAppointmentDate() + ")");
-        }
+
+        assertCheckinTimeWindow(appointment);
 
         appointment.setStatus(AppointmentStatus.CHECKED_IN);
         assignStaffIfPossible(account, appointment);
 
         return appointmentService.mapToResponse(appointmentRepository.save(appointment));
+    }
+
+    /**
+     * Chỉ cho check-in trong khung [giờ hẹn, giờ hẹn + SLOT_DURATION] của đúng ngày hẹn.
+     * Trước giờ / trước ngày → từ chối. Đã quá khung → từ chối (cron sẽ đánh CANCELLED).
+     */
+    private void assertCheckinTimeWindow(Appointment appointment) {
+        LocalDate apptDate = appointment.getAppointmentDate();
+        var timeSlot = appointment.getTimeSlot();
+        if (apptDate == null || timeSlot == null) {
+            throw new BadRequestException("Lịch hẹn thiếu ngày hoặc khung giờ");
+        }
+
+        LocalDateTime slotStart = LocalDateTime.of(apptDate, timeSlot);
+        LocalDateTime slotEnd = slotStart.plusMinutes(SLOT_DURATION_MINUTES);
+        LocalDateTime now = LocalDateTime.now();
+
+        if (now.isBefore(slotStart)) {
+            throw new BadRequestException(
+                    "Chưa đến giờ tiêm. Chỉ được check-in từ "
+                            + timeSlot + " ngày " + apptDate
+                            + " (hiện tại: " + now.toLocalTime().withNano(0) + ")");
+        }
+        if (!now.isBefore(slotEnd)) {
+            throw new BadRequestException(
+                    "Đã quá khung giờ tiêm (" + timeSlot + "–"
+                            + slotEnd.toLocalTime().withNano(0) + " ngày " + apptDate
+                            + "). Lịch sẽ được hệ thống hủy tự động nếu chưa check-in.");
+        }
     }
 
     // ===================== HOÀN TẤT TIÊM CHỦNG (TRỪ KHO TỰ ĐỘNG) =====================
@@ -113,6 +148,28 @@ public class StaffAppointmentService {
                 currentAccountId);
 
         return appointmentService.mapToResponse(findAppointmentOrThrow(appointmentId));
+    }
+
+    /**
+     * Cập nhật ghi chú nhân viên trên lịch hẹn (không đổi trạng thái).
+     */
+    @Transactional
+    public AppointmentResponse updateNote(Long appointmentId, String note, Long currentAccountId) {
+        Account account = findAccountOrThrow(currentAccountId);
+        Appointment appointment = findAppointmentOrThrow(appointmentId);
+        checkFacilityScope(account, appointment);
+
+        String normalized = note == null ? null : note.trim();
+        if (normalized != null && normalized.isEmpty()) {
+            normalized = null;
+        }
+        if (normalized != null && normalized.length() > 2000) {
+            throw new BadRequestException("Ghi chú không được vượt quá 2000 ký tự");
+        }
+
+        appointment.setNote(normalized);
+        assignStaffIfPossible(account, appointment);
+        return appointmentService.mapToResponse(appointmentRepository.save(appointment));
     }
 
     // ===================== HELPERS =====================

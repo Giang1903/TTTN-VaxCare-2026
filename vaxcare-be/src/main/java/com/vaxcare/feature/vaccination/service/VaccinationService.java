@@ -104,6 +104,12 @@ public class VaccinationService {
         if (STOCK_DEDUCTING_RESULTS.contains(result)) {
             // Chỉ tính/nhắc mũi tiếp theo khi mũi này thực sự được tiêm (SUCCESS/PARTIAL)
             reminderService.createNextDoseNotificationIfApplicable(detail);
+            // Hệ thống chủ động gửi khảo sát / theo dõi sau tiêm (24–72h)
+            try {
+                reminderService.notifyPostVaccinationSurvey(detail);
+            } catch (Exception ex) {
+                // không làm fail ghi nhận tiêm nếu mail/notification lỗi
+            }
         }
 
         appointment.setStatus(AppointmentStatus.COMPLETED);

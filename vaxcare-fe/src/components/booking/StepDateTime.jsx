@@ -65,11 +65,11 @@ export default function StepDateTime({
       .then((data) => {
         if (cancelled) return;
         const list = Array.isArray(data) ? [...data] : [];
+        // Hiển thị theo thứ tự giờ trong ngày; badge AI chỉ gắn slot recommended (top N từ backend)
         list.sort((a, b) => {
-          const ar = a.aiRecommended ? 0 : 1;
-          const br = b.aiRecommended ? 0 : 1;
-          if (ar !== br) return ar - br;
-          return (a.aiOverloadProbability ?? 1) - (b.aiOverloadProbability ?? 1);
+          const ta = slotKey(a);
+          const tb = slotKey(b);
+          return ta.localeCompare(tb);
         });
         setSlots(list);
       })
@@ -98,9 +98,17 @@ export default function StepDateTime({
 
   const recommendedSlots = useMemo(
     () =>
-      slots.filter(
-        (s) => s.aiRecommended && !(s.full || (s.availableCount != null && s.availableCount <= 0)),
-      ),
+      slots
+        .filter(
+          (s) => s.aiRecommended && !(s.full || (s.availableCount != null && s.availableCount <= 0)),
+        )
+        // Gợi ý theo đúng tiêu chí tốt nhất: chờ ít → quá tải thấp
+        .sort((a, b) => {
+          const wa = a.aiEstimatedWaitMinutes ?? 999;
+          const wb = b.aiEstimatedWaitMinutes ?? 999;
+          if (wa !== wb) return wa - wb;
+          return (a.aiOverloadProbability ?? 1) - (b.aiOverloadProbability ?? 1);
+        }),
     [slots],
   );
 
