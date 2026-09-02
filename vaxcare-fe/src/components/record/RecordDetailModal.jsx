@@ -11,6 +11,15 @@ function formatDob(dob) {
   return s;
 }
 
+function formatGender(gender) {
+  if (!gender) return '—';
+  const g = String(gender).toUpperCase();
+  if (g === 'MALE' || g === 'NAM') return 'Nam';
+  if (g === 'FEMALE' || g === 'NỮ' || g === 'NU') return 'Nữ';
+  if (g === 'OTHER' || g === 'KHÁC' || g === 'KHAC') return 'Khác';
+  return String(gender);
+}
+
 function initials(name) {
   if (!name) return '?';
   const parts = name.trim().split(/\s+/);
@@ -52,7 +61,7 @@ export default function RecordDetailModal({
           <div style={{ fontWeight: 700, fontSize: '18px' }}>{displayName}</div>
           <div style={{ color: 'var(--gray-500)', fontSize: '13px', marginTop: '2px' }}>
             {profile?.email || '—'} · Sinh {formatDob(profile?.dateOfBirth)} ·{' '}
-            {profile?.address || 'Chưa cập nhật địa chỉ'}
+            {formatGender(profile?.gender)} · {profile?.address || 'Chưa cập nhật địa chỉ'}
           </div>
           <div style={{ marginTop: '6px' }}>
             <span className="profile-verified" style={{ fontSize: '12px' }}>
@@ -87,7 +96,6 @@ export default function RecordDetailModal({
               </div>
               <div>Dị ứng: {h?.allergies || '—'}</div>
               <div>Tiền sử bệnh: {h?.medicalHistory || '—'}</div>
-              <div>Ghi chú: {h?.note || h?.healthNote || '—'}</div>
             </>
           );
         })()}

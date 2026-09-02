@@ -100,7 +100,6 @@ export default function HealthProfileCard({ health, onEdit }) {
           <div style={{ display: 'grid', gap: 10, fontSize: 14 }}>
             <Row label="Dị ứng" value={health?.allergies || '—'} />
             <Row label="Tiền sử bệnh" value={health?.medicalHistory || '—'} />
-            <Row label="Ghi chú" value={health?.note || health?.healthNote || '—'} />
           </div>
         </>
       )}

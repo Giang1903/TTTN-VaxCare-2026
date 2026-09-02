@@ -150,6 +150,28 @@ public class StaffAppointmentService {
         return appointmentService.mapToResponse(findAppointmentOrThrow(appointmentId));
     }
 
+    /**
+     * Cập nhật ghi chú nhân viên trên lịch hẹn (không đổi trạng thái).
+     */
+    @Transactional
+    public AppointmentResponse updateNote(Long appointmentId, String note, Long currentAccountId) {
+        Account account = findAccountOrThrow(currentAccountId);
+        Appointment appointment = findAppointmentOrThrow(appointmentId);
+        checkFacilityScope(account, appointment);
+
+        String normalized = note == null ? null : note.trim();
+        if (normalized != null && normalized.isEmpty()) {
+            normalized = null;
+        }
+        if (normalized != null && normalized.length() > 2000) {
+            throw new BadRequestException("Ghi chú không được vượt quá 2000 ký tự");
+        }
+
+        appointment.setNote(normalized);
+        assignStaffIfPossible(account, appointment);
+        return appointmentService.mapToResponse(appointmentRepository.save(appointment));
+    }
+
     // ===================== HELPERS =====================
 
     private Long resolveEffectiveFacilityId(Account account, Long requestedFacilityId) {

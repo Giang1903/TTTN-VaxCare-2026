@@ -32,6 +32,15 @@ function formatDob(dob) {
   return s;
 }
 
+function formatGender(gender) {
+  if (!gender) return 'Chưa cập nhật';
+  const g = String(gender).toUpperCase();
+  if (g === 'MALE' || g === 'NAM') return 'Nam';
+  if (g === 'FEMALE' || g === 'NỮ' || g === 'NU') return 'Nữ';
+  if (g === 'OTHER' || g === 'KHÁC' || g === 'KHAC') return 'Khác';
+  return String(gender);
+}
+
 // ============ PROFILE HEADER ============
 export default function ProfileHeader({
   profile,
@@ -41,6 +50,7 @@ export default function ProfileHeader({
 }) {
   const displayName = profile?.fullName || 'Người dùng';
   const dob = formatDob(profile?.dateOfBirth);
+  const gender = formatGender(profile?.gender);
   const city = profile?.address || 'Chưa cập nhật địa chỉ';
   const phone = profile?.phone || 'Chưa có SĐT';
 
@@ -58,6 +68,13 @@ export default function ProfileHeader({
                   <path d="M16 2v4M8 2v4M3 10h18" />
                 </svg>
                 {dob}
+              </span>
+              <span className="profile-chip">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+                {gender}
               </span>
               <span className="profile-chip">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

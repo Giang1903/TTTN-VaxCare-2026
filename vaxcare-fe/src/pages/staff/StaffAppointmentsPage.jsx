@@ -104,6 +104,7 @@ export default function StaffAppointmentsPage() {
   const [manualQr, setManualQr] = useState('');
   const [cameraOn, setCameraOn] = useState(false);
   const [noteDraft, setNoteDraft] = useState('');
+  const [noteSaving, setNoteSaving] = useState(false);
 
   const loadAppointments = useCallback(async () => {
     setLoading(true);
@@ -167,7 +168,29 @@ export default function StaffAppointmentsPage() {
 
   const openView = (appt) => {
     setNoteDraft(appt.note || '');
+    setNoteSaving(false);
     setDrawer({ open: true, mode: 'view', apptId: appt.id });
+  };
+
+  const handleSaveNote = async () => {
+    if (!drawerAppt) return;
+    const original = drawerAppt.note || '';
+    if ((noteDraft || '') === original) {
+      showToast('Ghi chú không thay đổi', 'ok');
+      return;
+    }
+    setNoteSaving(true);
+    try {
+      const updated = await staffService.updateAppointmentNote(drawerAppt.id, noteDraft);
+      const mapped = staffService.mapAppointmentToUi(updated);
+      setAppts((list) => list.map((a) => (a.id === mapped.id ? { ...a, ...mapped } : a)));
+      setNoteDraft(mapped.note || '');
+      showToast('Đã lưu ghi chú lịch hẹn', 'ok');
+    } catch (err) {
+      showToast(err.message || 'Lưu ghi chú thất bại', 'warn');
+    } finally {
+      setNoteSaving(false);
+    }
   };
 
   const openScan = () => {
@@ -618,8 +641,20 @@ export default function StaffAppointmentsPage() {
                   className="note-box"
                   value={noteDraft}
                   onChange={(e) => setNoteDraft(e.target.value)}
-                  placeholder="Ghi chú của nhân viên..."
+                  placeholder="Ghi chú của nhân viên (dị ứng, gọi điện, lưu ý khi tiêm…)"
+                  maxLength={2000}
+                  disabled={noteSaving}
                 />
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
+                  <button
+                    type="button"
+                    className="btn primary"
+                    onClick={handleSaveNote}
+                    disabled={noteSaving || (noteDraft || '') === (drawerAppt.note || '')}
+                  >
+                    {noteSaving ? 'Đang lưu…' : 'Lưu ghi chú'}
+                  </button>
+                </div>
               </div>
             </div>
             <div className="drawer-foot">

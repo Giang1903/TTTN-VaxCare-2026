@@ -54,4 +54,15 @@ public class StaffAppointmentController {
         return ApiResponse.success("Hoàn tất tiêm chủng thành công, đã cập nhật tồn kho",
                 staffAppointmentService.completeVaccination(id, userPrincipal.getId()));
     }
+
+    @Parameter(description = "Cập nhật ghi chú nhân viên trên lịch hẹn. Body: { \"note\": \"...\" }")
+    @PatchMapping("/{id}/note")
+    public ApiResponse<AppointmentResponse> updateNote(
+            @PathVariable Long id,
+            @RequestBody(required = false) java.util.Map<String, String> body,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        String note = body != null ? body.get("note") : null;
+        return ApiResponse.success("Đã lưu ghi chú lịch hẹn",
+                staffAppointmentService.updateNote(id, note, userPrincipal.getId()));
+    }
 }

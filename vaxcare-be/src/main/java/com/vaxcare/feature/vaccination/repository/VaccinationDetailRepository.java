@@ -21,6 +21,29 @@ public interface VaccinationDetailRepository extends JpaRepository<VaccinationDe
 
     long countByResultAndInjectionDateBetween(VaccinationResult result, java.time.LocalDate from, java.time.LocalDate to);
 
+    /** Số mũi đã tiêm thành công / một phần theo user + vaccine (phục vụ giới hạn phác đồ khi đặt lịch). */
+    @Query("""
+        SELECT COUNT(d) FROM VaccinationDetail d
+        WHERE d.history.user.userId = :userId
+          AND d.vaccine.vaccineId = :vaccineId
+          AND d.result IN (
+              com.vaxcare.common.enums.VaccinationResult.SUCCESS,
+              com.vaxcare.common.enums.VaccinationResult.PARTIAL
+          )
+        """)
+    long countAdministeredDoses(@Param("userId") Long userId, @Param("vaccineId") Long vaccineId);
+
+    @Query("""
+        SELECT MAX(d.injectionDate) FROM VaccinationDetail d
+        WHERE d.history.user.userId = :userId
+          AND d.vaccine.vaccineId = :vaccineId
+          AND d.result IN (
+              com.vaxcare.common.enums.VaccinationResult.SUCCESS,
+              com.vaxcare.common.enums.VaccinationResult.PARTIAL
+          )
+        """)
+    java.time.LocalDate findLastInjectionDate(@Param("userId") Long userId, @Param("vaccineId") Long vaccineId);
+
     @Query("""
         SELECT d.result, COUNT(d) FROM VaccinationDetail d
         WHERE d.appointment.facility.facilityId = :facilityId

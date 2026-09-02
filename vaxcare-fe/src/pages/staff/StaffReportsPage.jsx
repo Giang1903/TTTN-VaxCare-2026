@@ -89,34 +89,72 @@ export default function StaffReportsPage() {
         setPeriodLabel(`${Number(range) || 30} ngày gần nhất`);
       }
 
-      const weekSeries = report?.weekSeries || [];
-      setWeek(
-        weekSeries.map((d) => ({
-          label: d.label,
-          val: d.count,
-          h: d.barHeight || 4,
+      // dailySeries = đúng khoảng filter; weekSeries chỉ luôn 7 ngày cuối (dùng fallback)
+      const daySeries = report?.dailySeries || report?.weekSeries || [];
+      const n = daySeries.length;
+
+      // >14 ngày: gom theo tuần để biểu đồ đọc được (tránh 90 cột + key nhãn T2/T3 trùng)
+      let chartPoints = [];
+      if (n > 14) {
+        for (let i = 0; i < n; i += 7) {
+          const chunk = daySeries.slice(i, i + 7);
+          const val = chunk.reduce((s, d) => s + Number(d.count || 0), 0);
+          const first = chunk[0];
+          const last = chunk[chunk.length - 1];
+          chartPoints.push({
+            key: `w-${first?.date || i}`,
+            label: first?.date ? fmt(first.date).slice(0, 5) : `T${Math.floor(i / 7) + 1}`,
+            val,
+            today: chunk.some((d) => d.today),
+            tip: first?.date && last?.date ? `${fmt(first.date)} – ${fmt(last.date)}` : '',
+          });
+        }
+      } else {
+        chartPoints = daySeries.map((d, i) => ({
+          key: d.date || `d-${i}`,
+          label: d.label || fmt(d.date),
+          val: Number(d.count || 0),
           today: !!d.today,
+          tip: d.date ? fmt(d.date) : '',
+        }));
+      }
+
+      const maxVal = Math.max(1, ...chartPoints.map((p) => p.val));
+      setWeek(
+        chartPoints.map((p) => ({
+          ...p,
+          // Cột có data tối thiểu ~12% chiều cao để nhìn rõ; cột 0 giữ thấp
+          h: p.val > 0 ? Math.max(12, Math.round((p.val / maxVal) * 100)) : 4,
         }))
       );
-      if (weekSeries.length) {
-        const first = weekSeries[0];
-        const last = weekSeries[weekSeries.length - 1];
+
+      if (daySeries.length) {
+        const first = daySeries[0];
+        const last = daySeries[daySeries.length - 1];
         setWeekLabel(
           first?.date && last?.date
             ? `${fmt(first.date)} – ${fmt(last.date)}`
-            : '7 ngày gần nhất'
+            : customMode
+              ? `${fmt(fromDate)} – ${fmt(toDate)}`
+              : `${Number(range) || 30} ngày gần nhất`
         );
-        const total = weekSeries.reduce((s, d) => s + Number(d.count || 0), 0);
-        const avg = Math.round((total / weekSeries.length) * 10) / 10;
-        const peak = [...weekSeries].sort((a, b) => Number(b.count) - Number(a.count))[0];
+        const total = daySeries.reduce((s, d) => s + Number(d.count || 0), 0);
+        const avg = Math.round((total / daySeries.length) * 10) / 10;
+        const peak = [...chartPoints].sort((a, b) => b.val - a.val)[0];
         setWeekInsight(
           total
-            ? `Trung bình ${avg} mũi/ngày. Cao nhất ${peak?.label || ''} (${peak?.count ?? 0}).`
-            : 'Chưa có lượt tiêm trong 7 ngày gần nhất.'
+            ? n > 14
+              ? `Tổng ${total} lịch · TB ${avg}/ngày. Tuần cao nhất ${peak?.tip || peak?.label || ''} (${peak?.val ?? 0}).`
+              : `Tổng ${total} lịch · TB ${avg}/ngày. Cao nhất ${peak?.tip || peak?.label || ''} (${peak?.val ?? 0}).`
+            : 'Chưa có lịch hẹn trong khoảng đã chọn.'
         );
       } else {
-        setWeekLabel('7 ngày gần nhất');
-        setWeekInsight('Chưa có dữ liệu lượt tiêm theo ngày.');
+        setWeekLabel(
+          customMode
+            ? `${fmt(fromDate)} – ${fmt(toDate)}`
+            : `${Number(range) || 30} ngày gần nhất`
+        );
+        setWeekInsight('Chưa có dữ liệu lịch hẹn theo ngày.');
       }
 
       // Funnel insight from real KPI
@@ -348,13 +386,13 @@ export default function StaffReportsPage() {
           <div className="panel">
             <div className="panel-head">
               <div>
-                <h3>Lượt tiêm theo ngày</h3>
+                <h3>Lịch hẹn theo {week.some((d) => String(d.key || '').startsWith('w-')) ? 'tuần' : 'ngày'}</h3>
                 <div className="sub">{weekLabel}</div>
               </div>
             </div>
             <div className="week-chart">
               {week.map((d) => (
-                <div key={d.label} className={`wc-col${d.today ? ' is-today' : ''}`}>
+                <div key={d.key || d.label} className={`wc-col${d.today ? ' is-today' : ''}`} title={d.tip || undefined}>
                   <div className="wc-val">{d.val}</div>
                   <div className="wc-bar-wrap">
                     <div className={`wc-bar${d.today ? ' today' : ''}`} style={{ height: `${d.h}%` }} />

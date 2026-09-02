@@ -69,13 +69,7 @@ public class AuthService {
                 .address(request.getAddress())
                 .build();
 
-        // Create HealthProfile
-        HealthProfile healthProfile = HealthProfile.builder()
-                .user(user)
-                .note("Khởi tạo hồ sơ sức khỏe mới")
-                .build();
-
-        user.setHealthProfile(healthProfile);
+        // user.setHealthProfile(healthProfile);
         account.setUser(user);
 
         Account savedAccount = accountRepository.save(account);

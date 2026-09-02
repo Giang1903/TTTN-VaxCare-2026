@@ -48,10 +48,55 @@ export default function Reports() {
 
   const k = report?.kpi || {};
   const series = report?.dailySeries || report?.weekSeries || [];
-  const max = Math.max(1, ...series.map((d) => d.count || 0));
   const ranking = report?.vaccineRanking || [];
   const facilityStats = report?.facilityStats || [];
   const reactionMix = report?.reactionMix || [];
+
+  const fmtDate = (s) => {
+    if (!s) return '';
+    const str = String(s);
+    if (str.includes('-')) {
+      const [y, m, d] = str.slice(0, 10).split('-');
+      return `${d}/${m}/${y}`;
+    }
+    return str;
+  };
+
+  // >14 ngày: gom theo tuần + key unique + cuộn ngang (tránh nhãn T2/T3 trùng, cột bị co)
+  const chartPoints = useMemo(() => {
+    const n = series.length;
+    let points = [];
+    if (n > 14) {
+      for (let i = 0; i < n; i += 7) {
+        const chunk = series.slice(i, i + 7);
+        const val = chunk.reduce((s, d) => s + Number(d.count || 0), 0);
+        const first = chunk[0];
+        const last = chunk[chunk.length - 1];
+        points.push({
+          key: `w-${first?.date || i}`,
+          label: first?.date ? fmtDate(first.date).slice(0, 5) : `T${Math.floor(i / 7) + 1}`,
+          count: val,
+          tip: first?.date && last?.date ? `${fmtDate(first.date)} – ${fmtDate(last.date)}` : '',
+          today: chunk.some((d) => d.today),
+        });
+      }
+    } else {
+      points = series.map((d, i) => ({
+        key: d.date || `d-${i}`,
+        label: d.label || fmtDate(d.date),
+        count: Number(d.count || 0),
+        tip: d.date ? fmtDate(d.date) : '',
+        today: !!d.today,
+      }));
+    }
+    const maxVal = Math.max(1, ...points.map((p) => p.count));
+    return points.map((p) => ({
+      ...p,
+      h: p.count > 0 ? Math.max(12, Math.round((p.count / maxVal) * 100)) : 4,
+    }));
+  }, [series]);
+
+  const chartIsWeekly = chartPoints.some((p) => String(p.key).startsWith('w-'));
 
   const funnelSteps = useMemo(() => {
     const kk = report?.kpi || {};
@@ -157,21 +202,20 @@ export default function Reports() {
           <div className="panel">
             <div className="panel-head">
               <div>
-                <h3>Lượt tiêm theo ngày</h3>
-                <div className="sub">{dateFrom} → {dateTo}</div>
+                <h3>Lịch hẹn theo {chartIsWeekly ? 'tuần' : 'ngày'}</h3>
+                <div className="sub">{fmtDate(dateFrom)} → {fmtDate(dateTo)}</div>
               </div>
             </div>
             <div className="week-chart">
-              {(series.length ? series : []).map((pt, i) => {
-                  const h = Math.round(((pt.count || 0) / max) * 100) || 4;
-                  return (
-                    <div key={pt.date || i} className="wc-col">
-                      <div className="wc-val">{pt.count}</div>
-                      <div className="wc-bar-wrap"><div className="wc-bar" style={{ height: `${h}%` }} /></div>
-                      <div className="wc-label">{pt.label}</div>
-                    </div>
-                  );
-                })}
+              {chartPoints.map((pt) => (
+                <div key={pt.key} className={`wc-col${pt.today ? ' is-today' : ''}`} title={pt.tip || undefined}>
+                  <div className="wc-val">{pt.count}</div>
+                  <div className="wc-bar-wrap">
+                    <div className={`wc-bar${pt.today ? ' today' : ''}`} style={{ height: `${pt.h}%` }} />
+                  </div>
+                  <div className="wc-label">{pt.label}</div>
+                </div>
+              ))}
             </div>
             <div className="insight">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -179,6 +223,7 @@ export default function Reports() {
               </svg>
               <span>
                 Tổng <strong>{k.appointments ?? 0}</strong> lịch trong kỳ · hoàn thành <strong>{k.completed ?? 0}</strong> ({(k.completionRate ?? 0)}%).
+                {chartIsWeekly ? ' Biểu đồ đã gom theo tuần — kéo ngang để xem hết.' : ''}
               </span>
             </div>
           </div>

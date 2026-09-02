@@ -33,6 +33,7 @@ export default function EditProfileModal({ open, onClose, profile, onSaved }) {
   const [form, setForm] = useState({
     fullName: '',
     dateOfBirth: '',
+    gender: '',
     address: '',
     phone: '',
     height: '',
@@ -51,6 +52,7 @@ export default function EditProfileModal({ open, onClose, profile, onSaved }) {
     setForm({
       fullName: profile.fullName || '',
       dateOfBirth: toDateInput(profile.dateOfBirth),
+      gender: profile.gender ? String(profile.gender).toUpperCase() : '',
       address: profile.address || '',
       phone: profile.phone || '',
       height: '',
@@ -97,6 +99,7 @@ export default function EditProfileModal({ open, onClose, profile, onSaved }) {
         fullName,
         phone: form.phone.trim() || undefined,
         dateOfBirth: form.dateOfBirth || undefined,
+        gender: form.gender || undefined,
         address: form.address.trim() || undefined,
       });
 
@@ -161,13 +164,24 @@ export default function EditProfileModal({ open, onClose, profile, onSaved }) {
             <input type="date" name="dateOfBirth" value={form.dateOfBirth} onChange={handleChange} style={inputStyle} />
           </div>
           <div className="form-field">
+            <label style={labelStyle}>Giới tính</label>
+            <select name="gender" value={form.gender} onChange={handleChange} style={inputStyle}>
+              <option value="">Chọn giới tính</option>
+              <option value="MALE">Nam</option>
+              <option value="FEMALE">Nữ</option>
+              <option value="OTHER">Khác</option>
+            </select>
+          </div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+          <div className="form-field">
             <label style={labelStyle}>Số điện thoại</label>
             <input type="tel" name="phone" value={form.phone} onChange={handleChange} style={inputStyle} />
           </div>
-        </div>
-        <div className="form-field" style={{ marginBottom: 18 }}>
-          <label style={labelStyle}>Địa chỉ / Tỉnh thành</label>
-          <input type="text" name="address" value={form.address} onChange={handleChange} style={inputStyle} />
+          <div className="form-field">
+            <label style={labelStyle}>Địa chỉ / Tỉnh thành</label>
+            <input type="text" name="address" value={form.address} onChange={handleChange} style={inputStyle} />
+          </div>
         </div>
 
         <p style={{ fontSize: 12.5, fontWeight: 800, color: '#64748b', marginBottom: 10, letterSpacing: 0.4 }}>
@@ -203,17 +217,6 @@ export default function EditProfileModal({ open, onClose, profile, onSaved }) {
             rows={2}
             style={{ ...inputStyle, resize: 'vertical' }}
             placeholder="Bệnh nền, phẫu thuật…"
-          />
-        </div>
-        <div className="form-field" style={{ marginBottom: 4 }}>
-          <label style={labelStyle}>Ghi chú sức khỏe</label>
-          <textarea
-            name="healthNote"
-            value={form.healthNote}
-            onChange={handleChange}
-            rows={2}
-            style={{ ...inputStyle, resize: 'vertical' }}
-            placeholder="Ghi chú thêm cho nhân viên y tế…"
           />
         </div>
       </form>

@@ -50,6 +50,17 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
                              @Param("timeSlot") LocalTime timeSlot,
                              @Param("excludeId") Long excludeId);
 
+    /** Số lịch đang mở (chưa hủy / no-show / completed) của user cho 1 loại vắc xin. */
+    @Query("""
+        SELECT COUNT(a) FROM Appointment a
+        WHERE a.user.userId = :userId
+          AND a.vaccine.vaccineId = :vaccineId
+          AND a.status IN :statuses
+        """)
+    long countByUserAndVaccineAndStatusIn(@Param("userId") Long userId,
+                                          @Param("vaccineId") Long vaccineId,
+                                          @Param("statuses") java.util.Collection<AppointmentStatus> statuses);
+
     List<Appointment> findByStatusAndAppointmentDateBefore(AppointmentStatus status, LocalDate date);
 
     @Query("""

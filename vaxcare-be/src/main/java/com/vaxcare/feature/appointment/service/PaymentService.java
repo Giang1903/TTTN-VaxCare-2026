@@ -26,6 +26,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -265,28 +267,73 @@ public class PaymentService {
     }
 
     private void sendPaymentSuccessNotifications(Payment payment, Appointment appointment) {
+        final Long appointmentId = appointment.getAppointmentId();
+        final Long userId = appointment.getUser() != null ? appointment.getUser().getUserId() : null;
+        final String fullName = appointment.getUser() != null ? appointment.getUser().getFullName() : null;
+        final String vaccineName = appointment.getVaccine() != null ? appointment.getVaccine().getVaccineName() : null;
+        final java.math.BigDecimal amount = payment.getAmount();
+        final String txnId = payment.getTransactionId();
+
+        // Notification in-app ngay trong transaction (nhanh, ít lỗi)
         try {
-            Account account = appointment.getUser().getAccount();
-
-            emailService.sendPaymentConfirmationEmail(
-                    account.getEmail(),
-                    appointment.getUser().getFullName(),
-                    appointment.getAppointmentId(),
-                    appointment.getVaccine().getVaccineName(),
-                    payment.getAmount(),
-                    payment.getTransactionId());
-
-            notificationService.create(
-                    account,
-                    "Thanh toán thành công",
-                    "Bạn đã thanh toán thành công " + payment.getAmount() + "đ cho lịch hẹn #"
-                            + appointment.getAppointmentId() + " (" + appointment.getVaccine().getVaccineName() + ").",
-                    NotificationType.APPOINTMENT,
-                    appointment.getAppointmentId());
+            Account account = null;
+            if (userId != null) {
+                account = accountRepository.findById(userId).orElse(null);
+            }
+            if (account == null && appointment.getUser() != null) {
+                account = appointment.getUser().getAccount();
+            }
+            if (account != null) {
+                notificationService.create(
+                        account,
+                        "Thanh toán thành công",
+                        "Bạn đã thanh toán thành công " + amount + "đ cho lịch hẹn #"
+                                + appointmentId
+                                + (vaccineName != null ? " (" + vaccineName + ")" : "") + ".",
+                        NotificationType.APPOINTMENT,
+                        appointmentId);
+            }
         } catch (Exception e) {
-            // Gửi email/notification thất bại không được làm rollback giao dịch thanh toán đã thành công
-            log.error("Không thể gửi email/thông báo xác nhận thanh toán cho appointment #{}",
-                    appointment.getAppointmentId(), e);
+            log.error("[Payment] Notification failed appointment #{}: {}", appointmentId, e.getMessage(), e);
+        }
+
+        // Email SAU khi commit — tránh mail bị nuốt khi TX/session đóng, và không ảnh hưởng thanh toán
+        final Long uid = userId;
+        Runnable sendMail = () -> {
+            try {
+                String toEmail = null;
+                String name = fullName;
+                if (uid != null) {
+                    Account acc = accountRepository.findById(uid).orElse(null);
+                    if (acc != null) {
+                        toEmail = acc.getEmail();
+                        if (name == null && acc.getUser() != null) {
+                            name = acc.getUser().getFullName();
+                        }
+                    }
+                }
+                if (toEmail == null || toEmail.isBlank()) {
+                    log.warn("[Payment] No email for userId={} appointment #{} – skip payment mail",
+                            uid, appointmentId);
+                    return;
+                }
+                log.info("[Payment] Sending payment email to {} for appointment #{}", toEmail, appointmentId);
+                emailService.sendPaymentConfirmationEmail(
+                        toEmail, name, appointmentId, vaccineName, amount, txnId);
+            } catch (Exception e) {
+                log.error("[Payment] Payment email failed appointment #{}: {}", appointmentId, e.getMessage(), e);
+            }
+        };
+
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    sendMail.run();
+                }
+            });
+        } else {
+            sendMail.run();
         }
     }
 

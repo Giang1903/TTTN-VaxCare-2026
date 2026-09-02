@@ -17,34 +17,27 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
-/**
- * Tự động hủy:
- * 1) Lịch PENDING chưa thanh toán quá 30 phút → trả chỗ
- * 2) Lịch PENDING/CONFIRMED đã quá khung giờ tiêm mà chưa check-in
- * Không hoàn tiền.
- */
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AppointmentExpiryService {
 
-    /** Khớp StaffAppointmentService / AppointmentService */
     private static final int SLOT_DURATION_MINUTES = 30;
 
-    /** Thời gian tối đa giữ chỗ khi chưa thanh toán */
-    private static final int UNPAID_HOLD_MINUTES = 30;
+    private static final int UNPAID_HOLD_MINUTES = 15;
 
     private static final String AUTO_CANCEL_REASON_EXPIRED_SLOT =
             "Hệ thống tự hủy: đã quá ngày/giờ tiêm mà chưa check-in";
 
     private static final String AUTO_CANCEL_REASON_UNPAID_TIMEOUT =
-            "Hệ thống tự hủy: quá 30 phút chưa thanh toán – đã trả lại chỗ trống";
+            "Hệ thống tự hủy: quá 15 phút chưa thanh toán – đã trả lại chỗ trống";
 
     private final AppointmentRepository appointmentRepository;
     private final PaymentRepository paymentRepository;
 
     /**
-     * Mỗi 5 phút: hủy lịch PENDING tạo cách đây ≥ 30 phút mà chưa thanh toán thành công.
+     * Mỗi 5 phút: hủy lịch PENDING tạo cách đây ≥ 15 phút mà chưa thanh toán thành công.
      * Status → CANCELLED → không còn tính vào capacity (trả chỗ).
      */
     @Scheduled(cron = "0 */5 * * * *")
@@ -76,7 +69,7 @@ public class AppointmentExpiryService {
         }
 
         if (cancelled > 0) {
-            log.info("[CronJob] Hủy {} lịch PENDING quá {} phút chưa thanh toán ",
+            log.info("[CronJob] Hủy {} lịch PENDING quá {} phút chưa thanh toán (đã trả chỗ)",
                     cancelled, UNPAID_HOLD_MINUTES);
         } else {
             log.debug("[CronJob] Không có lịch PENDING hết hạn thanh toán lúc {}", now);

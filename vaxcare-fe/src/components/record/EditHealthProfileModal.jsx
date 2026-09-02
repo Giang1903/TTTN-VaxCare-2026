@@ -168,18 +168,6 @@ export default function EditHealthProfileModal({ open, onClose, health, profileI
             placeholder="Bệnh mãn tính, phẫu thuật, điều trị đang dùng…"
           />
         </div>
-
-        <div className="form-field" style={{ marginBottom: '4px' }}>
-          <label style={labelStyle}>Ghi chú thêm</label>
-          <textarea
-            name="note"
-            value={form.note}
-            onChange={handleChange}
-            rows={2}
-            style={{ ...inputStyle, resize: 'vertical' }}
-            placeholder="Ghi chú cho nhân viên y tế…"
-          />
-        </div>
       </form>
     </VxModal>
   );

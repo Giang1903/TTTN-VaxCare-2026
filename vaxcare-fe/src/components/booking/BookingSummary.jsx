@@ -45,7 +45,7 @@ export default function BookingSummary({ vaccine, facility, date, slot, step }) 
         </div>
         {step >= 3 && facility && (
           <div className="ai-hint">
-            <strong>AI:</strong> Khung giờ sáng tại {facility.name} thường ít chờ hơn buổi chiều.
+            <strong> Mọi thắc mắc liên hệ hỗ trợ tới quản trị viên.</strong>
           </div>
         )}
       </div>
