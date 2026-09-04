@@ -35,13 +35,24 @@ public class StaffAppointmentService {
 
     @Transactional(readOnly = true)
     public List<AppointmentResponse> searchAppointments(Long currentAccountId, Long facilityId,
-                                                          LocalDate date, AppointmentStatus status, String keyword) {
+                                                          LocalDate date, AppointmentStatus status, String keyword,
+                                                          boolean paidOnly) {
         Account account = findAccountOrThrow(currentAccountId);
         Long effectiveFacilityId = resolveEffectiveFacilityId(account, facilityId);
         String normalizedKeyword = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
 
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
         return appointmentRepository.searchForStaff(effectiveFacilityId, date, status, normalizedKeyword).stream()
-                .map(appointmentService::mapToResponse)
+                .map(a -> {
+                    appointmentService.expireIfPastSlot(a, now);
+                    return appointmentService.mapToResponse(a);
+                })
+                .filter(r -> {
+                    if (!paidOnly) return true;
+                    boolean paid = Boolean.TRUE.equals(r.getPaid());
+                    boolean cancelled = r.getStatus() == AppointmentStatus.CANCELLED;
+                    return paid || cancelled;
+                })
                 .toList();
     }
 

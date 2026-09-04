@@ -1,6 +1,7 @@
 package com.vaxcare.feature.appointment.dto;
 
 import com.vaxcare.common.enums.AppointmentStatus;
+import com.vaxcare.common.enums.PaymentStatus;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -34,4 +35,9 @@ public class AppointmentResponse {
     private String qrCode;
     private String note;
     private LocalDateTime createdAt;
+    private PaymentStatus paymentStatus;
+    private Boolean paid;
+
+    private LocalDateTime cancelledAt;
+    private String cancellationReason;
 }

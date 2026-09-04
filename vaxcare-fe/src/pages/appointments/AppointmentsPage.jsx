@@ -68,8 +68,9 @@ function mapAppointment(raw) {
   let line2 = null;
   if (ui.status === 'completed') {
     line2 = 'Đã tiêm';
-  } else if (ui.status === 'cancelled' && raw.note) {
-    line2 = raw.note;
+  } else if (ui.status === 'cancelled') {
+    const reason = raw.cancellationReason || raw.note;
+    line2 = reason ? `Lý do hủy: ${reason}` : 'Đã hủy';
   }
 
   const displayCode =
@@ -95,10 +96,13 @@ function mapAppointment(raw) {
     facility: facilityPart,
     facilityId: raw.facilityId,
     vaccineId: raw.vaccineId,
-    cancelledNote: ui.status === 'cancelled' ? null : null,
+    cancelledNote: ui.status === 'cancelled' ? (raw.cancellationReason || null) : null,
     rawStatus: raw.status,
     appointmentDate: raw.appointmentDate,
     timeSlot: raw.timeSlot,
+    paid: raw.paid === true || String(raw.paymentStatus || '').toUpperCase() === 'SUCCESS',
+    paymentStatus: raw.paymentStatus || null,
+    cancellationReason: raw.cancellationReason || null,
   };
 }
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { getVaccineCategories, searchVaccines } from '../../services/vaccineService';
 import { formatCurrency } from '../../utils/format';
@@ -17,6 +17,16 @@ export default function VaccineCatalog() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [page, setPage] = useState(1);
+  const catalogTopRef = useRef(null);
+
+  // Cuộn về đầu khu vực danh sách vắc xin mỗi khi chuyển trang, tránh việc
+  // người dùng đứng nguyên ở vị trí thanh phân trang phía cuối danh sách.
+  function goToPage(nextPage) {
+    setPage(nextPage);
+    if (catalogTopRef.current) {
+      catalogTopRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
 
   // Danh mục dùng cho các nút filter + áp ?category= từ Home
   useEffect(() => {
@@ -101,6 +111,7 @@ export default function VaccineCatalog() {
       {/* ============ VACCINE GRID ============ */}
       <section className="vaccine-preview" id="vaccines" style={{ paddingTop: 0 }}>
         <div className="wrap">
+          <div ref={catalogTopRef} style={{ scrollMarginTop: '96px' }} />
           <div className="catalog-toolbar">
             <div className="filter-row" style={{ marginBottom: 0 }}>
               <span
@@ -174,7 +185,7 @@ export default function VaccineCatalog() {
                 className="page-btn nav-btn"
                 aria-label="Trang trước"
                 disabled={page === 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                onClick={() => goToPage(Math.max(1, page - 1))}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round">
                   <path d="M15 6l-6 6 6 6" />
@@ -184,7 +195,7 @@ export default function VaccineCatalog() {
                 <button
                   key={p}
                   className={'page-btn' + (page === p ? ' active' : '')}
-                  onClick={() => setPage(p)}
+                  onClick={() => goToPage(p)}
                 >
                   {p}
                 </button>
@@ -193,7 +204,7 @@ export default function VaccineCatalog() {
                 className="page-btn nav-btn"
                 aria-label="Trang sau"
                 disabled={page === totalPages}
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                onClick={() => goToPage(Math.min(totalPages, page + 1))}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round">
                   <path d="M9 6l6 6-6 6" />

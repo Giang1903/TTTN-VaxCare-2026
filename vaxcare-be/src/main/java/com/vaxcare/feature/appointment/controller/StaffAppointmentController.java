@@ -33,9 +33,12 @@ public class StaffAppointmentController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(required = false) AppointmentStatus status,
             @Parameter(description = "Tìm theo tên hoặc số điện thoại người đặt lịch")
-            @RequestParam(required = false) String keyword) {
+            @RequestParam(required = false) String keyword,
+            @Parameter(description = "true = chỉ lịch đã thanh toán SUCCESS hoặc đã hủy (kèm lý do). Ẩn lịch chưa thanh toán.")
+            @RequestParam(required = false, defaultValue = "false") Boolean paidOnly) {
         return ApiResponse.success("Lấy danh sách lịch hẹn thành công",
-                staffAppointmentService.searchAppointments(userPrincipal.getId(), facilityId, date, status, keyword));
+                staffAppointmentService.searchAppointments(
+                        userPrincipal.getId(), facilityId, date, status, keyword, Boolean.TRUE.equals(paidOnly)));
     }
 
     @PatchMapping("/{id}/confirm")

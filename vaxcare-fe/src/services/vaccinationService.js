@@ -115,7 +115,10 @@ export function buildProtocolsFromDetails(details = []) {
       isCompleted,
       pct: `${r.doses}/${req} mũi${isCompleted ? ' (Hoàn thành)' : ''}`,
       width: `${widthPct}%`,
-      sub: `Mũi gần nhất: ${last}`,
+      // Chưa đủ mũi → nhấn "Mũi tiếp theo"; đã đủ → "Mũi gần nhất"
+      sub: isCompleted
+        ? `Mũi gần nhất: ${last}`
+        : `Mũi tiếp theo (sau mũi: ${last})`,
     };
   });
 }

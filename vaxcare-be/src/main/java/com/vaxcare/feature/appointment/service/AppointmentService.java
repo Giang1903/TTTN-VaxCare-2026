@@ -38,6 +38,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import com.vaxcare.common.enums.PaymentStatus;
+import com.vaxcare.feature.appointment.dto.CancelAppointmentRequest;
+import com.vaxcare.feature.appointment.entity.Payment;
+import com.vaxcare.feature.appointment.repository.PaymentRepository;
+
 @Service
 @RequiredArgsConstructor
 @SuppressWarnings("null")
@@ -56,6 +61,7 @@ public class AppointmentService {
     private final AiDispatchService aiDispatchService;
     private final VaccineBatchRepository vaccineBatchRepository;
     private final VaccinationDetailRepository vaccinationDetailRepository;
+    private final PaymentRepository paymentRepository;
 
     // ===================== KHUNG GIỜ TRỐNG =====================
 
@@ -107,11 +113,15 @@ public class AppointmentService {
 
     // ===================== ĐẶT / XEM LỊCH HẸN =====================
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<AppointmentResponse> getMyAppointments(Long currentUserId) {
         User user = resolveUser(currentUserId);
+        LocalDateTime now = LocalDateTime.now();
         return appointmentRepository.findByUserIdWithDetails(user.getUserId()).stream()
-                .map(this::mapToResponse)
+                .map(a -> {
+                    expireIfPastSlot(a, now);
+                    return mapToResponse(a);
+                })
                 .toList();
     }
 
@@ -230,11 +240,61 @@ public class AppointmentService {
                 && newTimeSlot.equals(appointment.getTimeSlot());
         if (!slotUnchanged) {
             ensureSlotHasCapacity(facility, newDate, newTimeSlot, appointment.getAppointmentId());
+            ensureUserHasNoOverlappingSlot(appointment.getUser().getUserId(), newDate, newTimeSlot);
         }
 
         appointment.setAppointmentDate(newDate);
         appointment.setTimeSlot(newTimeSlot);
         // Không đổi facility / vaccine / price / qrCode / status (giữ CONFIRMED nếu đã thanh toán)
+
+        return mapToResponse(appointmentRepository.save(appointment));
+    }
+
+    @Transactional
+    public AppointmentResponse cancelAppointment(Long appointmentId, Long currentUserId, CancelAppointmentRequest request) {
+        Appointment appointment = findAppointmentOrThrow(appointmentId);
+        checkOwnership(appointment, currentUserId);
+
+        if (appointment.getStatus() == AppointmentStatus.CANCELLED) {
+            throw new BadRequestException("Lịch hẹn này đã bị hủy trước đó");
+        }
+        if (appointment.getStatus() == AppointmentStatus.CHECKED_IN || appointment.getStatus() == AppointmentStatus.COMPLETED) {
+            throw new BadRequestException("Lịch hẹn đã check-in / hoàn tất tiêm chủng, không thể hủy");
+        }
+
+        if (isPastSlotEnd(appointment, LocalDateTime.now())) {
+            // Hủy luôn thay vì báo lỗi để UI đồng bộ với cron
+            expireIfPastSlot(appointment, LocalDateTime.now());
+            return mapToResponse(appointment);
+        }
+        if (appointment.getStatus() == AppointmentStatus.NO_SHOW) {
+            throw new BadRequestException("Lịch hẹn đã đánh dấu không đến, không thể hủy");
+        }
+
+        Payment payment = paymentRepository.findByAppointment_AppointmentId(appointmentId).orElse(null);
+        boolean isPaid = payment != null && payment.getStatus() == PaymentStatus.SUCCESS;
+
+        String reason = request != null && request.getReason() != null ? request.getReason().trim() : "";
+        if (isPaid) {
+            // Bắt buộc có lý do khi hủy lịch đã thanh toán; không hoàn tiền
+            if (reason.isBlank()) {
+                throw new BadRequestException(
+                        "Vui lòng nhập lý do hủy. Lịch đã thanh toán khi hủy sẽ không được hoàn tiền.");
+            }
+            reason = reason + " [Không hoàn tiền — user hủy sau thanh toán]";
+        } else if (reason.isBlank()) {
+            reason = "Người dùng chủ động hủy lịch hẹn chưa thanh toán (nhả slot)";
+        }
+
+        appointment.setStatus(AppointmentStatus.CANCELLED);
+        appointment.setCancelledAt(LocalDateTime.now());
+        appointment.setCancellationReason(reason);
+
+        // Chỉ đánh FAILED cho payment đang PENDING; payment SUCCESS giữ nguyên (không hoàn tiền)
+        if (payment != null && payment.getStatus() == PaymentStatus.PENDING) {
+            payment.setStatus(PaymentStatus.FAILED);
+            paymentRepository.save(payment);
+        }
 
         return mapToResponse(appointmentRepository.save(appointment));
     }
@@ -362,6 +422,10 @@ public class AppointmentService {
         if (appointment.getStatus() == AppointmentStatus.CHECKED_IN) {
             throw new BadRequestException("Lịch hẹn đã check-in, không thể " + action);
         }
+        if (isPastSlotEnd(appointment, LocalDateTime.now())) {
+            throw new BadRequestException(
+                    "Không thể " + action + " vì đã quá khung giờ tiêm. Hệ thống sẽ tự hủy lịch chưa check-in.");
+        }
     }
 
     private void checkOwnership(Appointment appointment, Long currentUserId) {
@@ -405,7 +469,46 @@ public class AppointmentService {
         return prices.stream().findFirst().map(PriceList::getPrice).orElse(null);
     }
 
+
+    private static final String AUTO_CANCEL_REASON_EXPIRED_SLOT =
+            "Hệ thống tự hủy: đã quá ngày/giờ tiêm mà chưa check-in";
+
+    public boolean isPastSlotEnd(Appointment appointment, LocalDateTime now) {
+        if (appointment.getAppointmentDate() == null || appointment.getTimeSlot() == null) {
+            return false;
+        }
+        LocalDateTime slotEnd = LocalDateTime.of(appointment.getAppointmentDate(), appointment.getTimeSlot())
+                .plusMinutes(SLOT_DURATION_MINUTES);
+        return !now.isBefore(slotEnd);
+    }
+
+    public void expireIfPastSlot(Appointment appointment, LocalDateTime now) {
+        if (appointment.getStatus() != AppointmentStatus.PENDING
+                && appointment.getStatus() != AppointmentStatus.CONFIRMED) {
+            return;
+        }
+        if (!isPastSlotEnd(appointment, now)) {
+            return;
+        }
+        appointment.setStatus(AppointmentStatus.CANCELLED);
+        appointment.setCancelledAt(now);
+        if (appointment.getCancellationReason() == null || appointment.getCancellationReason().isBlank()) {
+            appointment.setCancellationReason(AUTO_CANCEL_REASON_EXPIRED_SLOT);
+        }
+        appointmentRepository.save(appointment);
+        paymentRepository.findByAppointment_AppointmentId(appointment.getAppointmentId()).ifPresent(p -> {
+            if (p.getStatus() == PaymentStatus.PENDING) {
+                p.setStatus(PaymentStatus.FAILED);
+                paymentRepository.save(p);
+            }
+        });
+    }
+
     public AppointmentResponse mapToResponse(Appointment appointment) {
+        Payment payment = paymentRepository.findByAppointment_AppointmentId(appointment.getAppointmentId()).orElse(null);
+        PaymentStatus paymentStatus = payment != null ? payment.getStatus() : null;
+        boolean paid = paymentStatus == PaymentStatus.SUCCESS;
+
         return AppointmentResponse.builder()
                 .appointmentId(appointment.getAppointmentId())
                 .userId(appointment.getUser().getUserId())
@@ -426,6 +529,10 @@ public class AppointmentService {
                 .qrCode(appointment.getQrCode())
                 .note(appointment.getNote())
                 .createdAt(appointment.getCreatedAt())
+                .paymentStatus(paymentStatus)
+                .paid(paid)
+                .cancelledAt(appointment.getCancelledAt())
+                .cancellationReason(appointment.getCancellationReason())
                 .build();
     }
 }

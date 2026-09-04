@@ -77,9 +77,9 @@ public class AppointmentExpiryService {
     }
 
     /**
-     * Mỗi 15 phút: hủy PENDING/CONFIRMED đã hết khung giờ hẹn (chưa check-in).
+     * Mỗi 5 phút: hủy PENDING/CONFIRMED đã hết khung giờ hẹn (chưa check-in).
      */
-    @Scheduled(cron = "0 */15 * * * *")
+    @Scheduled(cron = "0 */5 * * * *")
     @Transactional
     public void cancelExpiredAppointments() {
         LocalDateTime now = LocalDateTime.now();

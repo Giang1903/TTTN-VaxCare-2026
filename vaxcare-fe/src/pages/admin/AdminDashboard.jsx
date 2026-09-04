@@ -262,10 +262,10 @@ export default function Dashboard() {
                     <span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 2 3 10l3 3 8-8-3-3Z" /></svg></span>
                     Quản lý vắc xin
                   </Link>
-                  <Link to="/admin/config" className="quick-btn">
+                  {/* <Link to="/admin/config" className="quick-btn">
                     <span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3" /><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2" /></svg></span>
                     Cấu hình hệ thống
-                  </Link>
+                  </Link> */}
                 </div>
               </div>
             </div>

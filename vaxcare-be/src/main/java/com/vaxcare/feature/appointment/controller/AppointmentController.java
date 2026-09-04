@@ -2,6 +2,7 @@ package com.vaxcare.feature.appointment.controller;
 
 import com.vaxcare.common.dto.ApiResponse;
 import com.vaxcare.feature.appointment.dto.AppointmentRequest;
+import com.vaxcare.feature.appointment.dto.CancelAppointmentRequest;
 import com.vaxcare.feature.appointment.dto.RescheduleRequest;
 import com.vaxcare.feature.appointment.dto.AppointmentResponse;
 import com.vaxcare.feature.appointment.dto.AppointmentSlotResponse;
@@ -64,6 +65,15 @@ public class AppointmentController {
             @Valid @RequestBody AppointmentRequest request) {
         return ApiResponse.success("Đặt lịch hẹn thành công",
                 appointmentService.bookAppointment(userPrincipal.getId(), request));
+    }
+
+    @PostMapping("/{id}/cancel")
+    public ApiResponse<AppointmentResponse> cancelAppointment(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @RequestBody(required = false) CancelAppointmentRequest request) {
+        return ApiResponse.success("Hủy lịch hẹn thành công. Slot đã được trả lại. Lịch đã thanh toán sẽ không được hoàn tiền.",
+                appointmentService.cancelAppointment(id, userPrincipal.getId(), request));
     }
 
     @PutMapping("/{id}")

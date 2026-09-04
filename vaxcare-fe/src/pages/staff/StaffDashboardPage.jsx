@@ -5,6 +5,7 @@ import StaffTopbar from '../../components/staff/StaffTopbar';
 import useStaffToast from '../../hooks/useStaffToast';
 import * as staffService from '../../services/staffService';
 import { useAuth } from '../../context/AuthContext';
+import { formatTime } from '../../utils/format';
 
 export default function StaffDashboardPage() {
   const navigate = useNavigate();
@@ -153,11 +154,16 @@ export default function StaffDashboardPage() {
     return true;
   });
 
+  const dateLabel = new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+  const shiftOpen = user?.facilityOpeningTime ? formatTime(user.facilityOpeningTime) : '';
+  const shiftClose = user?.facilityClosingTime ? formatTime(user.facilityClosingTime) : '';
+  const shiftSuffix = shiftOpen && shiftClose ? ` · Ca ${shiftOpen} – ${shiftClose}` : '';
+
   return (
     <>
       <StaffTopbar
         title="Bảng điều khiển"
-        subtitle={`${new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })} · Ca 07:30 – 17:00`}
+        subtitle={`${dateLabel}${shiftSuffix}`}
         searchPlaceholder="Tìm bệnh nhân, lịch hẹn..."
       />
 

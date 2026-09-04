@@ -1,4 +1,3 @@
-
 package com.vaxcare.feature.auth.dto;
 
 import com.vaxcare.common.enums.Gender;
@@ -7,6 +6,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Getter
 @Setter
@@ -35,6 +35,8 @@ public class UserProfileResponse {
     // Medical staff fields
     private Long facilityId;
     private String facilityName;
+    private LocalTime facilityOpeningTime;
+    private LocalTime facilityClosingTime;
     private String staffCode;
     private String specialty;
 }
