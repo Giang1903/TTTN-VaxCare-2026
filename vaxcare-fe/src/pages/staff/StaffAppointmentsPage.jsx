@@ -411,8 +411,9 @@ export default function StaffAppointmentsPage() {
                   <th>Giờ</th>
                   <th>Người dân</th>
                   <th>Vắc xin</th>
-                  <th>Mã QR</th>
+                  <th>Thanh toán</th>
                   <th>Trạng thái</th>
+                  <th>Lý do hủy</th>
                   <th style={{ textAlign: 'right' }}>Thao tác</th>
                 </tr>
               </thead>
@@ -447,13 +448,26 @@ export default function StaffAppointmentsPage() {
                       </div>
                     </td>
                     <td>
-                      <span className="qr-code">{a.qr}</span>
+                      <span
+                        className={`status-badge ${a.paid ? 'completed' : a.status === 'cancelled' ? 'cancelled' : 'pending'}`}
+                        title={a.paymentLabel}
+                      >
+                        <span className="d" />
+                        {a.paid ? 'Đã TT' : a.paymentLabel || 'Chưa TT'}
+                      </span>
                     </td>
                     <td>
                       <span className={`status-badge ${a.status}`}>
                         <span className="d" />
                         {STATUS_LABEL[a.status]}
                       </span>
+                    </td>
+                    <td style={{ maxWidth: 180, fontSize: 12, color: '#64748b' }}>
+                      {a.status === 'cancelled' && a.cancellationReason
+                        ? a.cancellationReason
+                        : a.status === 'cancelled'
+                          ? '—'
+                          : ''}
                     </td>
                     <td>
                       <RowActions status={a.status} onAction={(act) => handleAction(a, act)} />
@@ -634,6 +648,24 @@ export default function StaffAppointmentsPage() {
                   <span className="lbl">Trạng thái</span>
                   <span className="val">{STATUS_LABEL[drawerAppt.status]}</span>
                 </div>
+                <div className="detail-row">
+                  <span className="lbl">Thanh toán</span>
+                  <span className="val">{drawerAppt.paymentLabel || (drawerAppt.paid ? 'Đã thanh toán' : 'Chưa thanh toán')}</span>
+                </div>
+                {drawerAppt.status === 'cancelled' && (
+                  <div className="detail-row">
+                    <span className="lbl">Lý do hủy</span>
+                    <span className="val" style={{ color: '#b91c1c', whiteSpace: 'pre-wrap' }}>
+                      {drawerAppt.cancellationReason || '—'}
+                    </span>
+                  </div>
+                )}
+                {drawerAppt.status === 'cancelled' && drawerAppt.cancelledAt && (
+                  <div className="detail-row">
+                    <span className="lbl">Hủy lúc</span>
+                    <span className="val">{String(drawerAppt.cancelledAt).replace('T', ' ').slice(0, 19)}</span>
+                  </div>
+                )}
               </div>
               <div className="drawer-section">
                 <h4>Ghi chú</h4>

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import * as staffService from '../../services/staffService';
+import { formatTime } from '../../utils/format';
 
 const icons = {
   overview: (
@@ -49,6 +50,11 @@ export default function StaffSidebar() {
   const fullName = user?.fullName || 'Nhân viên y tế';
   const facilityName = user?.facilityName || 'VaxCare';
   const staffCode = user?.staffCode || '';
+
+  // Ca làm việc lấy theo giờ hoạt động thực tế của cơ sở (không hardcode 07:30–17:00 nữa)
+  const openTime = user?.facilityOpeningTime ? formatTime(user.facilityOpeningTime) : '';
+  const closeTime = user?.facilityClosingTime ? formatTime(user.facilityClosingTime) : '';
+  const shiftLabel = openTime && closeTime ? `Ca làm việc: ${openTime} – ${closeTime}` : null;
   const initials =
     fullName
       .split(/\s+/)
@@ -121,7 +127,7 @@ export default function StaffSidebar() {
         </svg>
         <div>
           <div className="fp-name">{facilityName}</div>
-          <div className="fp-sub">Ca làm việc: 07:30 – 17:00</div>
+          {shiftLabel && <div className="fp-sub">{shiftLabel}</div>}
         </div>
       </div>
 

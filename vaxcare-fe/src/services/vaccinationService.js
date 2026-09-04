@@ -79,28 +79,46 @@ export function mapDetailToTimelineItem(d) {
   };
 }
 
-/** Gom theo vaccine → phác đồ đơn giản (số mũi đã tiêm) */
+/** Gom theo vaccine → phác đồ (số mũi đã tiêm / tổng số mũi yêu cầu) */
 export function buildProtocolsFromDetails(details = []) {
   const map = new Map();
   for (const d of details) {
     const key = d.vaccineId ?? d.vaccineName;
     if (key == null) continue;
     if (!map.has(key)) {
-      map.set(key, { key: String(key), name: d.vaccineName || "Vắc xin", doses: 0, lastDate: null });
+      map.set(key, {
+        key: String(key),
+        name: d.vaccineName || "Vắc xin",
+        doses: 0,
+        requiredDoses: d.requiredDoses || 1,
+        lastDate: null,
+      });
     }
     const row = map.get(key);
     row.doses += 1;
+    if (d.requiredDoses && d.requiredDoses > row.requiredDoses) {
+      row.requiredDoses = d.requiredDoses;
+    }
     const id = d.injectionDate ? String(d.injectionDate) : null;
     if (id && (!row.lastDate || id > row.lastDate)) row.lastDate = id;
   }
   return [...map.values()].map((r) => {
     const last = r.lastDate ? formatDate(r.lastDate) : "—";
+    const req = r.requiredDoses || 1;
+    const isCompleted = r.doses >= req;
+    const widthPct = Math.min(100, Math.round((r.doses / req) * 100));
     return {
       key: r.key,
       name: r.name,
-      pct: `${r.doses} mũi`,
-      width: `${Math.min(100, r.doses * 25)}%`,
-      sub: `Mũi gần nhất: ${last}`,
+      doses: r.doses,
+      requiredDoses: req,
+      isCompleted,
+      pct: `${r.doses}/${req} mũi${isCompleted ? ' (Hoàn thành)' : ''}`,
+      width: `${widthPct}%`,
+      // Chưa đủ mũi → nhấn "Mũi tiếp theo"; đã đủ → "Mũi gần nhất"
+      sub: isCompleted
+        ? `Mũi gần nhất: ${last}`
+        : `Mũi tiếp theo (sau mũi: ${last})`,
     };
   });
 }

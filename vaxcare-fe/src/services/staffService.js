@@ -54,6 +54,15 @@ export function mapAppointmentToUi(a) {
     actionClass = "solid";
   }
   const meta = [a.vaccineName, a.note].filter(Boolean).join(" · ") || "";
+  const paymentStatus = a.paymentStatus ? String(a.paymentStatus).toUpperCase() : null;
+  const paid = a.paid === true || paymentStatus === "SUCCESS";
+  let paymentLabel = "Chưa thanh toán";
+  if (paymentStatus === "SUCCESS") paymentLabel = "Đã thanh toán";
+  else if (paymentStatus === "PENDING") paymentLabel = "Chờ thanh toán";
+  else if (paymentStatus === "FAILED") paymentLabel = "Thanh toán thất bại";
+  else if (paymentStatus === "REFUNDED") paymentLabel = "Đã hoàn tiền";
+  else if (!paymentStatus) paymentLabel = "Chưa có giao dịch";
+
   return {
     id: a.appointmentId,
     time,
@@ -74,17 +83,23 @@ export function mapAppointmentToUi(a) {
     ai: !!a.recommendedByAi,
     note: a.note || "",
     highlight: status === "checkedin",
+    paid,
+    paymentStatus,
+    paymentLabel,
+    cancelledAt: a.cancelledAt || null,
+    cancellationReason: a.cancellationReason || "",
     _raw: a,
   };
 }
 
 /** GET /staff/appointments */
-export function searchAppointments({ facilityId, date, status, keyword } = {}) {
+export function searchAppointments({ facilityId, date, status, keyword, paidOnly } = {}) {
   const params = new URLSearchParams();
   if (facilityId != null) params.set("facilityId", String(facilityId));
   if (date) params.set("date", date);
   if (status) params.set("status", status);
   if (keyword) params.set("keyword", keyword);
+  if (paidOnly) params.set("paidOnly", "true");
   const qs = params.toString();
   return apiClient.request(`/staff/appointments${qs ? `?${qs}` : ""}`, {
     method: "GET",

@@ -262,7 +262,9 @@ public class AuthService {
                     .specialty(staff.getSpecialty());
             if (staff.getFacility() != null) {
                 builder.facilityId(staff.getFacility().getFacilityId())
-                        .facilityName(staff.getFacility().getFacilityName());
+                        .facilityName(staff.getFacility().getFacilityName())
+                        .facilityOpeningTime(staff.getFacility().getOpeningTime())
+                        .facilityClosingTime(staff.getFacility().getClosingTime());
             }
         }
 

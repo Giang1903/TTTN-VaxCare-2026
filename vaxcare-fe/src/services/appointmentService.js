@@ -40,6 +40,14 @@ export function rescheduleAppointment(id, { appointmentDate, timeSlot }) {
     },
   });
 }
+/** POST /appointments/{id}/cancel — hủy lịch hẹn chưa thanh toán và nhả slot */
+export function cancelAppointment(id, reason) {
+  return apiClient.request(`/appointments/${id}/cancel`, {
+    method: "POST",
+    body: { reason: reason || undefined },
+  });
+}
+
 /** POST /api/v1/payments/create-vnpay — tạo URL thanh toán VNPay */
 export function createVnpayPayment(appointmentId) {
   return apiClient.request("/payments/create-vnpay", {

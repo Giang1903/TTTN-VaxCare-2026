@@ -347,26 +347,26 @@ CREATE TABLE `schedule_overload_predictions` (
 
 -- --------------------------------------------------------
 
---
--- Cấu trúc bảng cho bảng `system_configs`
---
+-- --
+-- -- Cấu trúc bảng cho bảng `system_configs`
+-- --
 
-CREATE TABLE `system_configs` (
-  `config_key` varchar(100) NOT NULL,
-  `config_value` text,
-  `description` varchar(255) DEFAULT NULL,
-  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+-- CREATE TABLE `system_configs` (
+--   `config_key` varchar(100) NOT NULL,
+--   `config_value` text,
+--   `description` varchar(255) DEFAULT NULL,
+--   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
---
--- Đang đổ dữ liệu cho bảng `system_configs`
---
+-- --
+-- -- Đang đổ dữ liệu cho bảng `system_configs`
+-- --
 
-INSERT INTO `system_configs` (`config_key`, `config_value`, `description`, `updated_at`) VALUES
-('booking_advance_days', '30', 'Số ngày được phép đặt lịch trước', '2026-08-12 12:33:22'),
-('default_currency', 'VND', 'Đơn vị tiền tệ', '2026-08-12 12:33:22'),
-('qr_code_prefix', 'VXC', 'Tiền tố mã QR', '2026-08-12 12:33:22'),
-('site_name', 'VaxCare', 'Tên hệ thống', '2026-08-12 12:33:22');
+-- INSERT INTO `system_configs` (`config_key`, `config_value`, `description`, `updated_at`) VALUES
+-- ('booking_advance_days', '30', 'Số ngày được phép đặt lịch trước', '2026-08-12 12:33:22'),
+-- ('default_currency', 'VND', 'Đơn vị tiền tệ', '2026-08-12 12:33:22'),
+-- ('qr_code_prefix', 'VXC', 'Tiền tố mã QR', '2026-08-12 12:33:22'),
+-- ('site_name', 'VaxCare', 'Tên hệ thống', '2026-08-12 12:33:22');
 
 -- --------------------------------------------------------
 
@@ -788,12 +788,6 @@ ALTER TABLE `protocol_details`
 ALTER TABLE `schedule_overload_predictions`
   ADD PRIMARY KEY (`prediction_id`),
   ADD KEY `idx_predictions_facility_date_slot` (`facility_id`,`prediction_date`,`time_slot`);
-
---
--- Chỉ mục cho bảng `system_configs`
---
-ALTER TABLE `system_configs`
-  ADD PRIMARY KEY (`config_key`);
 
 --
 -- Chỉ mục cho bảng `users`

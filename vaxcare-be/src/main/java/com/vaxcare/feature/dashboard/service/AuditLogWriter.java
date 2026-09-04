@@ -19,11 +19,6 @@ public class AuditLogWriter {
     private final AuditLogRepository auditLogRepository;
     private final AccountRepository accountRepository;
     private final PlatformTransactionManager transactionManager;
-
-    /**
-     * Ghi audit trong transaction riêng. Mọi lỗi都被 nuốt để không phá business flow.
-     * Dùng TransactionTemplate thay vì @Transactional + try/catch (tránh UnexpectedRollbackException).
-     */
     public void write(String action, String entityType, Long entityId, String oldValue, String newValue) {
         try {
             TransactionTemplate template = new TransactionTemplate(transactionManager);

@@ -48,8 +48,9 @@ import AdminUsers from "../pages/admin/AdminUsers";
 import AdminVaccines from "../pages/admin/AdminVaccines";
 import AdminInventory from "../pages/admin/AdminInventory";
 import AdminPricing from "../pages/admin/AdminPricing";
-import AdminConfig from "../pages/admin/AdminConfig";
+// import AdminConfig from "../pages/admin/AdminConfig";
 import AdminAudit from "../pages/admin/AdminAudit";
+import AdminAiForecast from "../pages/admin/AdminAiForecast";
 
 export default function AppRoutes() {
   return (
@@ -100,8 +101,9 @@ export default function AppRoutes() {
           <Route path="vaccines" element={<AdminVaccines />} />
           <Route path="inventory" element={<AdminInventory />} />
           <Route path="pricing" element={<AdminPricing />} />
-          <Route path="config" element={<AdminConfig />} />
+          {/* <Route path="config" element={<AdminConfig />} /> */}
           <Route path="audit" element={<AdminAudit />} />
+          <Route path="ai-forecast" element={<AdminAiForecast />} />
         </Route>
       </Route>
 

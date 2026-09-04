@@ -35,13 +35,24 @@ public class StaffAppointmentService {
 
     @Transactional(readOnly = true)
     public List<AppointmentResponse> searchAppointments(Long currentAccountId, Long facilityId,
-                                                          LocalDate date, AppointmentStatus status, String keyword) {
+                                                          LocalDate date, AppointmentStatus status, String keyword,
+                                                          boolean paidOnly) {
         Account account = findAccountOrThrow(currentAccountId);
         Long effectiveFacilityId = resolveEffectiveFacilityId(account, facilityId);
         String normalizedKeyword = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
 
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
         return appointmentRepository.searchForStaff(effectiveFacilityId, date, status, normalizedKeyword).stream()
-                .map(appointmentService::mapToResponse)
+                .map(a -> {
+                    appointmentService.expireIfPastSlot(a, now);
+                    return appointmentService.mapToResponse(a);
+                })
+                .filter(r -> {
+                    if (!paidOnly) return true;
+                    boolean paid = Boolean.TRUE.equals(r.getPaid());
+                    boolean cancelled = r.getStatus() == AppointmentStatus.CANCELLED;
+                    return paid || cancelled;
+                })
                 .toList();
     }
 
@@ -103,8 +114,7 @@ public class StaffAppointmentService {
     }
 
     /**
-     * Chỉ cho check-in trong khung [giờ hẹn, giờ hẹn + SLOT_DURATION] của đúng ngày hẹn.
-     * Trước giờ / trước ngày → từ chối. Đã quá khung → từ chối (cron sẽ đánh CANCELLED).
+     * Cho phép check-in trước tối đa 15 phút đến hết khung [giờ hẹn + SLOT_DURATION] của đúng ngày hẹn.
      */
     private void assertCheckinTimeWindow(Appointment appointment) {
         LocalDate apptDate = appointment.getAppointmentDate();
@@ -114,13 +124,14 @@ public class StaffAppointmentService {
         }
 
         LocalDateTime slotStart = LocalDateTime.of(apptDate, timeSlot);
+        LocalDateTime earliestCheckin = slotStart.minusMinutes(15);
         LocalDateTime slotEnd = slotStart.plusMinutes(SLOT_DURATION_MINUTES);
         LocalDateTime now = LocalDateTime.now();
 
-        if (now.isBefore(slotStart)) {
+        if (now.isBefore(earliestCheckin)) {
             throw new BadRequestException(
-                    "Chưa đến giờ tiêm. Chỉ được check-in từ "
-                            + timeSlot + " ngày " + apptDate
+                    "Chưa đến khung giờ check-in. Chỉ được check-in từ "
+                            + timeSlot.minusMinutes(15) + " (trước giờ tiêm 15 phút) ngày " + apptDate
                             + " (hiện tại: " + now.toLocalTime().withNano(0) + ")");
         }
         if (!now.isBefore(slotEnd)) {

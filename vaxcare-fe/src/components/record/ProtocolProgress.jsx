@@ -49,17 +49,19 @@ export default function ProtocolProgress({ protocols = [] }) {
             <div className="protocol-card" key={p.key}>
               <div className="pc-head">
                 <h4>
-                  <span className="pc-icon hepb">
+                  <span className="pc-icon hepb" style={{ backgroundColor: p.isCompleted ? 'rgba(16, 185, 129, 0.12)' : undefined, color: p.isCompleted ? '#10b981' : undefined }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M12 2 3 7v6c0 5 3.8 8.6 9 9 5.2-.4 9-4 9-9V7l-9-5Z" />
                     </svg>
                   </span>
                   {p.name}
                 </h4>
-                <span className="pc-pct">{p.pct}</span>
+                <span className="pc-pct" style={{ color: p.isCompleted ? '#10b981' : 'var(--primary)', fontWeight: 700 }}>
+                  {p.pct}
+                </span>
               </div>
-              <div className="progress-bar">
-                <span style={{ width: p.width || '0%' }} />
+              <div className="progress-bar" style={{ backgroundColor: p.isCompleted ? '#e6f4ea' : undefined }}>
+                <span style={{ width: p.width || '0%', backgroundColor: p.isCompleted ? '#10b981' : 'var(--primary)', transition: 'width 0.4s ease' }} />
               </div>
               {p.sub && <p className="pc-sub">{p.sub}</p>}
             </div>

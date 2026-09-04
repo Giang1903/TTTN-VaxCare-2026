@@ -61,6 +61,19 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
                                           @Param("vaccineId") Long vaccineId,
                                           @Param("statuses") java.util.Collection<AppointmentStatus> statuses);
 
+    boolean existsByUser_UserIdAndAppointmentDateAndTimeSlotAndStatusIn(
+            Long userId, LocalDate appointmentDate, LocalTime timeSlot, java.util.Collection<AppointmentStatus> statuses);
+
+    @Query("""
+        SELECT MAX(a.appointmentDate) FROM Appointment a
+        WHERE a.user.userId = :userId
+          AND a.vaccine.vaccineId = :vaccineId
+          AND a.status IN :statuses
+        """)
+    LocalDate findLatestAppointmentDateByUserAndVaccine(@Param("userId") Long userId,
+                                                        @Param("vaccineId") Long vaccineId,
+                                                        @Param("statuses") java.util.Collection<AppointmentStatus> statuses);
+
     List<Appointment> findByStatusAndAppointmentDateBefore(AppointmentStatus status, LocalDate date);
 
     @Query("""

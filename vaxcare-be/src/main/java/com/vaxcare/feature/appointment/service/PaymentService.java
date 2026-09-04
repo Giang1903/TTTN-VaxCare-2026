@@ -37,6 +37,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import com.vaxcare.feature.inventory.repository.VaccineBatchRepository;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -50,6 +52,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final AppointmentRepository appointmentRepository;
     private final AccountRepository accountRepository;
+    private final VaccineBatchRepository vaccineBatchRepository;
     private final VNPayConfig vnPayConfig;
     private final ObjectMapper objectMapper;
     private final EmailService emailService;
@@ -70,6 +73,8 @@ public class PaymentService {
         if (appointment.getPrice() == null || appointment.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
             throw new BadRequestException("Lịch hẹn này chưa có giá vắc xin hợp lệ để thanh toán");
         }
+
+        ensureSlotAvailableForPayment(appointment);
 
         Payment payment = paymentRepository.findByAppointment_AppointmentId(appointment.getAppointmentId())
                 .orElse(null);
@@ -247,6 +252,22 @@ public class PaymentService {
                         appointment.getAppointmentId());
             }
 
+            var facility = appointment.getFacility();
+            long bookedCount = appointmentRepository.countBookingsInSlot(
+                    facility.getFacilityId(),
+                    appointment.getAppointmentDate(),
+                    appointment.getTimeSlot(),
+                    appointment.getAppointmentId());
+            int capacity = facility.getCapacityPerSlot() != null ? facility.getCapacityPerSlot() : 0;
+            if (bookedCount >= capacity) {
+                log.warn("VNPay thanh toán THÀNH CÔNG cho appointment #{} nhưng slot đã bị người khác thanh toán trước đó.",
+                        appointment.getAppointmentId());
+
+                return new CallbackResult(true, "00",
+                        "Thanh toán thành công nhưng khung giờ này đã hết slot (do người khác vừa hoàn tất thanh toán giữ chỗ trước). Vui lòng liên hệ tổng đài VaxCare để được hỗ trợ hoàn tiền hoặc đổi lịch.",
+                        appointment.getAppointmentId());
+            }
+
             if (appointment.getStatus() == AppointmentStatus.PENDING) {
                 appointment.setStatus(AppointmentStatus.CONFIRMED);
             }
@@ -263,6 +284,28 @@ public class PaymentService {
             payment.setStatus(PaymentStatus.FAILED);
             paymentRepository.save(payment);
             return new CallbackResult(false, "00", "Thanh toán thất bại hoặc bị hủy", appointment.getAppointmentId());
+        }
+    }
+
+    private void ensureSlotAvailableForPayment(Appointment appointment) {
+        var facility = appointment.getFacility();
+        long bookedCount = appointmentRepository.countBookingsInSlot(
+                facility.getFacilityId(),
+                appointment.getAppointmentDate(),
+                appointment.getTimeSlot(),
+                appointment.getAppointmentId());
+        int capacity = facility.getCapacityPerSlot() != null ? facility.getCapacityPerSlot() : 0;
+        if (bookedCount >= capacity) {
+            throw new BadRequestException(
+                    "Khung giờ này đã hết slot trống (do người khác vừa hoàn tất thanh toán trước). Vui lòng hủy lịch hẹn và chọn khung giờ khác.");
+        }
+
+        Integer stock = vaccineBatchRepository.sumStockByFacilityAndVaccine(
+                facility.getFacilityId(),
+                appointment.getVaccine().getVaccineId());
+        if (stock == null || stock <= 0) {
+            throw new BadRequestException(
+                    "Vắc xin này tại cơ sở đã hết tồn kho (do người khác vừa hoàn tất thanh toán). Vui lòng chọn vắc xin/cơ sở khác.");
         }
     }
 
