@@ -250,12 +250,12 @@ export function mapBatchAdminToUi(b, facilityNameMap = {}) {
 }
 
 // ---- System configs ----
-export function listConfigs() {
-  return apiClient.request("/admin/configs", { method: "GET" });
-}
-export function saveConfigsBatch(items) {
-  return apiClient.request("/admin/configs/batch", { method: "PUT", body: items });
-}
+// export function listConfigs() {
+//   return apiClient.request("/admin/configs", { method: "GET" });
+// }
+// export function saveConfigsBatch(items) {
+//   return apiClient.request("/admin/configs/batch", { method: "PUT", body: items });
+// }
 
 // ---- Create staff ----
 export function createStaff(body) {
@@ -314,4 +314,13 @@ export async function exportReportSummary({ fromDate, toDate, facilityId } = {})
   );
   if (!res.ok) throw new Error("Export thất bại");
   return res.blob();
+}
+
+// ---- AI 2 Forecasts ----
+export function getAiForecasts(vaccineId, facilityId) {
+  return apiClient.request(`/admin/ai/forecasts?vaccineId=${vaccineId}&facilityId=${facilityId}`, { method: "GET" });
+}
+
+export function runAiForecastManual() {
+  return apiClient.request("/admin/ai/forecasts/run", { method: "POST" });
 }

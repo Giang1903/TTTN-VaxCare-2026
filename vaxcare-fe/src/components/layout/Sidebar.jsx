@@ -141,6 +141,11 @@ export default function Sidebar() {
           //   icon: "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4",
           // },
           {
+            to: "/admin/ai-forecast",
+            label: "Dự báo tồn kho (AI)",
+            icon: "M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6",
+          },
+          {
             to: "/admin/audit",
             label: "Nhật ký audit",
             icon: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8",
