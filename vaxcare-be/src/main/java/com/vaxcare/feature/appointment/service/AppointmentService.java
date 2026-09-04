@@ -163,6 +163,7 @@ public class AppointmentService {
         ensureVaccineInStockAtFacility(facility.getFacilityId(), vaccine.getVaccineId());
         validateSlotWithinWorkingHours(facility, request.getAppointmentDate(), request.getTimeSlot());
         ensureSlotHasCapacity(facility, request.getAppointmentDate(), request.getTimeSlot(), null);
+        ensureUserHasNoOverlappingSlot(user.getUserId(), request.getAppointmentDate(), request.getTimeSlot());
         enforceProtocolLimits(user.getUserId(), vaccine, request.getAppointmentDate());
 
         // Chặn đặt lịch ngay nếu không có giá hiệu lực (tránh PENDING treo chỗ rồi fail lúc thanh toán)
@@ -281,11 +282,20 @@ public class AppointmentService {
         }
     }
 
+    private void ensureUserHasNoOverlappingSlot(Long userId, LocalDate date, LocalTime timeSlot) {
+        boolean exists = appointmentRepository.existsByUser_UserIdAndAppointmentDateAndTimeSlotAndStatusIn(
+                userId, date, timeSlot, ACTIVE_STATUSES);
+        if (exists) {
+            throw new BadRequestException(
+                    "Bạn đã có một lịch hẹn khác vào khung giờ " + timeSlot + " ngày " + date
+                            + ". Vui lòng chọn khung giờ hoặc ngày khác.");
+        }
+    }
+
     /**
      * Giới hạn đặt lịch theo phác đồ:
-     * - Không đặt thêm nếu đã tiêm đủ required_doses
-     * - Không đặt thêm nếu số mũi đã tiêm + lịch đang mở >= required_doses
-     * - Tôn trọng khoảng cách giữa các mũi (dose_interval_days) nếu có
+     * - Không đặt thêm nếu đã tiêm/đặt đủ required_doses
+     * - Không đặt thêm nếu chưa tới ngày hẹn mũi tiếp theo (tính từ mốc tiêm/đặt gần nhất + dose_interval_days)
      */
     private void enforceProtocolLimits(Long userId, Vaccine vaccine, LocalDate appointmentDate) {
         int required = vaccine.getRequiredDoses() != null && vaccine.getRequiredDoses() > 0
@@ -304,26 +314,42 @@ public class AppointmentService {
                 userId, vaccine.getVaccineId(), ACTIVE_STATUSES);
         if (administered + activeOpen >= required) {
             throw new BadRequestException(
-                    "Bạn đang có lịch hẹn đang mở cho \"" + vaccine.getVaccineName()
+                    "Bạn đang có lịch hẹn/mũi tiêm đang mở cho \"" + vaccine.getVaccineName()
                             + "\". Phác đồ tối đa " + required + " mũi (đã tiêm "
-                            + administered + ", đang chờ " + activeOpen
+                            + administered + ", đang mở " + activeOpen
                             + "). Vui lòng hoàn tất hoặc hủy lịch hiện có trước khi đặt thêm.");
         }
 
-        Integer intervalDays = vaccine.getDoseIntervalDays();
-        if (intervalDays != null && intervalDays > 0 && administered > 0) {
-            LocalDate lastInjection = vaccinationDetailRepository.findLastInjectionDate(
-                    userId, vaccine.getVaccineId());
-            if (lastInjection != null) {
-                long daysSince = ChronoUnit.DAYS.between(lastInjection, appointmentDate);
+        // Tìm mốc ngày gần nhất của vắc xin này (từ lịch sử tiêm hoặc từ các lịch hẹn đang mở)
+        LocalDate lastInjection = vaccinationDetailRepository.findLastInjectionDate(userId, vaccine.getVaccineId());
+        LocalDate lastAppointment = appointmentRepository.findLatestAppointmentDateByUserAndVaccine(
+                userId, vaccine.getVaccineId(), ACTIVE_STATUSES);
+
+        LocalDate latestPrevDate = null;
+        if (lastInjection != null && lastAppointment != null) {
+            latestPrevDate = lastInjection.isAfter(lastAppointment) ? lastInjection : lastAppointment;
+        } else if (lastInjection != null) {
+            latestPrevDate = lastInjection;
+        } else if (lastAppointment != null) {
+            latestPrevDate = lastAppointment;
+        }
+
+        if (latestPrevDate != null) {
+            Integer intervalDays = vaccine.getDoseIntervalDays();
+            if (intervalDays != null && intervalDays > 0) {
+                long daysSince = ChronoUnit.DAYS.between(latestPrevDate, appointmentDate);
                 if (daysSince < intervalDays) {
-                    LocalDate earliest = lastInjection.plusDays(intervalDays);
+                    LocalDate earliest = latestPrevDate.plusDays(intervalDays);
                     throw new BadRequestException(
-                            "Chưa đủ khoảng cách giữa các mũi của \"" + vaccine.getVaccineName()
-                                    + "\". Cần cách tối thiểu " + intervalDays
-                                    + " ngày sau mũi gần nhất (" + lastInjection
-                                    + "). Ngày sớm nhất có thể đặt: " + earliest + ".");
+                            "Bạn đã đặt/tiêm vắc xin \"" + vaccine.getVaccineName()
+                                    + "\" trước đó (mốc gần nhất: " + latestPrevDate
+                                    + "). Chưa tới lịch tiêm mũi tiếp theo. Cần cách tối thiểu " + intervalDays
+                                    + " ngày. Ngày sớm nhất có thể đặt: " + earliest + ".");
                 }
+            } else {
+                throw new BadRequestException(
+                        "Bạn đã đặt/tiêm vắc xin \"" + vaccine.getVaccineName()
+                                + "\" trước đó. Loại vắc xin này không cho phép đặt nhiều mũi cùng lúc.");
             }
         }
     }

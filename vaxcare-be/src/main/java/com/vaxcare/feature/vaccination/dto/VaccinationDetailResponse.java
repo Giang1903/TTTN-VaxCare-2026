@@ -25,6 +25,7 @@ public class VaccinationDetailResponse {
     private Long staffId;
     private String staffName;
     private Integer doseNumber;
+    private Integer requiredDoses;
     private LocalDate injectionDate;
     private VaccinationResult result;
     private String note;

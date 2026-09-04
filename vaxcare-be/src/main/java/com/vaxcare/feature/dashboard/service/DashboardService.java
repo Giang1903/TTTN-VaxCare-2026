@@ -321,6 +321,7 @@ public class DashboardService {
                 .staffId(detail.getStaff() != null ? detail.getStaff().getStaffId() : null)
                 .staffName(detail.getStaff() != null ? detail.getStaff().getFullName() : null)
                 .doseNumber(detail.getDoseNumber())
+                .requiredDoses(detail.getVaccine() != null ? detail.getVaccine().getRequiredDoses() : 1)
                 .injectionDate(detail.getInjectionDate())
                 .result(detail.getResult())
                 .note(detail.getNote())
