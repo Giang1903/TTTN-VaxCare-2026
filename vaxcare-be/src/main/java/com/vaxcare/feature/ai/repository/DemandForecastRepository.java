@@ -13,6 +13,18 @@ import java.util.List;
 @Repository
 public interface DemandForecastRepository extends JpaRepository<DemandForecast, Long> {
 
+    @Query("""
+            SELECT f FROM DemandForecast f
+            JOIN FETCH f.vaccine
+            JOIN FETCH f.facility
+            WHERE f.vaccine.vaccineId = :vaccineId
+              AND f.facility.facilityId = :facilityId
+            ORDER BY f.forecastPeriodStart ASC
+            """)
+    List<DemandForecast> findByVaccineAndFacilityWithDetails(
+            @Param("vaccineId") Long vaccineId,
+            @Param("facilityId") Long facilityId);
+
     List<DemandForecast> findByVaccine_VaccineIdAndFacility_FacilityIdOrderByForecastPeriodStartAsc(
             Long vaccineId, Long facilityId);
 

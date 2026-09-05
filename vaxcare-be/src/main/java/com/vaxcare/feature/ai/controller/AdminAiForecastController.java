@@ -28,7 +28,7 @@ public class AdminAiForecastController {
             @RequestParam Long vaccineId,
             @RequestParam Long facilityId) {
         List<DemandForecastResponse> data = demandForecastRepository
-                .findByVaccine_VaccineIdAndFacility_FacilityIdOrderByForecastPeriodStartAsc(vaccineId, facilityId)
+                .findByVaccineAndFacilityWithDetails(vaccineId, facilityId)
                 .stream()
                 .map(this::toResponse)
                 .toList();
