@@ -259,9 +259,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<Appointment> findExpirableBeforeDate(@Param("date") LocalDate date);
 
     /**
-     * Lịch PENDING/CONFIRMED trong ngày {@code date} có time_slot <= {@code timeSlotUpper}
-     * (gọi với now - SLOT_DURATION để lấy các slot đã kết thúc).
-     */
+     * Lịch PENDING/CONFIRMED trong ngày {@code date} có time_slot <= {@code timeSlotUpper}     */
     @Query("""
         SELECT a FROM Appointment a
         WHERE a.status IN (
@@ -286,5 +284,24 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
           AND a.createdAt < :cutoff
         """)
     List<Appointment> findUnpaidPendingCreatedBefore(@Param("cutoff") LocalDateTime cutoff);
+
+
+    /**
+     * Đã có lịch đặt lại miễn phí (price = 0) sau ngày mũi FAILED, cùng user/vaccine/facility.
+     */
+    @Query("""
+        SELECT COUNT(a) > 0 FROM Appointment a
+        WHERE a.user.userId = :userId
+          AND a.vaccine.vaccineId = :vaccineId
+          AND a.facility.facilityId = :facilityId
+          AND a.price = 0
+          AND a.status <> com.vaxcare.common.enums.AppointmentStatus.CANCELLED
+          AND a.createdAt >= :since
+        """)
+    boolean existsFreeRebookSince(
+            @Param("userId") Long userId,
+            @Param("vaccineId") Long vaccineId,
+            @Param("facilityId") Long facilityId,
+            @Param("since") java.time.LocalDateTime since);
 
 }

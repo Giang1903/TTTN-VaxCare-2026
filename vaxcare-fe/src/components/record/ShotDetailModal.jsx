@@ -34,14 +34,16 @@ export default function ShotDetailModal({ open, onClose, shot }) {
           <button type="button" className="btn btn-ghost" onClick={onClose}>
             Đóng
           </button>
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={handleDownload}
-            disabled={downloading || !s.detailId}
-          >
-            {downloading ? 'Đang tải…' : 'Tải chứng nhận PDF'}
-          </button>
+          {s.certificateCode ? (
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleDownload}
+              disabled={downloading || !s.detailId}
+            >
+              {downloading ? 'Đang tải…' : 'Tải chứng nhận PDF'}
+            </button>
+          ) : null}
         </>
       }
     >

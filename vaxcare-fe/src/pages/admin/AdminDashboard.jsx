@@ -196,7 +196,7 @@ export default function Dashboard() {
               <div className="panel-head">
                 <div>
                   <h3>Sức khỏe hệ thống</h3>
-                  <div className="sub">system_configs · realtime</div>
+                  <div className="sub"></div>
                 </div>
               </div>
               <div className="panel-body">

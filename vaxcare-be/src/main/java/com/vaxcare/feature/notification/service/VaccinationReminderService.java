@@ -114,12 +114,12 @@ public class VaccinationReminderService {
     }
 
     /**
-     * Gửi ngay sau khi ghi nhận tiêm SUCCESS/PARTIAL: mời theo dõi sức khỏe 24–72h và khai báo phản ứng trên app.
+     * Gửi ngay sau khi ghi nhận tiêm SUCCESS: mời theo dõi sức khỏe 24–72h và khai báo phản ứng trên app.
      * Idempotent theo NotificationType.AFTER_VACCINATION + detailId.
      */
     @Transactional
     public void notifyPostVaccinationSurvey(VaccinationDetail detail) {
-        if (detail.getResult() != VaccinationResult.SUCCESS && detail.getResult() != VaccinationResult.PARTIAL) {
+        if (detail.getResult() != VaccinationResult.SUCCESS) {
             return;
         }
         var account = detail.getHistory().getUser().getAccount();
@@ -254,7 +254,7 @@ public class VaccinationReminderService {
     // ===================== CRON: NHẮC KHẢO SÁT SAU TIÊM (24–72h) =====================
 
     /**
-     * Mỗi ngày 09:00: mũi SUCCESS/PARTIAL có injectionDate trong [today-3, today-1],
+     * Mỗi ngày 09:00: mũi SUCCESS có injectionDate trong [today-3, today-1],
      * chưa có phản ứng khai báo, chưa gửi AFTER_VACCINATION → gửi nhắc khảo sát.
      * (Lần gửi ngay sau tiêm dùng cùng type → alreadyNotified sẽ chặn trùng nếu đã gửi lúc complete.)
      * Nếu lúc complete chưa gửi được mail, cron này bắt kịp trong cửa sổ 24–72h.

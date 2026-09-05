@@ -131,7 +131,7 @@ export default function Vaccines() {
 
   return (
     <>
-      <Topbar title="Vắc xin & phác đồ" subtitle="Thứ Ba, 18/08/2026 · vaccines + vaccination_protocols" onSearch={setQ} />
+      <Topbar title="Vắc xin & phác đồ" subtitle="Thứ Ba, 18/08/2026 · vaccines " onSearch={setQ} />
       <div className="content">
         <section className="kpi-row">
           <div className="kpi c1"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 2 3 10l3 3 8-8-3-3Z" /></svg></span></div><div className="num">{kpiTotal}</div><div className="lbl">Loại vắc xin</div></div>

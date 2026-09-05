@@ -204,7 +204,7 @@ export default function StaffReactionsPage() {
             <div className="panel-head">
               <div>
                 <h3>Phản hồi sau tiêm</h3>
-                <div className="sub">post_vaccination_reactions · Cập nhật realtime</div>
+                <div className="sub"></div>
               </div>
             </div>
             <div className="rx-list">

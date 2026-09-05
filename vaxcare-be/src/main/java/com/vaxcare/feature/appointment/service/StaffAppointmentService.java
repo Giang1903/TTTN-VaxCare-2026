@@ -10,6 +10,7 @@ import com.vaxcare.common.exception.UnauthorizedException;
 import com.vaxcare.feature.appointment.dto.AppointmentResponse;
 import com.vaxcare.feature.appointment.entity.Appointment;
 import com.vaxcare.feature.appointment.repository.AppointmentRepository;
+import com.vaxcare.feature.vaccination.repository.VaccinationDetailRepository;
 import com.vaxcare.feature.auth.entity.Account;
 import com.vaxcare.feature.auth.entity.MedicalStaff;
 import com.vaxcare.feature.auth.repository.AccountRepository;
@@ -31,6 +32,7 @@ public class StaffAppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final AccountRepository accountRepository;
     private final AppointmentService appointmentService;
+    private final VaccinationDetailRepository vaccinationDetailRepository;
     private final VaccinationService vaccinationService;
 
     @Transactional(readOnly = true)
@@ -180,7 +182,18 @@ public class StaffAppointmentService {
 
         appointment.setNote(normalized);
         assignStaffIfPossible(account, appointment);
-        return appointmentService.mapToResponse(appointmentRepository.save(appointment));
+        Appointment saved = appointmentRepository.save(appointment);
+
+        // Đồng bộ ghi chú staff → vaccination_detail (user xem chi tiết mũi)
+        // Biến final để dùng trong lambda
+        final String noteForDetail = normalized;
+        vaccinationDetailRepository.findByAppointment_AppointmentId(appointmentId)
+                .ifPresent(detail -> {
+                    detail.setNote(noteForDetail);
+                    vaccinationDetailRepository.save(detail);
+                });
+
+        return appointmentService.mapToResponse(saved);
     }
 
     // ===================== HELPERS =====================
