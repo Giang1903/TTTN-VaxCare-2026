@@ -411,7 +411,6 @@ export default function StaffVaccinationPage() {
                         <div className="radio-pills">
                           {[
                             { v: 'SUCCESS', l: 'Thành công' },
-                            { v: 'PARTIAL', l: 'Một phần' },
                             { v: 'FAILED', l: 'Không tiêm được' },
                           ].map((o) => (
                             <label
@@ -450,10 +449,9 @@ export default function StaffVaccinationPage() {
                       <span className="step">4</span> Chứng nhận tiêm
                     </h4>
                     <div className="cert-preview">
-                      <div className="clabel">Mã chứng nhận (tự sinh)</div>
+                      <div className="clabel">Mã chứng nhận</div>
                       <div className="ccode">{certCode}</div>
                       <div className="cmeta">
-                        Sẽ được lưu vào vaccination_details.certificate_code · Gửi kèm thông báo cho người dùng
                       </div>
                     </div>
                   </div>
@@ -520,7 +518,6 @@ export default function StaffVaccinationPage() {
               <div className="panel-body" style={{ fontSize: 13, color: 'var(--gray-700)', lineHeight: 1.55 }}>
                 <p style={{ marginBottom: 10 }}>{patient.protocolNote}</p>
                 <p style={{ color: 'var(--gray-500)', fontSize: 12.5 }}>
-                  Nguồn: phác đồ vaccination_protocols / protocol_details.
                 </p>
               </div>
             </div>

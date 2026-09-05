@@ -223,7 +223,7 @@ export default function Reports() {
               </svg>
               <span>
                 Tổng <strong>{k.appointments ?? 0}</strong> lịch trong kỳ · hoàn thành <strong>{k.completed ?? 0}</strong> ({(k.completionRate ?? 0)}%).
-                {chartIsWeekly ? ' Biểu đồ đã gom theo tuần — kéo ngang để xem hết.' : ''}
+                {chartIsWeekly ? ' Biểu đồ gom theo tuần.' : ''}
               </span>
             </div>
           </div>

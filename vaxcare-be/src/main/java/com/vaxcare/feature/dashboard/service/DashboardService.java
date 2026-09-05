@@ -27,6 +27,7 @@ import com.vaxcare.feature.vaccination.entity.VaccinationDetail;
 import com.vaxcare.feature.vaccination.entity.VaccinationHistory;
 import com.vaxcare.feature.vaccination.repository.VaccinationDetailRepository;
 import com.vaxcare.feature.vaccination.repository.VaccinationHistoryRepository;
+import com.vaxcare.feature.vaccine.entity.Vaccine;
 import com.vaxcare.feature.vaccine.repository.VaccineRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,7 +35,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.YearMonth;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,12 +101,100 @@ public class DashboardService {
                         .map(this::mapVaccinationDetail)
                         .toList();
 
+        com.vaxcare.feature.dashboard.dto.AiRecommendationDto aiRecommendation = buildAiRecommendation(userId);
+
         return UserDashboardResponse.builder()
                 .totalAppointments(totalAppointments)
                 .totalVaccinationsCompleted(totalVaccinationsCompleted)
                 .unreadNotifications(unreadNotifications)
                 .upcomingAppointments(upcomingAppointments)
                 .recentVaccinations(recentVaccinations)
+                .aiRecommendation(aiRecommendation)
+                .build();
+    }
+
+    private com.vaxcare.feature.dashboard.dto.AiRecommendationDto buildAiRecommendation(Long userId) {
+        List<VaccinationDetail> historyDetails = vaccinationHistoryRepository.findByUser_UserId(userId)
+                .map(VaccinationHistory::getHistoryId)
+                .map(vaccinationDetailRepository::findAllByHistoryIdWithDetails)
+                .orElseGet(List::of);
+
+        Vaccine recommendedVaccine = null;
+        Integer nextDoseNumber = 1;
+        LocalDate earliestDate = LocalDate.now().plusDays(2);
+
+        Map<Long, Integer> doseCountMap = new HashMap<>();
+        Map<Long, LocalDate> lastDateMap = new HashMap<>();
+        Map<Long, Vaccine> vaccineMap = new HashMap<>();
+
+        for (VaccinationDetail d : historyDetails) {
+            if (d.getResult() == VaccinationResult.SUCCESS) {
+                Long vId = d.getVaccine().getVaccineId();
+                doseCountMap.put(vId, doseCountMap.getOrDefault(vId, 0) + 1);
+                vaccineMap.put(vId, d.getVaccine());
+                LocalDate date = d.getInjectionDate();
+                if (date != null && (!lastDateMap.containsKey(vId) || date.isAfter(lastDateMap.get(vId)))) {
+                    lastDateMap.put(vId, date);
+                }
+            }
+        }
+
+        for (Map.Entry<Long, Integer> entry : doseCountMap.entrySet()) {
+            Vaccine v = vaccineMap.get(entry.getKey());
+            int taken = entry.getValue();
+            int req = v.getRequiredDoses() != null ? v.getRequiredDoses() : 1;
+            if (taken < req) {
+                recommendedVaccine = v;
+                nextDoseNumber = taken + 1;
+                LocalDate lastInj = lastDateMap.get(entry.getKey());
+                if (lastInj != null && v.getDoseIntervalDays() != null && v.getDoseIntervalDays() > 0) {
+                    LocalDate intervalDate = lastInj.plusDays(v.getDoseIntervalDays());
+                    if (intervalDate.isAfter(earliestDate)) {
+                        earliestDate = intervalDate;
+                    }
+                }
+                break;
+            }
+        }
+
+        if (recommendedVaccine == null) {
+            List<Vaccine> activeVaccines = vaccineRepository.findByStatus(ActiveStatus.ACTIVE);
+            for (Vaccine v : activeVaccines) {
+                if (!doseCountMap.containsKey(v.getVaccineId())) {
+                    recommendedVaccine = v;
+                    nextDoseNumber = 1;
+                    break;
+                }
+            }
+            if (recommendedVaccine == null && !activeVaccines.isEmpty()) {
+                recommendedVaccine = activeVaccines.get(0);
+            }
+        }
+
+        if (recommendedVaccine == null) {
+            return null;
+        }
+
+        List<VaccinationFacility> facilities = facilityRepository.findByStatus(ActiveStatus.ACTIVE);
+        VaccinationFacility targetFacility = !facilities.isEmpty() ? facilities.get(0) : null;
+        if (targetFacility == null) {
+            return null;
+        }
+
+        LocalTime timeSlot = LocalTime.of(8, 30);
+        if (targetFacility.getOpeningTime() != null) {
+            timeSlot = targetFacility.getOpeningTime();
+        }
+
+        return com.vaxcare.feature.dashboard.dto.AiRecommendationDto.builder()
+                .vaccineId(recommendedVaccine.getVaccineId())
+                .vaccineName(recommendedVaccine.getVaccineName())
+                .doseNumber(nextDoseNumber)
+                .facilityId(targetFacility.getFacilityId())
+                .facilityName(targetFacility.getFacilityName())
+                .recommendedDate(earliestDate)
+                .recommendedTimeSlot(timeSlot)
+                .description("Xác suất còn chỗ cao, thời gian chờ dự kiến thấp.")
                 .build();
     }
 

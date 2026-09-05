@@ -70,7 +70,25 @@ export default function BookingPage() {
         `VX-${date.iso.replace(/-/g, '')}-${slot.replace(':', '')}`;
       setBookingCode(code);
 
-      // Thanh toán VNPay theo yêu cầu PDF (nếu có appointmentId)
+      const isFreeRebook =
+        result?.freeRebook === true ||
+        Number(result?.price) === 0 ||
+        String(result?.status || '').toUpperCase() === 'CONFIRMED';
+
+      // Đặt lại miễn phí sau FAILED → không gọi VNPay
+      if (isFreeRebook) {
+        if (result?.freeRebookMessage) {
+          setSubmitError(''); // clear
+          // hiện message trên success view qua bookingCode note
+          setBookingCode(
+            (code ? code + ' · ' : '') + (result.freeRebookMessage || 'Đặt lại miễn phí — không cần thanh toán')
+          );
+        }
+        setSuccess(true);
+        return;
+      }
+
+      // Thanh toán VNPay (lịch thường)
       if (appointmentId) {
         try {
           const pay = await createVnpayPayment(appointmentId);
@@ -79,7 +97,6 @@ export default function BookingPage() {
             return;
           }
         } catch (payErr) {
-          // Đặt lịch đã thành công — cho phép xem lịch nếu thanh toán lỗi
           setSubmitError(
             (payErr.message || 'Không tạo được link thanh toán.') +
               ' Lịch đã được tạo — bạn có thể thanh toán sau trong mục Lịch hẹn.'

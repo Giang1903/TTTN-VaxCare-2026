@@ -14,6 +14,8 @@ public interface VaccinationDetailRepository extends JpaRepository<VaccinationDe
 
     boolean existsByAppointment_AppointmentId(Long appointmentId);
 
+    java.util.Optional<VaccinationDetail> findByAppointment_AppointmentId(Long appointmentId);
+
     long countByHistory_HistoryIdAndVaccine_VaccineIdAndResultNot(
             Long historyId, Long vaccineId, VaccinationResult excludedResult);
 
@@ -21,15 +23,12 @@ public interface VaccinationDetailRepository extends JpaRepository<VaccinationDe
 
     long countByResultAndInjectionDateBetween(VaccinationResult result, java.time.LocalDate from, java.time.LocalDate to);
 
-    /** Số mũi đã tiêm thành công / một phần theo user + vaccine (phục vụ giới hạn phác đồ khi đặt lịch). */
+    /** Số mũi đã tiêm thành công theo user + vaccine (phục vụ giới hạn phác đồ khi đặt lịch). */
     @Query("""
         SELECT COUNT(d) FROM VaccinationDetail d
         WHERE d.history.user.userId = :userId
           AND d.vaccine.vaccineId = :vaccineId
-          AND d.result IN (
-              com.vaxcare.common.enums.VaccinationResult.SUCCESS,
-              com.vaxcare.common.enums.VaccinationResult.PARTIAL
-          )
+          AND d.result = com.vaxcare.common.enums.VaccinationResult.SUCCESS
         """)
     long countAdministeredDoses(@Param("userId") Long userId, @Param("vaccineId") Long vaccineId);
 
@@ -37,10 +36,7 @@ public interface VaccinationDetailRepository extends JpaRepository<VaccinationDe
         SELECT MAX(d.injectionDate) FROM VaccinationDetail d
         WHERE d.history.user.userId = :userId
           AND d.vaccine.vaccineId = :vaccineId
-          AND d.result IN (
-              com.vaxcare.common.enums.VaccinationResult.SUCCESS,
-              com.vaxcare.common.enums.VaccinationResult.PARTIAL
-          )
+          AND d.result = com.vaxcare.common.enums.VaccinationResult.SUCCESS
         """)
     java.time.LocalDate findLastInjectionDate(@Param("userId") Long userId, @Param("vaccineId") Long vaccineId);
 
@@ -111,13 +107,34 @@ public interface VaccinationDetailRepository extends JpaRepository<VaccinationDe
         JOIN FETCH h.user u
         JOIN FETCH u.account
         WHERE d.result IN (
-              com.vaxcare.common.enums.VaccinationResult.SUCCESS,
-              com.vaxcare.common.enums.VaccinationResult.PARTIAL
+              com.vaxcare.common.enums.VaccinationResult.SUCCESS
           )
           AND d.injectionDate BETWEEN :fromDate AND :toDate
         """)
     List<VaccinationDetail> findSuccessfulInjectionsBetween(
             @Param("fromDate") java.time.LocalDate fromDate,
             @Param("toDate") java.time.LocalDate toDate);
+
+
+    /**
+     * Mũi FAILED gần nhất của user + vaccine + cơ sở, trong khoảng từ fromDate trở đi
+     * (phục vụ đặt lại miễn phí trong 14 ngày).
+     */
+    @Query("""
+        SELECT d FROM VaccinationDetail d
+        JOIN FETCH d.appointment a
+        JOIN FETCH a.facility
+        WHERE d.history.user.userId = :userId
+          AND d.vaccine.vaccineId = :vaccineId
+          AND a.facility.facilityId = :facilityId
+          AND d.result = com.vaxcare.common.enums.VaccinationResult.FAILED
+          AND d.injectionDate >= :fromDate
+        ORDER BY d.injectionDate DESC, d.detailId DESC
+        """)
+    java.util.List<VaccinationDetail> findRecentFailedForRebook(
+            @Param("userId") Long userId,
+            @Param("vaccineId") Long vaccineId,
+            @Param("facilityId") Long facilityId,
+            @Param("fromDate") java.time.LocalDate fromDate);
 
 }

@@ -18,4 +18,5 @@ public class UserDashboardResponse {
     private long unreadNotifications;
     private List<AppointmentResponse> upcomingAppointments;
     private List<VaccinationDetailResponse> recentVaccinations;
+    private AiRecommendationDto aiRecommendation;  
 }

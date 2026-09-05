@@ -11,33 +11,51 @@ import HealthProfileCard from '../../components/record/HealthProfileCard';
 import { getMyHealthProfile } from '../../services/healthProfileService';
 import { useAuth } from '../../context/AuthContext';
 import * as vaccinationService from '../../services/vaccinationService';
+import { searchVaccines } from '../../services/vaccineService';
 import { getMyAppointments } from '../../services/appointmentService';
 
 export default function RecordPage() {
   const { user, refreshProfile } = useAuth();
   const [history, setHistory] = useState(null);
   const [upcomingCount, setUpcomingCount] = useState(0);
+  const [upcomingAppts, setUpcomingAppts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [shotModal, setShotModal] = useState({ open: false, shot: null });
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [health, setHealth] = useState(null);
+  const [vaccineMetaById, setVaccineMetaById] = useState({});
 
   const load = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      const [hist, appts, hp] = await Promise.all([
+      const [hist, appts, hp, vaccines] = await Promise.all([
         vaccinationService.getMyVaccinationHistory().catch(() => null),
         getMyAppointments().catch(() => []),
         getMyHealthProfile().catch(() => null),
+        searchVaccines({}).catch(() => []),
       ]);
       setHistory(hist);
       setHealth(hp);
+      // Map vaccineId -> { requiredDoses, doseIntervalDays } từ catalog vaccines
+      const metaMap = {};
+      for (const v of vaccines || []) {
+        const id = v.vaccineId ?? v.id;
+        if (id == null) continue;
+        const meta = {
+          requiredDoses: Number(v.requiredDoses ?? v.required_doses) || 1,
+          doseIntervalDays: Number(v.doseIntervalDays ?? v.dose_interval_days) || null,
+        };
+        metaMap[id] = meta;
+        metaMap[String(id)] = meta;
+      }
+      setVaccineMetaById(metaMap);
       const up = (appts || []).filter((a) =>
         ['PENDING', 'CONFIRMED', 'CHECKED_IN'].includes(String(a.status || '').toUpperCase()),
       );
+      setUpcomingAppts(up);
       setUpcomingCount(up.length);
     } catch (err) {
       setError(err.message || 'Không tải được hồ sơ tiêm chủng');
@@ -62,8 +80,8 @@ export default function RecordPage() {
   );
 
   const protocols = useMemo(
-    () => vaccinationService.buildProtocolsFromDetails(details),
-    [details],
+    () => vaccinationService.buildProtocolsFromDetails(details, vaccineMetaById, upcomingAppts),
+    [details, vaccineMetaById, upcomingAppts],
   );
 
   const stats = useMemo(

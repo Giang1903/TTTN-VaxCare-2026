@@ -36,10 +36,10 @@ import java.util.UUID;
 @SuppressWarnings("null")
 public class VaccinationService {
 
-    // Chỉ trừ kho khi mũi tiêm thực sự được đưa vào người (SUCCESS/PARTIAL). FAILED (vd: hoãn tiêm vì
+    // Chỉ trừ kho khi mũi tiêm thực sự được đưa vào người (SUCCESS). FAILED (vd: hoãn tiêm vì
     // phản ứng bất thường/chống chỉ định phát hiện tại chỗ) thì không trừ kho.
     private static final Set<VaccinationResult> STOCK_DEDUCTING_RESULTS =
-            Set.of(VaccinationResult.SUCCESS, VaccinationResult.PARTIAL);
+            Set.of(VaccinationResult.SUCCESS);
 
     private final AppointmentRepository appointmentRepository;
     private final AccountRepository accountRepository;
@@ -101,8 +101,17 @@ public class VaccinationService {
 
         detail = detailRepository.save(detail);
 
+        // Đồng bộ ghi chú → lịch hẹn (staff drawer + user đều thấy cùng nội dung)
+        String noteSync = request.getNote() != null ? request.getNote().trim() : null;
+        if (noteSync != null && noteSync.isEmpty()) {
+            noteSync = null;
+        }
+        if (noteSync != null) {
+            appointment.setNote(noteSync);
+        }
+
         if (STOCK_DEDUCTING_RESULTS.contains(result)) {
-            // Chỉ tính/nhắc mũi tiếp theo khi mũi này thực sự được tiêm (SUCCESS/PARTIAL)
+            // Chỉ tính/nhắc mũi tiếp theo khi mũi này thực sự được tiêm (SUCCESS)
             reminderService.createNextDoseNotificationIfApplicable(detail);
             // Hệ thống chủ động gửi khảo sát / theo dõi sau tiêm (24–72h)
             try {
@@ -150,7 +159,9 @@ public class VaccinationService {
                 .historyId(history.getHistoryId())
                 .userId(userId)
                 .userFullName(history.getUser().getFullName())
-                .totalDoses(details.size())
+                .totalDoses((int) details.stream()
+                        .filter(d -> d.getResult() == VaccinationResult.SUCCESS)
+                        .count())
                 .details(details.stream().map(this::mapToResponse).toList())
                 .build();
     }
@@ -198,6 +209,33 @@ public class VaccinationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lịch hẹn có ID: " + appointmentId));
     }
 
+
+    /** Luôn lấy required_doses từ bảng vaccines; tối thiểu 1. */
+    private int resolveRequiredDoses(VaccinationDetail detail) {
+        if (detail.getVaccine() == null) {
+            return 1;
+        }
+        Integer rd = detail.getVaccine().getRequiredDoses();
+        return (rd != null && rd > 0) ? rd : 1;
+    }
+
+
+    /**
+     * Ghi chú hiển thị cho user: ưu tiên note lúc ghi nhận tiêm,
+     * nếu trống thì lấy ghi chú staff trên lịch hẹn (appointment.note).
+     */
+    private String resolveDisplayNote(VaccinationDetail detail) {
+        if (detail.getNote() != null && !detail.getNote().isBlank()) {
+            return detail.getNote().trim();
+        }
+        if (detail.getAppointment() != null
+                && detail.getAppointment().getNote() != null
+                && !detail.getAppointment().getNote().isBlank()) {
+            return detail.getAppointment().getNote().trim();
+        }
+        return null;
+    }
+
     private VaccinationDetailResponse mapToResponse(VaccinationDetail detail) {
         Appointment appointment = detail.getAppointment();
         return VaccinationDetailResponse.builder()
@@ -213,9 +251,10 @@ public class VaccinationService {
                 .staffId(detail.getStaff() != null ? detail.getStaff().getStaffId() : null)
                 .staffName(detail.getStaff() != null ? detail.getStaff().getFullName() : null)
                 .doseNumber(detail.getDoseNumber())
+                .requiredDoses(resolveRequiredDoses(detail))
                 .injectionDate(detail.getInjectionDate())
                 .result(detail.getResult())
-                .note(detail.getNote())
+                .note(resolveDisplayNote(detail))
                 .certificateCode(detail.getCertificateCode())
                 .createdAt(detail.getCreatedAt())
                 .build();

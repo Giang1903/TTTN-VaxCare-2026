@@ -23,6 +23,7 @@ import com.vaxcare.feature.vaccine.repository.PriceListRepository;
 import com.vaxcare.feature.vaccine.repository.VaccineRepository;
 import com.vaxcare.feature.inventory.repository.VaccineBatchRepository;
 import com.vaxcare.feature.ai.service.AiDispatchService;
+import com.vaxcare.feature.vaccination.entity.VaccinationDetail;
 import com.vaxcare.feature.vaccination.repository.VaccinationDetailRepository;
 import com.vaxcare.utils.QRCodeUtil;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +50,9 @@ import com.vaxcare.feature.appointment.repository.PaymentRepository;
 public class AppointmentService {
 
     private static final int SLOT_DURATION_MINUTES = 30;
+
+    /** Số ngày được đặt lại miễn phí sau mũi FAILED (cùng vắc xin + cơ sở). */
+    private static final int FREE_REBOOK_WINDOW_DAYS = 14;
 
     private static final Set<AppointmentStatus> ACTIVE_STATUSES =
             Set.of(AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED, AppointmentStatus.CHECKED_IN);
@@ -176,15 +180,34 @@ public class AppointmentService {
         ensureUserHasNoOverlappingSlot(user.getUserId(), request.getAppointmentDate(), request.getTimeSlot());
         enforceProtocolLimits(user.getUserId(), vaccine, request.getAppointmentDate());
 
-        // Chặn đặt lịch ngay nếu không có giá hiệu lực (tránh PENDING treo chỗ rồi fail lúc thanh toán)
+        // --- Đặt lại miễn phí sau mũi FAILED (14 ngày, cùng vắc xin + cơ sở) ---
+        FreeRebookInfo freeInfo = resolveFreeRebookEligibility(
+                user.getUserId(), vaccine.getVaccineId(), facility.getFacilityId());
+
         java.math.BigDecimal price = resolveCurrentPrice(vaccine.getVaccineId(), facility.getFacilityId());
-        if (price == null || price.compareTo(java.math.BigDecimal.ZERO) <= 0) {
-            throw new BadRequestException(
-                    "Vắc xin này chưa có bảng giá hiệu lực tại cơ sở đã chọn. "
-                            + "Vui lòng chọn vắc xin/cơ sở khác hoặc liên hệ quản trị để cập nhật giá.");
+        if (!freeInfo.eligible()) {
+            if (price == null || price.compareTo(java.math.BigDecimal.ZERO) <= 0) {
+                throw new BadRequestException(
+                        "Vắc xin này chưa có bảng giá hiệu lực tại cơ sở đã chọn. "
+                                + "Vui lòng chọn vắc xin/cơ sở khác hoặc liên hệ quản trị để cập nhật giá.");
+            }
+        } else {
+            // Miễn phí: không thu tiền
+            price = java.math.BigDecimal.ZERO;
         }
 
-        // QR chỉ sinh sau khi thanh toán VNPay thành công (PaymentService)
+        AppointmentStatus initialStatus = freeInfo.eligible()
+                ? AppointmentStatus.CONFIRMED
+                : AppointmentStatus.PENDING;
+        String qrCode = freeInfo.eligible() ? QRCodeUtil.generateToken() : null;
+
+        String note = request.getNote();
+        if (freeInfo.eligible()) {
+            String tag = "[Đặt lại miễn phí sau mũi FAILED ngày "
+                    + freeInfo.failedDate() + " — không thu tiền]";
+            note = (note == null || note.isBlank()) ? tag : note.trim() + " | " + tag;
+        }
+
         Appointment appointment = Appointment.builder()
                 .user(user)
                 .facility(facility)
@@ -192,9 +215,9 @@ public class AppointmentService {
                 .price(price)
                 .appointmentDate(request.getAppointmentDate())
                 .timeSlot(request.getTimeSlot())
-                .status(AppointmentStatus.PENDING)
-                .qrCode(null)
-                .note(request.getNote())
+                .status(initialStatus)
+                .qrCode(qrCode)
+                .note(note)
                 .build();
 
         Appointment saved = appointmentRepository.save(appointment);
@@ -206,8 +229,51 @@ public class AppointmentService {
             // đã log trong AiDispatchService/AiServiceClient nếu có lỗi gọi AI
         }
 
-        // Không gửi email lúc đặt lịch — chỉ gửi khi thanh toán thành công (PaymentService)
-        return mapToResponse(saved);
+        AppointmentResponse response = mapToResponse(saved);
+        if (freeInfo.eligible()) {
+            response.setFreeRebook(true);
+            response.setFreeRebookMessage(
+                    "Bạn được đặt lại miễn phí trong "
+                            + FREE_REBOOK_WINDOW_DAYS
+                            + " ngày sau mũi tiêm không thành công (FAILED) cùng vắc xin và cơ sở. "
+                            + "Lịch đã xác nhận, không cần thanh toán.");
+        } else {
+            response.setFreeRebook(false);
+        }
+        return response;
+    }
+
+    private record FreeRebookInfo(boolean eligible, java.time.LocalDate failedDate) {
+        static FreeRebookInfo none() {
+            return new FreeRebookInfo(false, null);
+        }
+    }
+
+    /**
+     * Đủ điều kiện đặt lại miễn phí nếu:
+     * - Có mũi FAILED cùng user + vaccine + facility trong FREE_REBOOK_WINDOW_DAYS ngày gần nhất
+     * - Chưa dùng suất miễn phí (chưa có appointment price=0 sau thời điểm FAILED)
+     */
+    private FreeRebookInfo resolveFreeRebookEligibility(Long userId, Long vaccineId, Long facilityId) {
+        LocalDate fromDate = LocalDate.now().minusDays(FREE_REBOOK_WINDOW_DAYS);
+        var failedList = vaccinationDetailRepository.findRecentFailedForRebook(
+                userId, vaccineId, facilityId, fromDate);
+        if (failedList == null || failedList.isEmpty()) {
+            return FreeRebookInfo.none();
+        }
+        VaccinationDetail latestFailed = failedList.get(0);
+        LocalDate failedDate = latestFailed.getInjectionDate();
+        if (failedDate == null) {
+            return FreeRebookInfo.none();
+        }
+        // since = đầu ngày mũi FAILED (tránh trùng suất)
+        LocalDateTime since = failedDate.atStartOfDay();
+        boolean alreadyUsed = appointmentRepository.existsFreeRebookSince(
+                userId, vaccineId, facilityId, since);
+        if (alreadyUsed) {
+            return FreeRebookInfo.none();
+        }
+        return new FreeRebookInfo(true, failedDate);
     }
 
     @Transactional
@@ -533,6 +599,11 @@ public class AppointmentService {
                 .paid(paid)
                 .cancelledAt(appointment.getCancelledAt())
                 .cancellationReason(appointment.getCancellationReason())
+                .freeRebook(
+                        appointment.getPrice() != null
+                                && appointment.getPrice().compareTo(java.math.BigDecimal.ZERO) == 0
+                                && appointment.getNote() != null
+                                && appointment.getNote().contains("Đặt lại miễn phí"))
                 .build();
     }
 }
