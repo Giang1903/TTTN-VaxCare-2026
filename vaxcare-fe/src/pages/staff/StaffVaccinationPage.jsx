@@ -252,10 +252,20 @@ export default function StaffVaccinationPage() {
         note: staffNote || undefined,
       });
       setDoneIds((prev) => new Set(prev).add(patient.id));
-      setLastDetailId(detail?.detailId ?? null);
-      setSuccessMsg(`Đã ghi nhận tiêm ${patient.vaccine} cho ${patient.name}`);
+      const isFailed = String(result || '').toUpperCase() === 'FAILED';
+      setLastDetailId(isFailed ? null : (detail?.detailId ?? null));
+      setSuccessMsg(
+        isFailed
+          ? `Đã ghi nhận: không tiêm được — ${patient.vaccine} · ${patient.name}`
+          : `Đã ghi nhận tiêm ${patient.vaccine} cho ${patient.name}`,
+      );
       setShowSuccess(true);
-      showToast(`Đã ghi nhận tiêm cho ${patient.name}`, 'ok');
+      showToast(
+        isFailed
+          ? `Đã ghi nhận không tiêm được cho ${patient.name}`
+          : `Đã ghi nhận tiêm cho ${patient.name}`,
+        isFailed ? 'warn' : 'ok',
+      );
       // refresh queue (remove completed)
       setQueue((list) => list.filter((p) => p.id !== patient.id));
     } catch (err) {
@@ -472,12 +482,14 @@ export default function StaffVaccinationPage() {
                       <path d="M20 6 9 17l-5-5" />
                     </svg>
                   </div>
-                  <h3>Ghi nhận tiêm thành công</h3>
+                  <h3>{lastDetailId ? 'Ghi nhận tiêm thành công' : 'Đã ghi nhận: không tiêm được'}</h3>
                   <p>{successMsg}</p>
                   <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-                    <button type="button" className="btn outline" onClick={downloadCert}>
-                      Tải chứng nhận PDF
-                    </button>
+                    {lastDetailId && (
+                      <button type="button" className="btn outline" onClick={downloadCert}>
+                        Tải chứng nhận PDF
+                      </button>
+                    )}
                     <button type="button" className="btn primary" onClick={nextPatient}>
                       Ca tiếp theo
                     </button>

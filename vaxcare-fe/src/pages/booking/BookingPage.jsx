@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import SlimPageHero from '../../components/dashboard-shared/SlimPageHero';
 import StepPills from '../../components/booking/StepPills';
 import StepVaccine from '../../components/booking/StepVaccine';
@@ -7,8 +8,31 @@ import StepDateTime from '../../components/booking/StepDateTime';
 import StepConfirm from '../../components/booking/StepConfirm';
 import BookingSummary from '../../components/booking/BookingSummary';
 import { bookAppointment, createVnpayPayment } from '../../services/appointmentService';
+import { getVaccineById } from '../../services/vaccineService';
+import { getFacilityById } from '../../services/facilityService';
+
+const DOWS = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+const MONTHS = ['Th1', 'Th2', 'Th3', 'Th4', 'Th5', 'Th6', 'Th7', 'Th8', 'Th9', 'Th10', 'Th11', 'Th12'];
+
+function buildDateObj(iso) {
+  if (!iso) return null;
+  const d = new Date(`${String(iso).slice(0, 10)}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return null;
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return {
+    key: `${yyyy}-${mm}-${dd}`,
+    iso: `${yyyy}-${mm}-${dd}`,
+    label: `${dd}/${mm}/${yyyy}`,
+    dow: DOWS[d.getDay()],
+    dom: d.getDate(),
+    moy: MONTHS[d.getMonth()],
+  };
+}
 
 export default function BookingPage() {
+  const [searchParams] = useSearchParams();
   const [step, setStep] = useState(1);
   const [vaccine, setVaccine] = useState(null);
   const [facility, setFacility] = useState(null);
@@ -19,6 +43,78 @@ export default function BookingPage() {
   const [bookingCode, setBookingCode] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [prefillDone, setPrefillDone] = useState(false);
+
+  // Prefill từ AI gợi ý: /booking?vaccineId=&facilityId=&date=&time=
+  useEffect(() => {
+    if (prefillDone) return;
+    const vaccineId = searchParams.get('vaccineId');
+    const facilityId = searchParams.get('facilityId');
+    const dateIso = searchParams.get('date');
+    const time = searchParams.get('time');
+    if (!vaccineId && !facilityId && !dateIso && !time) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setPrefillDone(true);
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      try {
+        let nextStep = 1;
+        if (vaccineId) {
+          const v = await getVaccineById(vaccineId);
+          if (cancelled || !v) return;
+          setVaccine({
+            id: v.vaccineId,
+            name: v.vaccineName,
+            title: v.vaccineName,
+            desc: v.targetDisease ? `Phòng: ${v.targetDisease}` : v.manufacturer || '',
+            price: v.price,
+          });
+          nextStep = 2;
+        }
+        if (facilityId) {
+          const f = await getFacilityById(facilityId);
+          if (cancelled || !f) {
+            if (!cancelled) {
+              setStep(nextStep);
+              setPrefillDone(true);
+            }
+            return;
+          }
+          setFacility({
+            id: f.facilityId,
+            name: f.facilityName,
+            title: f.facilityName,
+            desc: f.address || '',
+          });
+          nextStep = 3;
+        }
+        if (dateIso) {
+          const dObj = buildDateObj(dateIso);
+          if (dObj) {
+            setDate(dObj);
+            nextStep = 3;
+          }
+        }
+        if (time) {
+          setSlot(String(time).slice(0, 5));
+          if (dateIso && facilityId && vaccineId) nextStep = 4;
+        }
+        if (!cancelled) {
+          setStep(nextStep);
+          setPrefillDone(true);
+        }
+      } catch {
+        if (!cancelled) setPrefillDone(true);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [searchParams, prefillDone]);
 
   function goStep(n) {
     setStep(n);

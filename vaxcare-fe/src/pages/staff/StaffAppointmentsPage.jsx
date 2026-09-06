@@ -11,6 +11,7 @@ const STATUS_LABEL = {
   confirmed: 'Đã xác nhận',
   checkedin: 'Đã check-in',
   completed: 'Hoàn thành',
+  failed: 'Không tiêm được',
   cancelled: 'Đã hủy',
   noshow: 'Vắng mặt',
 };
@@ -22,6 +23,7 @@ function countsOf(list) {
     confirmed: list.filter((a) => a.status === 'confirmed').length,
     checkedin: list.filter((a) => a.status === 'checkedin').length,
     completed: list.filter((a) => a.status === 'completed').length,
+    failed: list.filter((a) => a.status === 'failed').length,
     cancelled: list.filter((a) => a.status === 'cancelled' || a.status === 'noshow').length,
   };
 }
@@ -63,11 +65,11 @@ function RowActions({ status, onAction }) {
       </div>
     );
   }
-  if (status === 'cancelled' || status === 'noshow') {
+  if (status === 'cancelled' || status === 'noshow' || status === 'failed') {
     return (
       <div className="row-actions">
         <button type="button" className="row-action done" onClick={() => onAction('view')}>
-          Xem lý do
+          {status === 'failed' ? 'Xem chi tiết' : 'Xem lý do'}
         </button>
       </div>
     );
@@ -155,11 +157,13 @@ export default function StaffAppointmentsPage() {
                     ? 'Đã xác nhận'
                     : status === 'completed'
                       ? 'Đã xong'
-                      : status === 'cancelled'
-                        ? 'Đã hủy'
-                        : status === 'pending'
-                          ? 'Chờ duyệt'
-                          : a.slotNote,
+                      : status === 'failed'
+                        ? 'Không tiêm được'
+                        : status === 'cancelled'
+                          ? 'Đã hủy'
+                          : status === 'pending'
+                            ? 'Chờ duyệt'
+                            : a.slotNote,
             }
           : a
       )
@@ -323,13 +327,6 @@ export default function StaffAppointmentsPage() {
             </div>
           </div>
           <div className="toolbar-actions">
-            <button
-              type="button"
-              className="btn outline"
-              onClick={() => showToast('Đã làm mới danh sách lịch hẹn', 'ok')}
-            >
-              Làm mới
-            </button>
             <button type="button" className="btn primary" onClick={openScan}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="3" width="7" height="7" />
@@ -467,7 +464,9 @@ export default function StaffAppointmentsPage() {
                         ? a.cancellationReason
                         : a.status === 'cancelled'
                           ? '—'
-                          : ''}
+                          : a.status === 'failed'
+                            ? (a.note || 'Không tiêm được')
+                            : ''}
                     </td>
                     <td>
                       <RowActions status={a.status} onAction={(act) => handleAction(a, act)} />
@@ -742,6 +741,7 @@ export default function StaffAppointmentsPage() {
                 </>
               )}
               {(drawerAppt.status === 'completed' ||
+                drawerAppt.status === 'failed' ||
                 drawerAppt.status === 'cancelled' ||
                 drawerAppt.status === 'noshow') && (
                 <button type="button" className="btn outline" style={{ flex: 1 }} onClick={closeDrawer}>

@@ -202,9 +202,11 @@ export default function AppointmentCard({ appt, onRescheduled }) {
 
           {appt.status === "completed" && (
             <>
-              <a href="/record" className="btn btn-primary btn-sm">
-                Xem chứng nhận
-              </a>
+              {appt.hasCertificate !== false && (
+                <a href="/record" className="btn btn-primary btn-sm">
+                  Xem chứng nhận
+                </a>
+              )}
               <button
                 type="button"
                 style={{ fontSize: "13px", fontWeight: 600, color: "var(--teal-600)", background: "none", border: "none", cursor: "pointer" }}
@@ -214,6 +216,24 @@ export default function AppointmentCard({ appt, onRescheduled }) {
               </button>
               <a href="/reactions" style={{ fontSize: "13px", fontWeight: 600, color: "var(--teal-600)" }}>
                 Báo phản ứng
+              </a>
+            </>
+          )}
+
+          {appt.status === "failed" && (
+            <>
+              <a href="/record" className="btn btn-primary btn-sm">
+                Xem hồ sơ
+              </a>
+              <button
+                type="button"
+                style={{ fontSize: "13px", fontWeight: 600, color: "var(--teal-600)", background: "none", border: "none", cursor: "pointer" }}
+                onClick={() => setPayOpen(true)}
+              >
+                Xem hóa đơn
+              </button>
+              <a href="/booking" style={{ fontSize: "13px", fontWeight: 600, color: "var(--teal-600)" }}>
+                Đặt lại lịch
               </a>
             </>
           )}
