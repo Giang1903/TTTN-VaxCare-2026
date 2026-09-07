@@ -104,6 +104,16 @@ export default function StaffDashboardPage() {
 
   const handleAction = async (appt) => {
     try {
+      if (appt.status === 'pending' || appt.status === 'confirmed' || appt.status === 'checkedin') {
+        const priceZero = appt._raw?.price != null && Number(appt._raw.price) === 0;
+        if (!appt.paid && !priceZero) {
+          showToast(
+            'Lịch chưa thanh toán thành công — không thể xác nhận / check-in / ghi nhận tiêm.',
+            'warn',
+          );
+          return;
+        }
+      }
       if (appt.status === 'pending') {
         await staffService.confirmAppointment(appt.id);
         setAppts((list) =>
@@ -129,15 +139,9 @@ export default function StaffDashboardPage() {
         return;
       }
       if (appt.status === 'checkedin') {
-        await staffService.completeVaccination(appt.id);
-        setAppts((list) =>
-          list.map((a) =>
-            a.id === appt.id
-              ? { ...a, status: 'completed', statusLabel: 'Hoàn thành', action: 'Xem hồ sơ', actionClass: 'done' }
-              : a
-          )
-        );
-        showToast(`Đã ghi nhận tiêm cho ${appt.name}`, 'ok');
+        // Chuyển sang trang Ghi nhận tiêm (form đầy đủ: SUCCESS/FAILED, ghi chú, PDF)
+        // Không complete nhanh tại dashboard
+        navigate(`/staff/vaccination?id=${appt.id}`);
         return;
       }
       navigate('/staff/appointments');

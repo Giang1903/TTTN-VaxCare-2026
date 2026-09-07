@@ -555,7 +555,7 @@ public class AppointmentService {
         boolean paid = paymentStatus == PaymentStatus.SUCCESS;
 
         VaccinationDetail detail = vaccinationDetailRepository
-                .findByAppointment_AppointmentId(appointment.getAppointmentId())
+                .findFirstByAppointment_AppointmentIdOrderByDetailIdDesc(appointment.getAppointmentId())
                 .orElse(null);
 
         return AppointmentResponse.builder()

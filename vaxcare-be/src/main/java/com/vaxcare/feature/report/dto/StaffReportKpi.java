@@ -10,6 +10,7 @@ import lombok.*;
 public class StaffReportKpi {
     private long appointments;
     private long completed;
+    private long failed;
     private long cancelled;
     private long checkedIn;
     private long pending;

@@ -471,7 +471,7 @@ export default function StaffVaccinationPage() {
                       Hủy
                     </button>
                     <button type="button" className="btn primary" onClick={handleSubmit} disabled={!hasPatient}>
-                      Xác nhận đã tiêm
+                      Xác nhận
                     </button>
                   </div>
                 </div>

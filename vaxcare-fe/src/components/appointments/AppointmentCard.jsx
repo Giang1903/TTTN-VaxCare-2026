@@ -141,7 +141,7 @@ export default function AppointmentCard({ appt, onRescheduled }) {
         <div style={{ display: "flex", flexDirection: "column", gap: "8px", alignItems: "flex-end" }}>
           {canModify && (
             <>
-              {raw === "CONFIRMED" && appt.appointmentId && (
+              {raw === "CONFIRMED" && appt.appointmentId && appt.paid && (
                 <button
                   type="button"
                   className="btn btn-primary btn-sm"

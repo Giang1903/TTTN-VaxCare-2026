@@ -8,6 +8,9 @@ import com.vaxcare.common.exception.ResourceNotFoundException;
 import com.vaxcare.common.exception.UnauthorizedException;
 import com.vaxcare.feature.appointment.entity.Appointment;
 import com.vaxcare.feature.appointment.repository.AppointmentRepository;
+import com.vaxcare.feature.appointment.repository.PaymentRepository;
+import com.vaxcare.feature.appointment.entity.Payment;
+import com.vaxcare.common.enums.PaymentStatus;
 import com.vaxcare.feature.auth.entity.Account;
 import com.vaxcare.feature.auth.entity.MedicalStaff;
 import com.vaxcare.feature.auth.entity.User;
@@ -36,12 +39,11 @@ import java.util.UUID;
 @SuppressWarnings("null")
 public class VaccinationService {
 
-    // Chỉ trừ kho khi mũi tiêm thực sự được đưa vào người (SUCCESS). FAILED (vd: hoãn tiêm vì
-    // phản ứng bất thường/chống chỉ định phát hiện tại chỗ) thì không trừ kho.
     private static final Set<VaccinationResult> STOCK_DEDUCTING_RESULTS =
             Set.of(VaccinationResult.SUCCESS);
 
     private final AppointmentRepository appointmentRepository;
+    private final PaymentRepository paymentRepository;
     private final AccountRepository accountRepository;
     private final VaccinationHistoryRepository historyRepository;
     private final VaccinationDetailRepository detailRepository;
@@ -61,6 +63,18 @@ public class VaccinationService {
                     "Chỉ có thể ghi nhận kết quả tiêm cho lịch hẹn đang ở trạng thái CHECKED_IN (hiện tại: "
                             + appointment.getStatus() + ")");
         }
+        // Bắt buộc đã thanh toán (trừ lịch giá 0 / free rebook)
+        java.math.BigDecimal price = appointment.getPrice();
+        boolean free = price == null || price.compareTo(java.math.BigDecimal.ZERO) == 0;
+        if (!free) {
+            Payment payment = paymentRepository.findByAppointment_AppointmentId(appointment.getAppointmentId())
+                    .orElse(null);
+            boolean paid = payment != null && payment.getStatus() == PaymentStatus.SUCCESS;
+            if (!paid) {
+                throw new BadRequestException(
+                        "Lịch hẹn chưa thanh toán thành công — không thể ghi nhận tiêm.");
+            }
+        }
         if (detailRepository.existsByAppointment_AppointmentId(appointment.getAppointmentId())) {
             throw new BadRequestException("Lịch hẹn này đã được ghi nhận kết quả tiêm trước đó");
         }
@@ -78,8 +92,6 @@ public class VaccinationService {
                 : (int) detailRepository.countByHistory_HistoryIdAndVaccine_VaccineIdAndResultNot(
                         history.getHistoryId(), vaccineId, VaccinationResult.FAILED) + 1;
 
-        // Nếu không đủ tồn kho, deductStockForVaccination ném BadRequestException -> @Transactional
-        // rollback toàn bộ (không tạo VaccinationDetail, không đổi trạng thái lịch hẹn).
         VaccineBatch batch = STOCK_DEDUCTING_RESULTS.contains(result)
                 ? inventoryService.deductStockForVaccination(appointment.getFacility().getFacilityId(), vaccineId, 1)
                 : null;
@@ -111,9 +123,7 @@ public class VaccinationService {
         }
 
         if (STOCK_DEDUCTING_RESULTS.contains(result)) {
-            // Chỉ tính/nhắc mũi tiếp theo khi mũi này thực sự được tiêm (SUCCESS)
             reminderService.createNextDoseNotificationIfApplicable(detail);
-            // Hệ thống chủ động gửi khảo sát / theo dõi sau tiêm (24–72h)
             try {
                 reminderService.notifyPostVaccinationSurvey(detail);
             } catch (Exception ex) {
@@ -134,15 +144,12 @@ public class VaccinationService {
     public VaccinationHistoryResponse getHistoryByUserId(Long userId, Long currentAccountId) {
         Account currentAccount = findAccountOrThrow(currentAccountId);
 
-        // USER chỉ được xem lịch sử của chính mình. MEDICAL_STAFF/ADMIN xem được của bất kỳ ai
-        // (phục vụ tra cứu trước khi tiêm và xử lý phản ứng sau tiêm).
         if (currentAccount.getRole() == Role.USER && !userId.equals(currentAccountId)) {
             throw new UnauthorizedException("Bạn chỉ được xem lịch sử tiêm chủng của chính mình!");
         }
 
         VaccinationHistory history = historyRepository.findByUser_UserId(userId).orElse(null);
         if (history == null) {
-            // Người dùng chưa từng tiêm mũi nào trên hệ thống -> trả về lịch sử rỗng thay vì lỗi 404
             Account ownerAccount = findAccountOrThrow(userId);
             String fullName = ownerAccount.getUser() != null ? ownerAccount.getUser().getFullName() : null;
             return VaccinationHistoryResponse.builder()
@@ -220,10 +227,6 @@ public class VaccinationService {
     }
 
 
-    /**
-     * Ghi chú hiển thị cho user: ưu tiên note lúc ghi nhận tiêm,
-     * nếu trống thì lấy ghi chú staff trên lịch hẹn (appointment.note).
-     */
     private String resolveDisplayNote(VaccinationDetail detail) {
         if (detail.getNote() != null && !detail.getNote().isBlank()) {
             return detail.getNote().trim();

@@ -22,6 +22,7 @@ export default function StaffReportsPage() {
   const [kpi, setKpi] = useState({
     appointments: 0,
     completed: 0,
+    failed: 0,
     cancelled: 0,
     checkedin: 0,
     pending: 0,
@@ -51,6 +52,7 @@ export default function StaffReportsPage() {
       const k = report?.kpi || {};
       const appts = Number(k.appointments ?? 0);
       const completed = Number(k.completed ?? 0);
+      const failed = Number(k.failed ?? 0);
       const cancelled = Number(k.cancelled ?? 0);
       const checkedIn = Number(k.checkedIn ?? 0);
       const pending = Number(k.pending ?? 0);
@@ -64,6 +66,7 @@ export default function StaffReportsPage() {
       setKpi({
         appointments: appts,
         completed,
+        failed,
         cancelled,
         checkedin: checkedIn,
         pending,
@@ -88,12 +91,9 @@ export default function StaffReportsPage() {
       } else {
         setPeriodLabel(`${Number(range) || 30} ngày gần nhất`);
       }
-
-      // dailySeries = đúng khoảng filter; weekSeries chỉ luôn 7 ngày cuối (dùng fallback)
       const daySeries = report?.dailySeries || report?.weekSeries || [];
       const n = daySeries.length;
 
-      // >14 ngày: gom theo tuần để biểu đồ đọc được (tránh 90 cột + key nhãn T2/T3 trùng)
       let chartPoints = [];
       if (n > 14) {
         for (let i = 0; i < n; i += 7) {
@@ -123,7 +123,6 @@ export default function StaffReportsPage() {
       setWeek(
         chartPoints.map((p) => ({
           ...p,
-          // Cột có data tối thiểu ~12% chiều cao để nhìn rõ; cột 0 giữ thấp
           h: p.val > 0 ? Math.max(12, Math.round((p.val / maxVal) * 100)) : 4,
         }))
       );
@@ -172,7 +171,7 @@ export default function StaffReportsPage() {
         );
       } else {
         setFunnelInsight(
-          `Tỷ lệ hoàn thành ${completionRate}%. Hủy/vắng: ${cancelled} ca.`
+          `Tỷ lệ hoàn thành ${completionRate}%. Đã hủy/Vắng: ${cancelled} ca.`
         );
       }
 
@@ -426,6 +425,7 @@ export default function StaffReportsPage() {
                   { lbl: 'Đã xác nhận', n: kpi.confirmed || 0, bg: 'var(--info-dot)' },
                   { lbl: 'Check-in', n: kpi.checkedin || 0, bg: 'var(--teal-700)' },
                   { lbl: 'Hoàn thành', n: kpi.completed || 0, bg: 'var(--ok-dot)' },
+                  { lbl: 'Không tiêm được', n: kpi.failed || 0, bg: '#f59e0b' },
                   { lbl: 'Hủy / Vắng', n: kpi.cancelled || 0, bg: 'var(--danger-dot)' },
                 ];
                 return rows.map((f) => (

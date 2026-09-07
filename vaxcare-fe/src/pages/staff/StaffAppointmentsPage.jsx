@@ -213,6 +213,19 @@ export default function StaffAppointmentsPage() {
       openView(appt);
       return;
     }
+    const needsPay = action === 'confirm' || action === 'checkin' || action === 'vaccinate';
+    if (needsPay && !appt.paid) {
+      // Giá 0 / free vẫn có paid=true từ BE khi SUCCESS hoặc price 0 — nếu FE không có paid thì chặn
+      const priceZero =
+        appt._raw?.price != null && Number(appt._raw.price) === 0;
+      if (!priceZero) {
+        showToast(
+          'Lịch chưa thanh toán thành công. Yêu cầu khách thanh toán trước khi xác nhận / check-in / ghi nhận tiêm.',
+          'warn',
+        );
+        return;
+      }
+    }
     try {
       if (action === 'confirm') {
         await staffService.confirmAppointment(appt.id);
@@ -221,7 +234,7 @@ export default function StaffAppointmentsPage() {
         return;
       }
       if (action === 'checkin') {
-        // BE chỉ cho check-in khi CONFIRMED + có QR + đúng ngày hôm nay
+        // BE chỉ cho check-in khi CONFIRMED + đã TT + có QR + đúng khung giờ
         let qr = (appt.qr || '').trim();
         if (appt.status === 'pending') {
           await staffService.confirmAppointment(appt.id);
