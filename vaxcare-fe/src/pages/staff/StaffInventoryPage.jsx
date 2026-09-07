@@ -23,6 +23,7 @@ export default function StaffInventoryPage() {
   const facilityName = user?.facilityName || 'Cơ sở tiêm chủng';
   const [tab, setTab] = useState('all');
   const [q, setQ] = useState('');
+  const [rawBatches, setRawBatches] = useState([]);
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [detailBatch, setDetailBatch] = useState(null);
@@ -40,6 +41,7 @@ export default function StaffInventoryPage() {
 
   const loadBatches = useCallback(async () => {
     if (!facilityId) {
+      setRawBatches([]);
       setRows([]);
       setLoading(false);
       return;
@@ -47,10 +49,11 @@ export default function StaffInventoryPage() {
     setLoading(true);
     try {
       const list = await staffService.getBatches(facilityId);
-      setRows((list || []).map(staffService.mapBatchToUi));
+      setRawBatches(list || []);
     } catch (err) {
       console.error(err);
       showToast(err.message || 'Không tải được tồn kho', 'warn');
+      setRawBatches([]);
       setRows([]);
     } finally {
       setLoading(false);
@@ -87,14 +90,35 @@ export default function StaffInventoryPage() {
     };
   }, [facilityId]);
 
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setRows(
+      (rawBatches || []).map((b) =>
+        staffService.mapBatchToUi(b, {
+          alertThreshold: alertThreshold,
+          nearExpiryDays: 90,
+        }),
+      ),
+    );
+  }, [rawBatches, alertThreshold]);
+
   const filtered = useMemo(() => {
     return rows.filter((r) => {
-      if (tab === 'low' || tab === 'expiring') {
-        if (!r.f.includes(tab) && !r.f.includes('danger') && !r.f.includes('warn')) return false;
-        if (tab === 'low' && !(r.fillClass === 'warn' || r.fillClass === 'danger')) return false;
-        if (tab === 'expiring' && r.tag !== 'danger' && r.tag !== 'warn') return false;
-      } else if (tab !== 'all' && r.f && !r.f.includes(tab)) {
-        return false;
+      const flags = String(r.f || '');
+      if (tab === 'low') {
+        // Tồn thấp / hết hàng
+        if (!(flags.includes('low') || r.fillClass === 'warn' || r.fillClass === 'danger')) return false;
+        // Ưu tiên lô còn liên quan tồn (không chỉ hết hạn còn nhiều)
+        if (flags.includes('expiring') && !flags.includes('low') && (r.stock || 0) > 0 && r.fillClass === 'ok') {
+          return false;
+        }
+      } else if (tab === 'expiring') {
+        if (!(flags.includes('expiring') || String(r.status || '').toUpperCase() === 'NEAR_EXPIRY' || String(r.status || '').toUpperCase() === 'EXPIRED')) {
+          return false;
+        }
+      } else if (tab === 'ok') {
+        if (!(flags.includes('ok') || r.fillClass === 'ok')) return false;
+        if (flags.includes('low') || flags.includes('expiring') || flags.includes('danger')) return false;
       }
       if (q && !`${r.name} ${r.batch} ${r.cat}`.toLowerCase().includes(q.toLowerCase())) return false;
       return true;

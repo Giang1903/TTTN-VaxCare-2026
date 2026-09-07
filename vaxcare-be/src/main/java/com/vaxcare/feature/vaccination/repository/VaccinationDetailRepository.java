@@ -13,17 +13,23 @@ import java.util.List;
 public interface VaccinationDetailRepository extends JpaRepository<VaccinationDetail, Long> {
 
     boolean existsByAppointment_AppointmentId(Long appointmentId);
-
-    java.util.Optional<VaccinationDetail> findByAppointment_AppointmentId(Long appointmentId);
-
+    java.util.Optional<VaccinationDetail> findFirstByAppointment_AppointmentIdOrderByDetailIdDesc(Long appointmentId);
     long countByHistory_HistoryIdAndVaccine_VaccineIdAndResultNot(
             Long historyId, Long vaccineId, VaccinationResult excludedResult);
-
     long countByHistory_User_UserIdAndResult(Long userId, VaccinationResult result);
 
     long countByResultAndInjectionDateBetween(VaccinationResult result, java.time.LocalDate from, java.time.LocalDate to);
-
-    /** Số mũi đã tiêm thành công theo user + vaccine (phục vụ giới hạn phác đồ khi đặt lịch). */
+    @Query("""
+        SELECT COUNT(d) FROM VaccinationDetail d
+        WHERE (:facilityId IS NULL OR d.appointment.facility.facilityId = :facilityId)
+          AND d.result = :result
+          AND d.injectionDate BETWEEN :fromDate AND :toDate
+        """)
+    long countByFacilityAndResultAndDateBetween(
+            @Param("facilityId") Long facilityId,
+            @Param("result") VaccinationResult result,
+            @Param("fromDate") java.time.LocalDate fromDate,
+            @Param("toDate") java.time.LocalDate toDate);
     @Query("""
         SELECT COUNT(d) FROM VaccinationDetail d
         WHERE d.history.user.userId = :userId
@@ -118,7 +124,6 @@ public interface VaccinationDetailRepository extends JpaRepository<VaccinationDe
 
     /**
      * Mũi FAILED gần nhất của user + vaccine + cơ sở, trong khoảng từ fromDate trở đi
-     * (phục vụ đặt lại miễn phí trong 14 ngày).
      */
     @Query("""
         SELECT d FROM VaccinationDetail d

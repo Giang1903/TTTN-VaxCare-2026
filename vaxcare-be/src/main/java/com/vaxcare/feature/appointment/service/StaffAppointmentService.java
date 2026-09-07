@@ -3,6 +3,7 @@ package com.vaxcare.feature.appointment.service;
 import com.vaxcare.utils.QRCodeUtil;
 
 import com.vaxcare.common.enums.AppointmentStatus;
+import com.vaxcare.common.enums.PaymentStatus;
 import com.vaxcare.common.enums.Role;
 import com.vaxcare.common.exception.BadRequestException;
 import com.vaxcare.common.exception.ResourceNotFoundException;
@@ -10,6 +11,8 @@ import com.vaxcare.common.exception.UnauthorizedException;
 import com.vaxcare.feature.appointment.dto.AppointmentResponse;
 import com.vaxcare.feature.appointment.entity.Appointment;
 import com.vaxcare.feature.appointment.repository.AppointmentRepository;
+import com.vaxcare.feature.appointment.repository.PaymentRepository;
+import com.vaxcare.feature.appointment.entity.Payment;
 import com.vaxcare.feature.vaccination.repository.VaccinationDetailRepository;
 import com.vaxcare.feature.auth.entity.Account;
 import com.vaxcare.feature.auth.entity.MedicalStaff;
@@ -30,6 +33,7 @@ import java.util.Set;
 public class StaffAppointmentService {
 
     private final AppointmentRepository appointmentRepository;
+    private final PaymentRepository paymentRepository;
     private final AccountRepository accountRepository;
     private final AppointmentService appointmentService;
     private final VaccinationDetailRepository vaccinationDetailRepository;
@@ -69,8 +73,9 @@ public class StaffAppointmentService {
                     "Chỉ có thể xác nhận lịch hẹn đang ở trạng thái PENDING (hiện tại: " + appointment.getStatus() + ")");
         }
 
+        assertPaidOrFree(appointment);
+
         appointment.setStatus(AppointmentStatus.CONFIRMED);
-        // Lịch miễn phí / confirm bởi staff: sinh QR nếu chưa có (QR chuẩn sau thanh toán VNPay)
         if (appointment.getQrCode() == null || appointment.getQrCode().isBlank()) {
             appointment.setQrCode(QRCodeUtil.generateToken());
         }
@@ -107,6 +112,7 @@ public class StaffAppointmentService {
                             + appointment.getStatus() + ")");
         }
 
+        assertPaidOrFree(appointment);
         assertCheckinTimeWindow(appointment);
 
         appointment.setStatus(AppointmentStatus.CHECKED_IN);
@@ -145,13 +151,6 @@ public class StaffAppointmentService {
     }
 
     // ===================== HOÀN TẤT TIÊM CHỦNG (TRỪ KHO TỰ ĐỘNG) =====================
-
-    /**
-     * Endpoint "hoàn tất nhanh" (không cần Staff nhập chi tiết dose_number/kết quả/ghi chú).
-     * Từ 29/08: ủy quyền toàn bộ nghiệp vụ (trừ kho FEFO, tạo VaccinationHistory/VaccinationDetail,
-     * sinh certificate_code, chuyển appointment sang COMPLETED) cho VaccinationService, tránh trùng lặp
-     * logic với POST /api/v1/vaccinations/record - vốn cho phép nhập chi tiết đầy đủ hơn.
-     */
     @Transactional
     public AppointmentResponse completeVaccination(Long appointmentId, Long currentAccountId) {
         vaccinationService.recordVaccination(
@@ -183,11 +182,8 @@ public class StaffAppointmentService {
         appointment.setNote(normalized);
         assignStaffIfPossible(account, appointment);
         Appointment saved = appointmentRepository.save(appointment);
-
-        // Đồng bộ ghi chú staff → vaccination_detail (user xem chi tiết mũi)
-        // Biến final để dùng trong lambda
         final String noteForDetail = normalized;
-        vaccinationDetailRepository.findByAppointment_AppointmentId(appointmentId)
+        vaccinationDetailRepository.findFirstByAppointment_AppointmentIdOrderByDetailIdDesc(appointmentId)
                 .ifPresent(detail -> {
                     detail.setNote(noteForDetail);
                     vaccinationDetailRepository.save(detail);
@@ -203,7 +199,7 @@ public class StaffAppointmentService {
             MedicalStaff staff = requireStaffProfile(account);
             return staff.getFacility().getFacilityId();
         }
-        return requestedFacilityId; // ADMIN: null = xem tất cả cơ sở
+        return requestedFacilityId; 
     }
 
     private void checkFacilityScope(Account account, Appointment appointment) {
@@ -213,7 +209,27 @@ public class StaffAppointmentService {
                 throw new UnauthorizedException("Bạn chỉ được quản lý lịch hẹn thuộc cơ sở tiêm chủng của mình!");
             }
         }
-        // ADMIN: không giới hạn theo cơ sở
+    }
+
+
+    /**
+     * Phải thanh toán SUCCESS (hoặc giá 0 = miễn phí / free rebook) mới confirm / check-in / tiêm.
+     */
+    private void assertPaidOrFree(Appointment appointment) {
+        java.math.BigDecimal price = appointment.getPrice();
+        boolean free = price == null || price.compareTo(java.math.BigDecimal.ZERO) == 0;
+        if (free) {
+            return;
+        }
+        Payment payment = paymentRepository.findByAppointment_AppointmentId(appointment.getAppointmentId())
+                .orElse(null);
+        boolean paid = payment != null && payment.getStatus() == PaymentStatus.SUCCESS;
+        if (!paid) {
+            String payState = payment == null ? "chưa có giao dịch" : String.valueOf(payment.getStatus());
+            throw new BadRequestException(
+                    "Lịch hẹn chưa thanh toán thành công (" + payState + "). "
+                            + "Yêu cầu khách thanh toán trước khi xác nhận / check-in / ghi nhận tiêm.");
+        }
     }
 
     private void assignStaffIfPossible(Account account, Appointment appointment) {

@@ -8,9 +8,21 @@ import { formatTime } from '../../utils/format';
 
 const MONTHS = ['Th1', 'Th2', 'Th3', 'Th4', 'Th5', 'Th6', 'Th7', 'Th8', 'Th9', 'Th10', 'Th11', 'Th12'];
 
-/** Map backend AppointmentStatus → filter group + UI labels */
-function mapStatus(apiStatus) {
+/** Map backend AppointmentStatus + vaccinationResult → filter group + UI labels */
+function mapStatus(apiStatus, vaccinationResult) {
   const s = (apiStatus || '').toUpperCase();
+  const result = String(vaccinationResult || '').toUpperCase();
+
+  // COMPLETED + FAILED: lịch đã xử lý nhưng không tiêm được
+  if (s === 'COMPLETED' && result === 'FAILED') {
+    return {
+      status: 'failed',
+      statusLabel: 'Không tiêm được',
+      dateStyle: { background: '#fff7ed' },
+      dayStyle: { color: '#c2410c' },
+      monthStyle: { color: '#ea580c' },
+    };
+  }
   if (s === 'COMPLETED') {
     return {
       status: 'completed',
@@ -60,7 +72,7 @@ function mapAppointment(raw) {
     }
   }
 
-  const ui = mapStatus(raw.status);
+  const ui = mapStatus(raw.status, raw.vaccinationResult);
   const timeLabel = formatSlot(raw.timeSlot);
   const facilityPart = raw.facilityName || 'Cơ sở VaxCare';
   const line1 = timeLabel ? `${facilityPart} · ${timeLabel}` : facilityPart;
@@ -68,6 +80,9 @@ function mapAppointment(raw) {
   let line2 = null;
   if (ui.status === 'completed') {
     line2 = 'Đã tiêm';
+  } else if (ui.status === 'failed') {
+    const reason = raw.note;
+    line2 = reason ? `Lý do: ${reason}` : 'Không tiêm được';
   } else if (ui.status === 'cancelled') {
     const reason = raw.cancellationReason || raw.note;
     line2 = reason ? `Lý do hủy: ${reason}` : 'Đã hủy';
@@ -98,6 +113,9 @@ function mapAppointment(raw) {
     vaccineId: raw.vaccineId,
     cancelledNote: ui.status === 'cancelled' ? (raw.cancellationReason || null) : null,
     rawStatus: raw.status,
+    vaccinationResult: raw.vaccinationResult || null,
+    vaccinationDetailId: raw.vaccinationDetailId || null,
+    hasCertificate: raw.hasCertificate === true,
     appointmentDate: raw.appointmentDate,
     timeSlot: raw.timeSlot,
     paid: raw.paid === true || String(raw.paymentStatus || '').toUpperCase() === 'SUCCESS',
@@ -142,7 +160,13 @@ export default function AppointmentsPage() {
   }, [load]);
 
   const filtered = useMemo(
-    () => (filter === 'all' ? items : items.filter((a) => a.status === filter)),
+    () => {
+      if (filter === 'all') return items;
+      if (filter === 'cancelled') {
+        return items.filter((a) => a.status === 'cancelled' || a.status === 'failed');
+      }
+      return items.filter((a) => a.status === filter);
+    },
     [filter, items],
   );
 

@@ -6,7 +6,9 @@ import com.vaxcare.common.enums.Role;
 import com.vaxcare.common.exception.BadRequestException;
 import com.vaxcare.common.exception.ResourceNotFoundException;
 import com.vaxcare.feature.appointment.entity.Appointment;
+import com.vaxcare.common.enums.VaccinationResult;
 import com.vaxcare.feature.appointment.repository.AppointmentRepository;
+import com.vaxcare.feature.vaccination.repository.VaccinationDetailRepository;
 import com.vaxcare.feature.auth.entity.Account;
 import com.vaxcare.feature.auth.entity.MedicalStaff;
 import com.vaxcare.feature.auth.repository.AccountRepository;
@@ -34,6 +36,7 @@ public class StaffReportService {
     private final AppointmentRepository appointmentRepository;
     private final ReactionRepository reactionRepository;
     private final AccountRepository accountRepository;
+    private final VaccinationDetailRepository vaccinationDetailRepository;
 
     // -------------------------------------------------------------------------
     // Public API
@@ -68,13 +71,18 @@ public class StaffReportService {
         }
 
         long appointments = statusCounts.values().stream().mapToLong(Long::longValue).sum();
-        long completed = statusCounts.getOrDefault(AppointmentStatus.COMPLETED, 0L);
+        // COMPLETED appointment gồm cả SUCCESS và FAILED — KPI "mũi hoàn thành" chỉ đếm SUCCESS
+        long completed = vaccinationDetailRepository.countByFacilityAndResultAndDateBetween(
+                scope.facilityId(), VaccinationResult.SUCCESS, fromDate, toDate);
+        long failed = vaccinationDetailRepository.countByFacilityAndResultAndDateBetween(
+                scope.facilityId(), VaccinationResult.FAILED, fromDate, toDate);
         long cancelled = statusCounts.getOrDefault(AppointmentStatus.CANCELLED, 0L)
                 + statusCounts.getOrDefault(AppointmentStatus.NO_SHOW, 0L);
         long checkedIn = statusCounts.getOrDefault(AppointmentStatus.CHECKED_IN, 0L);
         long pending = statusCounts.getOrDefault(AppointmentStatus.PENDING, 0L);
         long confirmed = statusCounts.getOrDefault(AppointmentStatus.CONFIRMED, 0L);
 
+        // Tỷ lệ hoàn thành = mũi SUCCESS / tổng lịch (không tính FAILED là hoàn thành tiêm)
         double completionRate = appointments == 0
                 ? 0.0
                 : Math.round(completed * 1000.0 / appointments) / 10.0;
@@ -89,6 +97,7 @@ public class StaffReportService {
         StaffReportKpi kpi = StaffReportKpi.builder()
                 .appointments(appointments)
                 .completed(completed)
+                .failed(failed)
                 .cancelled(cancelled)
                 .checkedIn(checkedIn)
                 .pending(pending)
