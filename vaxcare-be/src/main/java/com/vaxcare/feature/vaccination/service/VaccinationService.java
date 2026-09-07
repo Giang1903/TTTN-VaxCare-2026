@@ -17,6 +17,7 @@ import com.vaxcare.feature.auth.entity.User;
 import com.vaxcare.feature.auth.repository.AccountRepository;
 import com.vaxcare.feature.inventory.entity.VaccineBatch;
 import com.vaxcare.feature.inventory.service.InventoryService;
+import com.vaxcare.feature.dashboard.service.AuditLogWriter;
 import com.vaxcare.feature.notification.service.VaccinationReminderService;
 import com.vaxcare.feature.vaccination.dto.RecordVaccinationRequest;
 import com.vaxcare.feature.vaccination.dto.VaccinationDetailResponse;
@@ -49,6 +50,7 @@ public class VaccinationService {
     private final VaccinationDetailRepository detailRepository;
     private final InventoryService inventoryService;
     private final VaccinationReminderService reminderService;
+    private final AuditLogWriter auditLogWriter;
 
     // ===================== GHI NHẬN KẾT QUẢ TIÊM (STAFF) =====================
 
@@ -58,6 +60,10 @@ public class VaccinationService {
         Appointment appointment = findAppointmentOrThrow(request.getAppointmentId());
         checkFacilityScope(account, appointment);
 
+        if (appointment.getStatus() == AppointmentStatus.COMPLETED) {
+            throw new BadRequestException(
+                    "Lịch hẹn này đã được ghi nhận tiêm trước đó. Không ghi nhận trùng.");
+        }
         if (appointment.getStatus() != AppointmentStatus.CHECKED_IN) {
             throw new BadRequestException(
                     "Chỉ có thể ghi nhận kết quả tiêm cho lịch hẹn đang ở trạng thái CHECKED_IN (hiện tại: "
@@ -76,7 +82,7 @@ public class VaccinationService {
             }
         }
         if (detailRepository.existsByAppointment_AppointmentId(appointment.getAppointmentId())) {
-            throw new BadRequestException("Lịch hẹn này đã được ghi nhận kết quả tiêm trước đó");
+            throw new BadRequestException("Lịch hẹn này đã được ghi nhận kết quả tiêm trước đó. Không ghi nhận trùng (có thể do bấm Xác nhận nhiều lần).");
         }
 
         User user = appointment.getUser();
@@ -134,6 +140,24 @@ public class VaccinationService {
         appointment.setStatus(AppointmentStatus.COMPLETED);
         assignStaffIfPossible(account, appointment);
         appointmentRepository.save(appointment);
+
+        try {
+            String summary = String.format(
+                    "appointmentId=%d,vaccineId=%d,result=%s,dose=%d,batch=%s",
+                    appointment.getAppointmentId(),
+                    vaccineId,
+                    result,
+                    doseNumber,
+                    batch != null ? batch.getBatchNumber() : "n/a");
+            auditLogWriter.write(
+                    "RECORD_VACCINATION",
+                    "VACCINATION",
+                    detail.getDetailId(),
+                    null,
+                    summary);
+        } catch (Exception ignored) {
+            // không làm fail ghi nhận tiêm
+        }
 
         return mapToResponse(detail);
     }
@@ -227,6 +251,10 @@ public class VaccinationService {
     }
 
 
+    /**
+     * Ghi chú hiển thị cho user: ưu tiên note lúc ghi nhận tiêm,
+     * nếu trống thì lấy ghi chú staff trên lịch hẹn (appointment.note).
+     */
     private String resolveDisplayNote(VaccinationDetail detail) {
         if (detail.getNote() != null && !detail.getNote().isBlank()) {
             return detail.getNote().trim();

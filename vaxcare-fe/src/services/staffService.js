@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-assignment */
 import { apiClient } from "./apiClient";
 
 /** Map BE AppointmentStatus -> UI status key */

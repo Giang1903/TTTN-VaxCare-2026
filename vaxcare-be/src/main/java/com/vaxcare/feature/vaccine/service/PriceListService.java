@@ -11,6 +11,7 @@ import com.vaxcare.feature.vaccine.entity.PriceList;
 import com.vaxcare.feature.vaccine.entity.Vaccine;
 import com.vaxcare.feature.vaccine.repository.PriceListRepository;
 import com.vaxcare.feature.vaccine.repository.VaccineRepository;
+import com.vaxcare.feature.dashboard.service.AuditLogWriter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ public class PriceListService {
     private final PriceListRepository priceListRepository;
     private final VaccineRepository vaccineRepository;
     private final VaccinationFacilityRepository facilityRepository;
+    private final AuditLogWriter auditLogWriter;
 
     @Transactional(readOnly = true)
     public List<PriceListResponse> getCurrentPrices(Long vaccineId, Long facilityId) {
@@ -84,7 +86,23 @@ public class PriceListService {
                 .status(newStatus)
                 .build();
 
-        return mapToResponse(priceListRepository.save(priceList));
+        PriceList saved = priceListRepository.save(priceList);
+        try {
+            String summary = String.format(
+                    "vaccineId=%d,facilityId=%s,price=%s,effective=%s",
+                    vaccine.getVaccineId(),
+                    request.getFacilityId(),
+                    saved.getPrice(),
+                    saved.getEffectiveDate());
+            auditLogWriter.write(
+                    "CREATE_PRICE",
+                    "CONFIG",
+                    saved.getPriceListId(),
+                    null,
+                    summary);
+        } catch (Exception ignored) {
+        }
+        return mapToResponse(saved);
     }
 
     /**
@@ -119,6 +137,15 @@ public class PriceListService {
             priceList.setExpiryDate(LocalDate.now().minusDays(1));
         }
         priceListRepository.save(priceList);
+        try {
+            auditLogWriter.write(
+                    "DEACTIVATE_PRICE",
+                    "CONFIG",
+                    priceListId,
+                    String.valueOf(priceList.getPrice()),
+                    "INACTIVE");
+        } catch (Exception ignored) {
+        }
     }
 
     private Vaccine findVaccineOrThrow(Long vaccineId) {

@@ -27,6 +27,7 @@ export default function StaffVaccinationPage() {
   const [staffNote, setStaffNote] = useState('');
   const [q, setQ] = useState('');
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   const toLocalDateString = (d = new Date()) => {
     const y = d.getFullYear();
@@ -244,7 +245,9 @@ export default function StaffVaccinationPage() {
   };
 
   const handleSubmit = async () => {
-    if (!patient) return;
+    if (!patient || submitting) return;
+    // Chặn double-click khi lag
+    setSubmitting(true);
     try {
       const detail = await staffService.recordVaccination({
         appointmentId: patient.id,
@@ -270,6 +273,8 @@ export default function StaffVaccinationPage() {
       setQueue((list) => list.filter((p) => p.id !== patient.id));
     } catch (err) {
       showToast(err.message || 'Ghi nhận tiêm thất bại', 'warn');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -470,8 +475,8 @@ export default function StaffVaccinationPage() {
                     <button type="button" className="btn outline" onClick={() => showToast('Đã hủy phiếu ghi nhận hiện tại', 'warn')}>
                       Hủy
                     </button>
-                    <button type="button" className="btn primary" onClick={handleSubmit} disabled={!hasPatient}>
-                      Xác nhận
+                    <button type="button" className="btn primary" onClick={handleSubmit} disabled={!hasPatient || submitting}>
+                      {submitting ? 'Đang ghi nhận…' : 'Xác nhận'}
                     </button>
                   </div>
                 </div>
