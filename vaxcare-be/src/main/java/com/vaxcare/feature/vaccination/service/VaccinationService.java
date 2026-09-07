@@ -8,12 +8,16 @@ import com.vaxcare.common.exception.ResourceNotFoundException;
 import com.vaxcare.common.exception.UnauthorizedException;
 import com.vaxcare.feature.appointment.entity.Appointment;
 import com.vaxcare.feature.appointment.repository.AppointmentRepository;
+import com.vaxcare.feature.appointment.repository.PaymentRepository;
+import com.vaxcare.feature.appointment.entity.Payment;
+import com.vaxcare.common.enums.PaymentStatus;
 import com.vaxcare.feature.auth.entity.Account;
 import com.vaxcare.feature.auth.entity.MedicalStaff;
 import com.vaxcare.feature.auth.entity.User;
 import com.vaxcare.feature.auth.repository.AccountRepository;
 import com.vaxcare.feature.inventory.entity.VaccineBatch;
 import com.vaxcare.feature.inventory.service.InventoryService;
+import com.vaxcare.feature.dashboard.service.AuditLogWriter;
 import com.vaxcare.feature.notification.service.VaccinationReminderService;
 import com.vaxcare.feature.vaccination.dto.RecordVaccinationRequest;
 import com.vaxcare.feature.vaccination.dto.VaccinationDetailResponse;
@@ -36,17 +40,17 @@ import java.util.UUID;
 @SuppressWarnings("null")
 public class VaccinationService {
 
-    // Chỉ trừ kho khi mũi tiêm thực sự được đưa vào người (SUCCESS). FAILED (vd: hoãn tiêm vì
-    // phản ứng bất thường/chống chỉ định phát hiện tại chỗ) thì không trừ kho.
     private static final Set<VaccinationResult> STOCK_DEDUCTING_RESULTS =
             Set.of(VaccinationResult.SUCCESS);
 
     private final AppointmentRepository appointmentRepository;
+    private final PaymentRepository paymentRepository;
     private final AccountRepository accountRepository;
     private final VaccinationHistoryRepository historyRepository;
     private final VaccinationDetailRepository detailRepository;
     private final InventoryService inventoryService;
     private final VaccinationReminderService reminderService;
+    private final AuditLogWriter auditLogWriter;
 
     // ===================== GHI NHẬN KẾT QUẢ TIÊM (STAFF) =====================
 
@@ -56,13 +60,29 @@ public class VaccinationService {
         Appointment appointment = findAppointmentOrThrow(request.getAppointmentId());
         checkFacilityScope(account, appointment);
 
+        if (appointment.getStatus() == AppointmentStatus.COMPLETED) {
+            throw new BadRequestException(
+                    "Lịch hẹn này đã được ghi nhận tiêm trước đó. Không ghi nhận trùng.");
+        }
         if (appointment.getStatus() != AppointmentStatus.CHECKED_IN) {
             throw new BadRequestException(
                     "Chỉ có thể ghi nhận kết quả tiêm cho lịch hẹn đang ở trạng thái CHECKED_IN (hiện tại: "
                             + appointment.getStatus() + ")");
         }
+        // Bắt buộc đã thanh toán (trừ lịch giá 0 / free rebook)
+        java.math.BigDecimal price = appointment.getPrice();
+        boolean free = price == null || price.compareTo(java.math.BigDecimal.ZERO) == 0;
+        if (!free) {
+            Payment payment = paymentRepository.findByAppointment_AppointmentId(appointment.getAppointmentId())
+                    .orElse(null);
+            boolean paid = payment != null && payment.getStatus() == PaymentStatus.SUCCESS;
+            if (!paid) {
+                throw new BadRequestException(
+                        "Lịch hẹn chưa thanh toán thành công — không thể ghi nhận tiêm.");
+            }
+        }
         if (detailRepository.existsByAppointment_AppointmentId(appointment.getAppointmentId())) {
-            throw new BadRequestException("Lịch hẹn này đã được ghi nhận kết quả tiêm trước đó");
+            throw new BadRequestException("Lịch hẹn này đã được ghi nhận kết quả tiêm trước đó. Không ghi nhận trùng (có thể do bấm Xác nhận nhiều lần).");
         }
 
         User user = appointment.getUser();
@@ -78,8 +98,6 @@ public class VaccinationService {
                 : (int) detailRepository.countByHistory_HistoryIdAndVaccine_VaccineIdAndResultNot(
                         history.getHistoryId(), vaccineId, VaccinationResult.FAILED) + 1;
 
-        // Nếu không đủ tồn kho, deductStockForVaccination ném BadRequestException -> @Transactional
-        // rollback toàn bộ (không tạo VaccinationDetail, không đổi trạng thái lịch hẹn).
         VaccineBatch batch = STOCK_DEDUCTING_RESULTS.contains(result)
                 ? inventoryService.deductStockForVaccination(appointment.getFacility().getFacilityId(), vaccineId, 1)
                 : null;
@@ -111,9 +129,7 @@ public class VaccinationService {
         }
 
         if (STOCK_DEDUCTING_RESULTS.contains(result)) {
-            // Chỉ tính/nhắc mũi tiếp theo khi mũi này thực sự được tiêm (SUCCESS)
             reminderService.createNextDoseNotificationIfApplicable(detail);
-            // Hệ thống chủ động gửi khảo sát / theo dõi sau tiêm (24–72h)
             try {
                 reminderService.notifyPostVaccinationSurvey(detail);
             } catch (Exception ex) {
@@ -125,6 +141,24 @@ public class VaccinationService {
         assignStaffIfPossible(account, appointment);
         appointmentRepository.save(appointment);
 
+        try {
+            String summary = String.format(
+                    "appointmentId=%d,vaccineId=%d,result=%s,dose=%d,batch=%s",
+                    appointment.getAppointmentId(),
+                    vaccineId,
+                    result,
+                    doseNumber,
+                    batch != null ? batch.getBatchNumber() : "n/a");
+            auditLogWriter.write(
+                    "RECORD_VACCINATION",
+                    "VACCINATION",
+                    detail.getDetailId(),
+                    null,
+                    summary);
+        } catch (Exception ignored) {
+            // không làm fail ghi nhận tiêm
+        }
+
         return mapToResponse(detail);
     }
 
@@ -134,15 +168,12 @@ public class VaccinationService {
     public VaccinationHistoryResponse getHistoryByUserId(Long userId, Long currentAccountId) {
         Account currentAccount = findAccountOrThrow(currentAccountId);
 
-        // USER chỉ được xem lịch sử của chính mình. MEDICAL_STAFF/ADMIN xem được của bất kỳ ai
-        // (phục vụ tra cứu trước khi tiêm và xử lý phản ứng sau tiêm).
         if (currentAccount.getRole() == Role.USER && !userId.equals(currentAccountId)) {
             throw new UnauthorizedException("Bạn chỉ được xem lịch sử tiêm chủng của chính mình!");
         }
 
         VaccinationHistory history = historyRepository.findByUser_UserId(userId).orElse(null);
         if (history == null) {
-            // Người dùng chưa từng tiêm mũi nào trên hệ thống -> trả về lịch sử rỗng thay vì lỗi 404
             Account ownerAccount = findAccountOrThrow(userId);
             String fullName = ownerAccount.getUser() != null ? ownerAccount.getUser().getFullName() : null;
             return VaccinationHistoryResponse.builder()

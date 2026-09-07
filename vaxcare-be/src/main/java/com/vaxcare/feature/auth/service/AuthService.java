@@ -13,6 +13,7 @@ import com.vaxcare.feature.auth.entity.User;
 import com.vaxcare.feature.auth.repository.AccountRepository;
 import com.vaxcare.feature.auth.repository.UserRepository;
 import com.vaxcare.feature.notification.service.EmailService;
+import com.vaxcare.feature.dashboard.service.AuditLogWriter;
 import com.vaxcare.security.JwtTokenProvider;
 import com.vaxcare.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
     private final EmailService emailService;
+    private final AuditLogWriter auditLogWriter;
 
     @Transactional
     public AccountResponse register(RegisterRequest request) {
@@ -172,6 +174,18 @@ public class AuthService {
             throw new BadRequestException(
                     "Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email và bấm link xác nhận.");
         } catch (AuthenticationException e) {
+            try {
+                Long accId = accountRepository.findByEmail(request.getEmail())
+                        .map(Account::getAccountId)
+                        .orElse(null);
+                auditLogWriter.write(
+                        "LOGIN_FAILED",
+                        "SECURITY",
+                        accId,
+                        null,
+                        request.getEmail());
+            } catch (Exception ignored) {
+            }
             throw new BadRequestException("Email hoặc mật khẩu không đúng.");
         }
 

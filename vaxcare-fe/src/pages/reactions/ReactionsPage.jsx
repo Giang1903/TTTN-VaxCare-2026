@@ -86,8 +86,13 @@ export default function ReactionsPage() {
   }, [load]);
 
   const doseOptions = useMemo(() => {
+    // Chỉ mũi SUCCESS mới được báo phản ứng sau tiêm (FAILED = chưa tiêm)
     return details
-      .filter((d) => d.detailId)
+      .filter((d) => {
+        if (!d.detailId) return false;
+        const r = String(d.result || 'SUCCESS').toUpperCase();
+        return r === 'SUCCESS' || r === 'PARTIAL';
+      })
       .map((d) => {
         const dose = d.doseNumber != null ? `Mũi ${d.doseNumber}` : '';
         const name = [d.vaccineName, dose].filter(Boolean).join(' – ') || `Mũi #${d.detailId}`;

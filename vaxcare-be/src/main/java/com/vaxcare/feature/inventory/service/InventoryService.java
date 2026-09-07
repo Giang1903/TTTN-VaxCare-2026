@@ -20,6 +20,7 @@ import com.vaxcare.feature.inventory.repository.VaccineBatchRepository;
 import com.vaxcare.feature.inventory.repository.VaccineInventoryRepository;
 import com.vaxcare.feature.vaccine.entity.Vaccine;
 import com.vaxcare.feature.vaccine.repository.VaccineRepository;
+import com.vaxcare.feature.dashboard.service.AuditLogWriter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +39,7 @@ public class InventoryService {
     private final VaccinationFacilityRepository facilityRepository;
     private final VaccineRepository vaccineRepository;
     private final AccountRepository accountRepository;
+    private final AuditLogWriter auditLogWriter;
 
     // ===================== NHẬP LÔ VẮC XIN =====================
 
@@ -69,7 +71,24 @@ public class InventoryService {
                 .status(BatchStatus.AVAILABLE)
                 .build();
 
-        return mapBatchToResponse(batchRepository.save(batch));
+        VaccineBatch saved = batchRepository.save(batch);
+        try {
+            String summary = String.format(
+                    "facilityId=%d,vaccineId=%d,batch=%s,qty=%d,expiry=%s",
+                    request.getFacilityId(),
+                    request.getVaccineId(),
+                    saved.getBatchNumber(),
+                    saved.getImportedQuantity(),
+                    saved.getExpiryDate());
+            auditLogWriter.write(
+                    "IMPORT_BATCH",
+                    "INVENTORY",
+                    saved.getBatchId(),
+                    null,
+                    summary);
+        } catch (Exception ignored) {
+        }
+        return mapBatchToResponse(saved);
     }
 
     // ===================== XEM DANH SÁCH LÔ =====================
@@ -160,8 +179,18 @@ public class InventoryService {
         assertFacilityAccess(currentAccountId, facilityId);
         VaccinationFacility facility = findFacilityOrThrow(facilityId);
         VaccineInventory inventory = getOrCreateInventory(facility);
+        Integer oldThr = inventory.getAlertThreshold();
         inventory.setAlertThreshold(request.getAlertThreshold());
         inventoryRepository.save(inventory);
+        try {
+            auditLogWriter.write(
+                    "UPDATE_ALERT_THRESHOLD",
+                    "INVENTORY",
+                    inventory.getInventoryId(),
+                    oldThr != null ? String.valueOf(oldThr) : null,
+                    String.valueOf(request.getAlertThreshold()));
+        } catch (Exception ignored) {
+        }
     }
 
     // ===================== TRỪ KHO TỰ ĐỘNG KHI HOÀN TẤT TIÊM CHỦNG =====================
@@ -198,6 +227,22 @@ public class InventoryService {
         }
 
         batchRepository.saveAll(batches);
+        try {
+            String summary = String.format(
+                    "facilityId=%d,vaccineId=%d,qty=%d,batch=%s,remaining=%d",
+                    facilityId,
+                    vaccineId,
+                    quantity,
+                    primaryBatch.getBatchNumber(),
+                    primaryBatch.getStockQuantity());
+            auditLogWriter.write(
+                    "DEDUCT_STOCK",
+                    "INVENTORY",
+                    primaryBatch.getBatchId(),
+                    null,
+                    summary);
+        } catch (Exception ignored) {
+        }
         return primaryBatch;
     }
 

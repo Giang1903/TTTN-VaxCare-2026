@@ -160,7 +160,10 @@ export default function RecordPage() {
             profile={user}
             recordCode={recordCode}
             updatedAt={updatedAt}
-            certificates={details.filter((d) => d.detailId)}
+            certificates={details.filter((d) => {
+              const r = String(d.result || 'SUCCESS').toUpperCase();
+              return d.detailId && (r === 'SUCCESS' || r === 'PARTIAL') && d.certificateCode;
+            })}
           />
         </div>
       </div>

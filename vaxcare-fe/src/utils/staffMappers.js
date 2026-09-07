@@ -9,7 +9,18 @@ const STATUS_UI = {
 
 export function mapAppointment(raw) {
   if (!raw) return null;
-  const ui = STATUS_UI[raw.status] || STATUS_UI.PENDING;
+  let ui = STATUS_UI[raw.status] || STATUS_UI.PENDING;
+
+  // COMPLETED + FAILED → hiển thị "Không tiêm được" (không nhầm với đã tiêm)
+  const vacResult = String(raw.vaccinationResult || "").toUpperCase();
+  if (String(raw.status || "").toUpperCase() === "COMPLETED" && vacResult === "FAILED") {
+    ui = {
+      status: "failed",
+      statusLabel: "Không tiêm được",
+      slotNote: "Không tiêm được",
+    };
+  }
+
   const name = raw.userFullName || "Khách hàng";
   const initials = name
     .split(/\s+/)
@@ -47,8 +58,12 @@ export function mapAppointment(raw) {
     ai: !!raw.recommendedByAi,
     note: raw.note || "",
     rawStatus: raw.status,
+    vaccinationResult: raw.vaccinationResult || null,
+    vaccinationDetailId: raw.vaccinationDetailId || null,
+    hasCertificate: raw.hasCertificate === true,
     staffName: raw.staffName,
     userId: raw.userId,
+    paid: raw.paid === true || String(raw.paymentStatus || "").toUpperCase() === "SUCCESS",
   };
 }
 

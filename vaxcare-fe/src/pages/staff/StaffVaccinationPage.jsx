@@ -27,6 +27,7 @@ export default function StaffVaccinationPage() {
   const [staffNote, setStaffNote] = useState('');
   const [q, setQ] = useState('');
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   const toLocalDateString = (d = new Date()) => {
     const y = d.getFullYear();
@@ -244,7 +245,9 @@ export default function StaffVaccinationPage() {
   };
 
   const handleSubmit = async () => {
-    if (!patient) return;
+    if (!patient || submitting) return;
+    // Chặn double-click khi lag
+    setSubmitting(true);
     try {
       const detail = await staffService.recordVaccination({
         appointmentId: patient.id,
@@ -252,14 +255,26 @@ export default function StaffVaccinationPage() {
         note: staffNote || undefined,
       });
       setDoneIds((prev) => new Set(prev).add(patient.id));
-      setLastDetailId(detail?.detailId ?? null);
-      setSuccessMsg(`Đã ghi nhận tiêm ${patient.vaccine} cho ${patient.name}`);
+      const isFailed = String(result || '').toUpperCase() === 'FAILED';
+      setLastDetailId(isFailed ? null : (detail?.detailId ?? null));
+      setSuccessMsg(
+        isFailed
+          ? `Đã ghi nhận: không tiêm được — ${patient.vaccine} · ${patient.name}`
+          : `Đã ghi nhận tiêm ${patient.vaccine} cho ${patient.name}`,
+      );
       setShowSuccess(true);
-      showToast(`Đã ghi nhận tiêm cho ${patient.name}`, 'ok');
+      showToast(
+        isFailed
+          ? `Đã ghi nhận không tiêm được cho ${patient.name}`
+          : `Đã ghi nhận tiêm cho ${patient.name}`,
+        isFailed ? 'warn' : 'ok',
+      );
       // refresh queue (remove completed)
       setQueue((list) => list.filter((p) => p.id !== patient.id));
     } catch (err) {
       showToast(err.message || 'Ghi nhận tiêm thất bại', 'warn');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -460,8 +475,8 @@ export default function StaffVaccinationPage() {
                     <button type="button" className="btn outline" onClick={() => showToast('Đã hủy phiếu ghi nhận hiện tại', 'warn')}>
                       Hủy
                     </button>
-                    <button type="button" className="btn primary" onClick={handleSubmit} disabled={!hasPatient}>
-                      Xác nhận đã tiêm
+                    <button type="button" className="btn primary" onClick={handleSubmit} disabled={!hasPatient || submitting}>
+                      {submitting ? 'Đang ghi nhận…' : 'Xác nhận'}
                     </button>
                   </div>
                 </div>
@@ -472,12 +487,14 @@ export default function StaffVaccinationPage() {
                       <path d="M20 6 9 17l-5-5" />
                     </svg>
                   </div>
-                  <h3>Ghi nhận tiêm thành công</h3>
+                  <h3>{lastDetailId ? 'Ghi nhận tiêm thành công' : 'Đã ghi nhận: không tiêm được'}</h3>
                   <p>{successMsg}</p>
                   <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-                    <button type="button" className="btn outline" onClick={downloadCert}>
-                      Tải chứng nhận PDF
-                    </button>
+                    {lastDetailId && (
+                      <button type="button" className="btn outline" onClick={downloadCert}>
+                        Tải chứng nhận PDF
+                      </button>
+                    )}
                     <button type="button" className="btn primary" onClick={nextPatient}>
                       Ca tiếp theo
                     </button>

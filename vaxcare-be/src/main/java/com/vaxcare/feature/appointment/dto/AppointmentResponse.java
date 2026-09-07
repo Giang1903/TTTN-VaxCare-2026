@@ -2,6 +2,7 @@ package com.vaxcare.feature.appointment.dto;
 
 import com.vaxcare.common.enums.AppointmentStatus;
 import com.vaxcare.common.enums.PaymentStatus;
+import com.vaxcare.common.enums.VaccinationResult;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -35,18 +36,13 @@ public class AppointmentResponse {
     private String qrCode;
     private String note;
     private LocalDateTime createdAt;
-
-    /** Trạng thái thanh toán gắn với lịch (null nếu chưa có bản ghi payment) */
     private PaymentStatus paymentStatus;
-
-    /** true khi paymentStatus == SUCCESS */
     private Boolean paid;
-
     private LocalDateTime cancelledAt;
     private String cancellationReason;
-
-    /** true nếu lịch này được đặt lại miễn phí sau mũi FAILED */
     private Boolean freeRebook;
-
     private String freeRebookMessage;
+    private VaccinationResult vaccinationResult;
+    private Long vaccinationDetailId;
+    private Boolean hasCertificate;
 }

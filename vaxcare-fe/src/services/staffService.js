@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-assignment */
 import { apiClient } from "./apiClient";
 
 /** Map BE AppointmentStatus -> UI status key */
@@ -32,12 +33,18 @@ export function mapAppointmentToUi(a) {
     a.price != null
       ? Number(a.price).toLocaleString("vi-VN") + "₫"
       : "";
-  const status = mapStatus(a.status);
+  // COMPLETED + FAILED → UI "Không tiêm được" (không hiện Hoàn thành)
+  const vacResult = String(a.vaccinationResult || "").toUpperCase();
+  let status = mapStatus(a.status);
+  if (String(a.status || "").toUpperCase() === "COMPLETED" && vacResult === "FAILED") {
+    status = "failed";
+  }
   const statusLabelMap = {
     pending: "Chờ xác nhận",
     confirmed: "Đã xác nhận",
     checkedin: "Đã check-in",
     completed: "Hoàn thành",
+    failed: "Không tiêm được",
     cancelled: "Đã hủy",
     noshow: "Vắng mặt",
   };
@@ -52,10 +59,14 @@ export function mapAppointmentToUi(a) {
   } else if (status === "checkedin") {
     action = "Ghi nhận tiêm";
     actionClass = "solid";
+  } else if (status === "failed") {
+    action = "Xem chi tiết";
+    actionClass = "done";
   }
   const meta = [a.vaccineName, a.note].filter(Boolean).join(" · ") || "";
   const paymentStatus = a.paymentStatus ? String(a.paymentStatus).toUpperCase() : null;
-  const paid = a.paid === true || paymentStatus === "SUCCESS";
+  const free = a.price != null && Number(a.price) === 0;
+  const paid = a.paid === true || paymentStatus === "SUCCESS" || free;
   let paymentLabel = "Chưa thanh toán";
   if (paymentStatus === "SUCCESS") paymentLabel = "Đã thanh toán";
   else if (paymentStatus === "PENDING") paymentLabel = "Chờ thanh toán";
@@ -86,6 +97,9 @@ export function mapAppointmentToUi(a) {
     paid,
     paymentStatus,
     paymentLabel,
+    vaccinationResult: a.vaccinationResult || null,
+    vaccinationDetailId: a.vaccinationDetailId || null,
+    hasCertificate: a.hasCertificate === true,
     cancelledAt: a.cancelledAt || null,
     cancellationReason: a.cancellationReason || "",
     _raw: a,
@@ -397,27 +411,82 @@ export function buildVaccineMix(rawList, limit = 6) {
     }));
 }
 
-/** Map VaccineBatchResponse -> inventory row / detail */
-export function mapBatchToUi(b) {
+/** Map VaccineBatchResponse -> inventory row / detail
+ * @param {object} b batch API
+ * @param {{ alertThreshold?: number|null, nearExpiryDays?: number }} [opts]
+ *   - alertThreshold: ngưỡng tồn thấp (liều) từ cấu hình cơ sở
+ *   - nearExpiryDays: số ngày còn lại để coi là sắp hết hạn (mặc định 90)
+ */
+export function mapBatchToUi(b, opts = {}) {
   const stock = b.stockQuantity ?? 0;
   const imported = b.importedQuantity ?? stock;
   const fill = imported > 0 ? Math.round((stock / imported) * 100) : 0;
-  let fillClass = "ok";
-  let tag = "";
-  let tagLabel = "";
-  let rowClass = "";
   const status = String(b.status || "").toUpperCase();
-  if (status === "EXPIRED" || stock <= 0) {
+  const nearExpiryDays = opts.nearExpiryDays != null ? Number(opts.nearExpiryDays) : 90;
+  const thr =
+    opts.alertThreshold != null && opts.alertThreshold !== ""
+      ? Number(opts.alertThreshold)
+      : null;
+
+  // Hạn dùng → số ngày còn lại
+  let daysLeft = null;
+  if (b.expiryDate) {
+    const iso = String(b.expiryDate).slice(0, 10);
+    const expD = new Date(`${iso}T00:00:00`);
+    if (!Number.isNaN(expD.getTime())) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      daysLeft = Math.ceil((expD - today) / (1000 * 60 * 60 * 24));
+    }
+  }
+
+  const isExpired =
+    status === "EXPIRED" || (daysLeft != null && daysLeft < 0) || stock <= 0;
+  const isNearExpiry =
+    !isExpired &&
+    (status === "NEAR_EXPIRY" ||
+      (daysLeft != null && daysLeft <= nearExpiryDays));
+  // Tồn thấp: dưới ngưỡng cơ sở (ưu tiên), fallback fill < 30% nếu chưa có ngưỡng
+  const isLowStock =
+    !isExpired &&
+    stock > 0 &&
+    ((thr != null && !Number.isNaN(thr) && stock < thr) ||
+      (thr == null && fill < 30));
+
+  let fillClass = "ok";
+  let tag = "ok";
+  let tagLabel = "Đủ hàng";
+  let rowClass = "";
+  const flags = [];
+
+  // Ưu tiên badge: Hết hạn > Sắp hết hạn > Tồn thấp > Đủ hàng
+  if (isExpired) {
     fillClass = "danger";
     tag = "danger";
-    tagLabel = "Hết / hết hạn";
+    tagLabel = stock <= 0 && !(daysLeft != null && daysLeft < 0) ? "Hết hàng" : "Hết hạn";
     rowClass = "danger-row";
-  } else if (status === "NEAR_EXPIRY" || fill < 30) {
+    flags.push("expiring", "danger");
+    if (stock <= 0) flags.push("low");
+  } else if (isNearExpiry) {
     fillClass = "warn";
     tag = "warn";
-    tagLabel = "Sắp hết / ưu tiên dùng";
+    tagLabel = isLowStock ? "Sắp hết hạn · Tồn thấp" : "Sắp hết hạn";
     rowClass = "warn-row";
+    flags.push("expiring", "warn");
+    if (isLowStock) flags.push("low");
+  } else if (isLowStock) {
+    fillClass = "warn";
+    tag = "warn";
+    tagLabel = "Tồn thấp";
+    rowClass = "warn-row";
+    flags.push("low", "warn");
+  } else {
+    fillClass = "ok";
+    tag = "ok";
+    tagLabel = "Đủ hàng";
+    flags.push("ok");
   }
+
   const exp = b.expiryDate
     ? String(b.expiryDate).split("-").reverse().join("/")
     : "";
@@ -442,9 +511,12 @@ export function mapBatchToUi(b) {
     exp,
     tag,
     tagLabel,
-    f: [tag, status.toLowerCase()].filter(Boolean).join(" "),
+    f: [...new Set([...flags, status.toLowerCase()])].filter(Boolean).join(" "),
     rowClass,
-    // detail
+    daysLeft,
+    isLowStock,
+    isNearExpiry,
+    isExpired,
     vax: b.vaccineName || "",
     stockLabel: `${stock} liều`,
     mfg,

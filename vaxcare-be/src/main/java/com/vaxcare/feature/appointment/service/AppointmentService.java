@@ -90,7 +90,6 @@ public class AppointmentService {
         boolean isToday = date.isEqual(LocalDate.now());
 
         while (cursor.isBefore(facility.getClosingTime())) {
-            // Bỏ qua các khung giờ đã trôi qua nếu đang tra cứu cho hôm nay
             if (!isToday || cursor.isAfter(now)) {
                 long booked = appointmentRepository.countBookingsInSlot(facilityId, date, cursor, null);
                 int capacity = facility.getCapacityPerSlot();
@@ -106,8 +105,6 @@ public class AppointmentService {
             }
             cursor = cursor.plusMinutes(SLOT_DURATION_MINUTES);
         }
-
-        // AI annotate lỗi không làm fail tra cứu slot (tránh UnexpectedRollbackException)
         try {
             return aiDispatchService.annotateSlots(facility, date, slots);
         } catch (Exception ex) {
@@ -192,7 +189,6 @@ public class AppointmentService {
                                 + "Vui lòng chọn vắc xin/cơ sở khác hoặc liên hệ quản trị để cập nhật giá.");
             }
         } else {
-            // Miễn phí: không thu tiền
             price = java.math.BigDecimal.ZERO;
         }
 
@@ -226,7 +222,6 @@ public class AppointmentService {
             aiDispatchService.applyAiMetadataOnBooking(saved);
             saved = appointmentRepository.save(saved);
         } catch (Exception ignored) {
-            // đã log trong AiDispatchService/AiServiceClient nếu có lỗi gọi AI
         }
 
         AppointmentResponse response = mapToResponse(saved);
@@ -248,12 +243,6 @@ public class AppointmentService {
             return new FreeRebookInfo(false, null);
         }
     }
-
-    /**
-     * Đủ điều kiện đặt lại miễn phí nếu:
-     * - Có mũi FAILED cùng user + vaccine + facility trong FREE_REBOOK_WINDOW_DAYS ngày gần nhất
-     * - Chưa dùng suất miễn phí (chưa có appointment price=0 sau thời điểm FAILED)
-     */
     private FreeRebookInfo resolveFreeRebookEligibility(Long userId, Long vaccineId, Long facilityId) {
         LocalDate fromDate = LocalDate.now().minusDays(FREE_REBOOK_WINDOW_DAYS);
         var failedList = vaccinationDetailRepository.findRecentFailedForRebook(
@@ -311,8 +300,6 @@ public class AppointmentService {
 
         appointment.setAppointmentDate(newDate);
         appointment.setTimeSlot(newTimeSlot);
-        // Không đổi facility / vaccine / price / qrCode / status (giữ CONFIRMED nếu đã thanh toán)
-
         return mapToResponse(appointmentRepository.save(appointment));
     }
 
@@ -329,7 +316,6 @@ public class AppointmentService {
         }
 
         if (isPastSlotEnd(appointment, LocalDateTime.now())) {
-            // Hủy luôn thay vì báo lỗi để UI đồng bộ với cron
             expireIfPastSlot(appointment, LocalDateTime.now());
             return mapToResponse(appointment);
         }
@@ -355,8 +341,6 @@ public class AppointmentService {
         appointment.setStatus(AppointmentStatus.CANCELLED);
         appointment.setCancelledAt(LocalDateTime.now());
         appointment.setCancellationReason(reason);
-
-        // Chỉ đánh FAILED cho payment đang PENDING; payment SUCCESS giữ nguyên (không hoàn tiền)
         if (payment != null && payment.getStatus() == PaymentStatus.PENDING) {
             payment.setStatus(PaymentStatus.FAILED);
             paymentRepository.save(payment);
@@ -418,11 +402,6 @@ public class AppointmentService {
         }
     }
 
-    /**
-     * Giới hạn đặt lịch theo phác đồ:
-     * - Không đặt thêm nếu đã tiêm/đặt đủ required_doses
-     * - Không đặt thêm nếu chưa tới ngày hẹn mũi tiếp theo (tính từ mốc tiêm/đặt gần nhất + dose_interval_days)
-     */
     private void enforceProtocolLimits(Long userId, Vaccine vaccine, LocalDate appointmentDate) {
         int required = vaccine.getRequiredDoses() != null && vaccine.getRequiredDoses() > 0
                 ? vaccine.getRequiredDoses()
@@ -575,6 +554,10 @@ public class AppointmentService {
         PaymentStatus paymentStatus = payment != null ? payment.getStatus() : null;
         boolean paid = paymentStatus == PaymentStatus.SUCCESS;
 
+        VaccinationDetail detail = vaccinationDetailRepository
+                .findFirstByAppointment_AppointmentIdOrderByDetailIdDesc(appointment.getAppointmentId())
+                .orElse(null);
+
         return AppointmentResponse.builder()
                 .appointmentId(appointment.getAppointmentId())
                 .userId(appointment.getUser().getUserId())
@@ -604,6 +587,12 @@ public class AppointmentService {
                                 && appointment.getPrice().compareTo(java.math.BigDecimal.ZERO) == 0
                                 && appointment.getNote() != null
                                 && appointment.getNote().contains("Đặt lại miễn phí"))
+                .vaccinationResult(detail != null ? detail.getResult() : null)
+                .vaccinationDetailId(detail != null ? detail.getDetailId() : null)
+                .hasCertificate(detail != null
+                        && detail.getResult() == com.vaxcare.common.enums.VaccinationResult.SUCCESS
+                        && detail.getCertificateCode() != null
+                        && !detail.getCertificateCode().isBlank())
                 .build();
     }
 }
