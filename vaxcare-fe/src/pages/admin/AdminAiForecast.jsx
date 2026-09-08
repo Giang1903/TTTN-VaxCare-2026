@@ -19,6 +19,7 @@ export default function AdminAiForecast() {
   const [forecasts, setForecasts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState(false);
+  const [stockAlert, setStockAlert] = useState(null); // { level, message, currentStock, totalPredicted }
 
   // Load facilities & vaccines list on mount
   useEffect(() => {
@@ -46,10 +47,35 @@ export default function AdminAiForecast() {
     setLoading(true);
     try {
       const res = await adminService.getAiForecasts(selectedVaccine, selectedFacility);
-      setForecasts(res || []);
+      // Hỗ trợ API mới { items, ... } và API cũ (mảng)
+      const list = Array.isArray(res) ? (res || []) : (res?.items || []);
+      setForecasts(list);
+
+      const stock = Array.isArray(res)
+        ? (list[0]?.actualQuantity ?? 0)
+        : (res?.currentStock ?? list[0]?.actualQuantity ?? 0);
+      const totalPred = list.reduce((s, x) => s + (x.predictedQuantity || 0), 0);
+      const maxPred = list.reduce((m, x) => Math.max(m, x.predictedQuantity || 0), 0);
+
+      let level = 'OK';
+      let message = 'Tồn kho đủ so với dự báo nhu cầu.';
+      if (list.length > 0) {
+        if (stock === 0 && totalPred > 0) {
+          level = 'CRITICAL';
+          message = `Cơ sở không còn tồn kho (0 liều) trong khi AI dự báo còn nhu cầu (tổng ${totalPred} liều). Cần nhập hàng ngay.`;
+        } else if (maxPred > stock || totalPred > stock) {
+          level = maxPred >= stock * 2 || stock < totalPred * 0.5 ? 'CRITICAL' : 'WARNING';
+          message = `Tồn kho hiện có ${stock} liều, tổng dự báo ${totalPred} liều (kỳ cao nhất ${maxPred} liều). Cần xem xét nhập thêm hoặc điều phối.`;
+        } else {
+          level = 'OK';
+          message = `Tồn kho đủ so với dự báo nhu cầu (${stock} liều ≥ ${totalPred} liều dự báo).`;
+        }
+      }
+      setStockAlert(list.length ? { level, message, currentStock: stock, totalPredicted: totalPred } : null);
     } catch (err) {
       showToast(err.message || 'Chưa có dữ liệu dự báo cho cặp vắc xin & cơ sở này', 'info');
       setForecasts([]);
+      setStockAlert(null);
     } finally {
       setLoading(false);
     }
@@ -196,7 +222,54 @@ export default function AdminAiForecast() {
           </button>
         </div>
 
+        
+        {/* Cảnh báo tồn kho vs dự báo AI */}
+        {stockAlert && stockAlert.level !== 'OK' && (
+          <div
+            style={{
+              marginBottom: 16,
+              padding: '14px 18px',
+              borderRadius: 12,
+              border: stockAlert.level === 'CRITICAL' ? '1px solid #fecaca' : '1px solid #fde68a',
+              background: stockAlert.level === 'CRITICAL' ? '#fef2f2' : '#fffbeb',
+              color: stockAlert.level === 'CRITICAL' ? '#991b1b' : '#92400e',
+              display: 'flex',
+              gap: 12,
+              alignItems: 'flex-start',
+            }}
+          >
+            <span style={{ fontSize: 20, lineHeight: 1 }}>{stockAlert.level === 'CRITICAL' ? '🚨' : '⚠️'}</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, marginBottom: 4 }}>
+                {stockAlert.level === 'CRITICAL' ? 'Cảnh báo nghiêm trọng: thiếu tồn kho' : 'Nhắc nhở: tồn kho có thể không đủ'}
+              </div>
+              <div style={{ fontSize: 14, opacity: 0.95 }}>{stockAlert.message}</div>
+              <div style={{ fontSize: 13, marginTop: 6, opacity: 0.85 }}>
+                Tồn kho hiện có: <b>{stockAlert.currentStock ?? 0} liều</b>
+                {' · '}
+                Tổng dự báo: <b>{stockAlert.totalPredicted ?? 0} liều</b>
+              </div>
+            </div>
+          </div>
+        )}
+        {stockAlert && stockAlert.level === 'OK' && forecasts.length > 0 && (
+          <div
+            style={{
+              marginBottom: 16,
+              padding: '12px 16px',
+              borderRadius: 12,
+              border: '1px solid #bbf7d0',
+              background: '#f0fdf4',
+              color: '#166534',
+              fontSize: 14,
+            }}
+          >
+            ✅ {stockAlert.message || 'Tồn kho đủ so với dự báo nhu cầu.'}
+          </div>
+        )}
+
         {/* Forecast Table Card */}
+
         <div style={{ background: 'var(--card-bg, #fff)', borderRadius: '12px', border: '1px solid var(--border, #e2e8f0)', padding: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
             <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--ink, #0f172a)' }}>
@@ -241,14 +314,15 @@ export default function AdminAiForecast() {
                     <th style={{ padding: '12px 16px' }}>Từ ngày</th>
                     <th style={{ padding: '12px 16px' }}>Đến ngày</th>
                     <th style={{ padding: '12px 16px' }}>Dự báo (Liều)</th>
-                    <th style={{ padding: '12px 16px' }}>Thực tế (Liều)</th>
+                    <th style={{ padding: '12px 16px' }}>Tồn kho hiện có (Liều)</th>
+                    <th style={{ padding: '12px 16px' }}>Thiếu (Liều)</th>
                     <th style={{ padding: '12px 16px' }}>Độ tin cậy</th>
                     <th style={{ padding: '12px 16px' }}>Mô hình AI</th>
                   </tr>
                 </thead>
                 <tbody>
                   {forecasts.map((f) => (
-                    <tr key={f.forecastId} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <tr key={f.forecastId} style={{ borderBottom: '1px solid #f1f5f9', background: ((f.predictedQuantity || 0) > (f.actualQuantity ?? 0)) ? ((f.actualQuantity ?? 0) === 0 ? '#fef2f2' : '#fffbeb') : undefined }}>
                       <td style={{ padding: '12px 16px', fontWeight: 600, color: '#64748b' }}>#{f.forecastId}</td>
                       <td style={{ padding: '12px 16px' }}>{formatDateVN(f.forecastPeriodStart)}</td>
                       <td style={{ padding: '12px 16px' }}>{formatDateVN(f.forecastPeriodEnd)}</td>
@@ -256,7 +330,12 @@ export default function AdminAiForecast() {
                         {f.predictedQuantity} liều
                       </td>
                       <td style={{ padding: '12px 16px' }}>
-                        {f.actualQuantity != null ? `${f.actualQuantity} liều` : <span style={{ color: '#94a3b8' }}>Chưa có data</span>}
+                        {f.actualQuantity != null ? `${f.actualQuantity} liều` : '0 liều'}
+                      </td>
+                      <td style={{ padding: '12px 16px', fontWeight: 600, color: ((f.predictedQuantity || 0) > (f.actualQuantity ?? 0)) ? '#dc2626' : '#64748b' }}>
+                        {((f.predictedQuantity || 0) > (f.actualQuantity ?? 0))
+                          ? `${(f.predictedQuantity || 0) - (f.actualQuantity ?? 0)} liều`
+                          : '—'}
                       </td>
                       <td style={{ padding: '12px 16px' }}>
                         <span style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 600, backgroundColor: '#d1fae5', color: '#047857' }}>

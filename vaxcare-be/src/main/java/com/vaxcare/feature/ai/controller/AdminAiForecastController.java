@@ -5,6 +5,7 @@ import com.vaxcare.feature.ai.dto.DemandForecastResponse;
 import com.vaxcare.feature.ai.entity.DemandForecast;
 import com.vaxcare.feature.ai.repository.DemandForecastRepository;
 import com.vaxcare.feature.ai.service.AiForecastService;
+import com.vaxcare.feature.inventory.repository.VaccineBatchRepository;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,15 +23,23 @@ public class AdminAiForecastController {
 
     private final AiForecastService aiForecastService;
     private final DemandForecastRepository demandForecastRepository;
+    private final VaccineBatchRepository vaccineBatchRepository;
 
     @GetMapping("/forecasts")
     public ApiResponse<List<DemandForecastResponse>> getForecasts(
             @RequestParam Long vaccineId,
             @RequestParam Long facilityId) {
+
+        Integer currentStock = vaccineBatchRepository.sumStockByFacilityAndVaccine(facilityId, vaccineId);
+        if (currentStock == null) {
+            currentStock = 0;
+        }
+        final Integer stock = currentStock;
+
         List<DemandForecastResponse> data = demandForecastRepository
                 .findByVaccineAndFacilityWithDetails(vaccineId, facilityId)
                 .stream()
-                .map(this::toResponse)
+                .map(f -> toResponse(f, stock))
                 .toList();
         return ApiResponse.success("Lấy dữ liệu dự báo nhu cầu vắc xin thành công", data);
     }
@@ -42,7 +51,7 @@ public class AdminAiForecastController {
                 Map.of("updatedCombos", updated));
     }
 
-    private DemandForecastResponse toResponse(DemandForecast f) {
+    private DemandForecastResponse toResponse(DemandForecast f, Integer currentStock) {
         return DemandForecastResponse.builder()
                 .forecastId(f.getForecastId())
                 .vaccineId(f.getVaccine().getVaccineId())
@@ -52,7 +61,7 @@ public class AdminAiForecastController {
                 .forecastPeriodStart(f.getForecastPeriodStart())
                 .forecastPeriodEnd(f.getForecastPeriodEnd())
                 .predictedQuantity(f.getPredictedQuantity())
-                .actualQuantity(f.getActualQuantity())
+                .actualQuantity(currentStock)
                 .confidenceLevel(f.getConfidenceLevel())
                 .modelVersion(f.getModelVersion())
                 .build();

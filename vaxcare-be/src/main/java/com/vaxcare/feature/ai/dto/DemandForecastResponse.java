@@ -22,4 +22,7 @@ public class DemandForecastResponse {
     private Integer actualQuantity;
     private BigDecimal confidenceLevel;
     private String modelVersion;
+    private Boolean stockShortage;
+    private Integer shortageQuantity;
+    private String alertLevel;
 }
