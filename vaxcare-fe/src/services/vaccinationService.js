@@ -206,6 +206,12 @@ export function buildProtocolsFromDetails(
     if (vid == null || !a.appointmentDate) continue;
     const st = String(a.status || "").toUpperCase();
     if (!["PENDING", "CONFIRMED", "CHECKED_IN"].includes(st)) continue;
+
+    const pay = String(a.paymentStatus || "").toUpperCase();
+    const free = a.price != null && Number(a.price) === 0;
+    const paid = a.paid === true || pay === "SUCCESS" || free;
+    if (!paid && st !== "CHECKED_IN") continue;
+
     const iso = String(a.appointmentDate).slice(0, 10);
     const prev = nextApptByVaccine.get(Number(vid)) || nextApptByVaccine.get(String(vid));
     if (!prev || iso < prev) {
