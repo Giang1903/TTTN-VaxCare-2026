@@ -259,6 +259,10 @@ export default function StaffReactionsPage() {
                     <span className="val">{d.inj || '—'}</span>
                   </div>
                   <div className="detail-row">
+                    <span className="lbl">Số mũi</span>
+                    <span className="val">{d.dose || '—'}</span>
+                  </div>
+                  <div className="detail-row">
                     <span className="lbl">Lô vắc xin</span>
                     <span className="val">{d.batch || '—'}</span>
                   </div>

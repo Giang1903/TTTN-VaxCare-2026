@@ -11,7 +11,7 @@ import HealthProfileCard from '../../components/record/HealthProfileCard';
 import { getMyHealthProfile } from '../../services/healthProfileService';
 import { useAuth } from '../../context/AuthContext';
 import * as vaccinationService from '../../services/vaccinationService';
-import { searchVaccines } from '../../services/vaccineService';
+import { searchVaccines, getProtocolsByVaccine } from '../../services/vaccineService';
 import { getMyAppointments } from '../../services/appointmentService';
 
 export default function RecordPage() {
@@ -26,6 +26,7 @@ export default function RecordPage() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [health, setHealth] = useState(null);
   const [vaccineMetaById, setVaccineMetaById] = useState({});
+  const [protocolsByVaccineId, setProtocolsByVaccineId] = useState({});
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -52,6 +53,30 @@ export default function RecordPage() {
         metaMap[String(id)] = meta;
       }
       setVaccineMetaById(metaMap);
+
+      // Tải phác đồ theo từng vắc xin đã tiêm (để tính mũi tiếp theo theo độ tuổi)
+      const histDetails = hist?.details || [];
+      const vaccineIds = [
+        ...new Set(
+          histDetails
+            .map((d) => d.vaccineId)
+            .filter((id) => id != null),
+        ),
+      ];
+      const protoMap = {};
+      await Promise.all(
+        vaccineIds.map(async (vid) => {
+          try {
+            const list = await getProtocolsByVaccine(vid);
+            protoMap[vid] = list || [];
+            protoMap[String(vid)] = list || [];
+          } catch {
+            protoMap[vid] = [];
+          }
+        }),
+      );
+      setProtocolsByVaccineId(protoMap);
+
       const up = (appts || []).filter((a) =>
         ['PENDING', 'CONFIRMED', 'CHECKED_IN'].includes(String(a.status || '').toUpperCase()),
       );
@@ -80,8 +105,12 @@ export default function RecordPage() {
   );
 
   const protocols = useMemo(
-    () => vaccinationService.buildProtocolsFromDetails(details, vaccineMetaById, upcomingAppts),
-    [details, vaccineMetaById, upcomingAppts],
+    () =>
+      vaccinationService.buildProtocolsFromDetails(details, vaccineMetaById, upcomingAppts, {
+        dateOfBirth: user?.dateOfBirth,
+        protocolsByVaccineId,
+      }),
+    [details, vaccineMetaById, upcomingAppts, user?.dateOfBirth, protocolsByVaccineId],
   );
 
   const stats = useMemo(
@@ -148,7 +177,7 @@ export default function RecordPage() {
           onEdit={() => setEditModalOpen(true)}
         />
 
-        <ProtocolProgress protocols={protocols} />
+        <ProtocolProgress protocols={protocols} dateOfBirthMissing={!user?.dateOfBirth} />
 
         <div className="record-layout">
           <VaccinationTimeline

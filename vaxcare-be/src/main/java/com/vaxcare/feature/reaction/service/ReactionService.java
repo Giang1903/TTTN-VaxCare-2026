@@ -127,14 +127,20 @@ public class ReactionService {
     private ReactionResponse mapToResponse(PostVaccinationReaction r) {
         VaccinationDetail d = r.getDetail();
         Appointment appointment = d.getAppointment();
+        var user = d.getHistory().getUser();
+        var account = user.getAccount();
+        var batch = d.getBatch();
         return ReactionResponse.builder()
                 .reactionId(r.getReactionId())
                 .detailId(d.getDetailId())
-                .userId(d.getHistory().getUser().getUserId())
-                .userFullName(d.getHistory().getUser().getFullName())
+                .userId(user.getUserId())
+                .userFullName(user.getFullName())
+                .userPhone(account != null ? account.getPhone() : null)
                 .vaccineId(d.getVaccine().getVaccineId())
                 .vaccineName(d.getVaccine().getVaccineName())
                 .injectionDate(d.getInjectionDate())
+                .doseNumber(d.getDoseNumber())
+                .batchNumber(batch != null ? batch.getBatchNumber() : null)
                 .facilityId(appointment != null ? appointment.getFacility().getFacilityId() : null)
                 .facilityName(appointment != null ? appointment.getFacility().getFacilityName() : null)
                 .severity(r.getSeverity())

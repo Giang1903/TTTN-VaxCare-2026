@@ -5,6 +5,15 @@ import { Overlay, Modal } from '../../components/ui/Modal';
 import { useToast } from '../../components/ui/Toast';
 import * as adminService from '../../services/adminService';
 
+function formatTodayVi() {
+  const d = new Date();
+  const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  return `${days[d.getDay()]}, ${dd}/${mm}/${yyyy}`;
+}
+
 const todayIso = () => new Date().toISOString().slice(0, 10);
 
 export default function Pricing() {
@@ -124,7 +133,7 @@ export default function Pricing() {
 
   return (
     <>
-      <Topbar title="Bảng giá" subtitle="Thứ Ba, 18/08/2026 · price_lists" onSearch={setQ} searchPlaceholder="Tìm kiếm…" />
+      <Topbar title="Bảng giá" subtitle={`${formatTodayVi()} · price_lists`} onSearch={setQ} searchPlaceholder="Tìm kiếm…" />
       <div className="content">
         <section className="kpi-row">
           <div className="kpi c1">

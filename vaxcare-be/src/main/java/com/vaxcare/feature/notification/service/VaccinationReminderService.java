@@ -2,6 +2,7 @@ package com.vaxcare.feature.notification.service;
 
 import com.vaxcare.common.enums.NotificationType;
 import com.vaxcare.common.enums.VaccinationResult;
+import com.vaxcare.feature.auth.entity.User;
 import com.vaxcare.feature.reaction.repository.ReactionRepository;
 import com.vaxcare.feature.vaccination.entity.VaccinationDetail;
 import com.vaxcare.feature.vaccination.repository.VaccinationDetailRepository;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,10 +31,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class VaccinationReminderService {
 
-    /** Nhắc trước hạn trong cửa sổ [today, today + LEAD] và bắt kịp / quá hạn nếu đã trễ. */
     private static final int REMINDER_LEAD_DAYS = 3;
 
-    /** Khung 24–72h sau tiêm: nhắc khảo sát từ ngày +1 đến +3. */
     private static final int SURVEY_FROM_DAYS_AFTER = 1;
     private static final int SURVEY_TO_DAYS_AFTER = 3;
 
@@ -45,20 +45,82 @@ public class VaccinationReminderService {
     private final EmailService emailService;
     private final ReactionRepository reactionRepository;
 
+    // ===================== AGE HELPERS =====================
+
+    public static Integer ageInMonths(LocalDate dateOfBirth, LocalDate onDate) {
+        if (dateOfBirth == null || onDate == null || dateOfBirth.isAfter(onDate)) {
+            return null;
+        }
+        return (int) ChronoUnit.MONTHS.between(dateOfBirth, onDate);
+    }
+
+    public static boolean matchesAge(ProtocolDetail detail, Integer ageMonths) {
+        Integer from = detail.getAgeFromMonths();
+        Integer to = detail.getAgeToMonths();
+
+        boolean unrestricted = from == null && to == null;
+        if (ageMonths == null) {
+            return unrestricted;
+        }
+        if (from != null && ageMonths < from) {
+            return false;
+        }
+        if (to != null && ageMonths > to) {
+            return false;
+        }
+        return true;
+    }
+
+    private static int ageSpecificityScore(ProtocolDetail pd) {
+        int score = 0;
+        if (pd.getAgeFromMonths() != null) {
+            score++;
+        }
+        if (pd.getAgeToMonths() != null) {
+            score++;
+        }
+        return score;
+    }
+
+    private Optional<ProtocolDetail> findNextDoseDetail(
+            List<ProtocolDetail> candidates,
+            int nextDoseNumber,
+            Integer ageMonths
+    ) {
+        List<ProtocolDetail> sameDose = candidates.stream()
+                .filter(pd -> pd.getDoseNumber() != null && pd.getDoseNumber() == nextDoseNumber)
+                .filter(pd -> matchesAge(pd, ageMonths))
+                .sorted(Comparator
+                        .comparingInt(VaccinationReminderService::ageSpecificityScore).reversed()
+                        .thenComparing(pd -> pd.getProtocolDetailId() != null ? pd.getProtocolDetailId() : 0L))
+                .toList();
+
+        if (!sameDose.isEmpty()) {
+            return Optional.of(sameDose.get(0));
+        }
+
+        return Optional.empty();
+    }
+
     // ===================== PROTOCOL ENGINE =====================
 
-    public Optional<LocalDate> calculateNextDoseDate(Vaccine vaccine, int justAdministeredDoseNumber, LocalDate fromDate) {
+    public Optional<LocalDate> calculateNextDoseDate(
+            Vaccine vaccine,
+            int justAdministeredDoseNumber,
+            LocalDate fromDate,
+            Integer ageMonths
+    ) {
         if (vaccine.getRequiredDoses() != null && justAdministeredDoseNumber >= vaccine.getRequiredDoses()) {
             return Optional.empty();
         }
 
+        int nextDoseNumber = justAdministeredDoseNumber + 1;
         List<VaccinationProtocol> protocols = protocolRepository.findByVaccine_VaccineId(vaccine.getVaccineId());
-        for (VaccinationProtocol protocol : protocols) {
-            Optional<ProtocolDetail> nextDetail = protocolDetailRepository
-                    .findByProtocol_ProtocolIdOrderByDoseNumberAsc(protocol.getProtocolId()).stream()
-                    .filter(pd -> pd.getDoseNumber() != null && pd.getDoseNumber() == justAdministeredDoseNumber + 1)
-                    .findFirst();
 
+        for (VaccinationProtocol protocol : protocols) {
+            List<ProtocolDetail> details =
+                    protocolDetailRepository.findByProtocol_ProtocolIdOrderByDoseNumberAsc(protocol.getProtocolId());
+            Optional<ProtocolDetail> nextDetail = findNextDoseDetail(details, nextDoseNumber, ageMonths);
             if (nextDetail.isPresent()) {
                 Integer intervalDays = nextDetail.get().getIntervalDays();
                 return Optional.of(fromDate.plusDays(intervalDays != null ? intervalDays : 0));
@@ -72,17 +134,30 @@ public class VaccinationReminderService {
         return Optional.empty();
     }
 
-    private Optional<LocalDate> calculateNextDoseDate(Vaccine vaccine, int justAdministeredDoseNumber, LocalDate fromDate,
-                                                       Map<Long, List<ProtocolDetail>> protocolDetailsByVaccineId) {
+    public Optional<LocalDate> calculateNextDoseDate(
+            Vaccine vaccine,
+            int justAdministeredDoseNumber,
+            LocalDate fromDate
+    ) {
+        return calculateNextDoseDate(vaccine, justAdministeredDoseNumber, fromDate, (Integer) null);
+    }
+
+    private Optional<LocalDate> calculateNextDoseDate(
+            Vaccine vaccine,
+            int justAdministeredDoseNumber,
+            LocalDate fromDate,
+            Map<Long, List<ProtocolDetail>> protocolDetailsByVaccineId,
+            Integer ageMonths
+    ) {
         if (vaccine.getRequiredDoses() != null && justAdministeredDoseNumber >= vaccine.getRequiredDoses()) {
             return Optional.empty();
         }
 
-        Optional<ProtocolDetail> nextDetail = protocolDetailsByVaccineId
-                .getOrDefault(vaccine.getVaccineId(), List.of()).stream()
-                .filter(pd -> pd.getDoseNumber() != null && pd.getDoseNumber() == justAdministeredDoseNumber + 1)
-                .findFirst();
+        int nextDoseNumber = justAdministeredDoseNumber + 1;
+        List<ProtocolDetail> allForVaccine =
+                protocolDetailsByVaccineId.getOrDefault(vaccine.getVaccineId(), List.of());
 
+        Optional<ProtocolDetail> nextDetail = findNextDoseDetail(allForVaccine, nextDoseNumber, ageMonths);
         if (nextDetail.isPresent()) {
             Integer intervalDays = nextDetail.get().getIntervalDays();
             return Optional.of(fromDate.plusDays(intervalDays != null ? intervalDays : 0));
@@ -98,14 +173,21 @@ public class VaccinationReminderService {
     @Transactional
     public void createNextDoseNotificationIfApplicable(VaccinationDetail detail) {
         Vaccine vaccine = detail.getVaccine();
-        calculateNextDoseDate(vaccine, detail.getDoseNumber(), detail.getInjectionDate())
+        User user = detail.getHistory().getUser();
+        Integer ageMonths = ageInMonths(user.getDateOfBirth(), detail.getInjectionDate());
+
+        calculateNextDoseDate(vaccine, detail.getDoseNumber(), detail.getInjectionDate(), ageMonths)
                 .ifPresent(nextDoseDate -> {
+                    String ageNote = ageMonths != null
+                            ? " (theo phác đồ phù hợp độ tuổi " + ageMonths + " tháng)"
+                            : "";
                     String content = "Mũi tiếp theo của vắc xin " + vaccine.getVaccineName()
                             + " (mũi số " + (detail.getDoseNumber() + 1) + ") dự kiến vào ngày "
-                            + nextDoseDate.format(DATE_FMT) + ". Hãy đặt lịch sớm để đảm bảo đúng phác đồ.";
+                            + nextDoseDate.format(DATE_FMT) + ageNote
+                            + ". Hãy đặt lịch sớm để đảm bảo đúng phác đồ.";
 
                     notificationService.create(
-                            detail.getHistory().getUser().getAccount(),
+                            user.getAccount(),
                             "Lịch tiêm tiếp theo (dự kiến)",
                             content,
                             NotificationType.SYSTEM,
@@ -113,10 +195,6 @@ public class VaccinationReminderService {
                 });
     }
 
-    /**
-     * Gửi ngay sau khi ghi nhận tiêm SUCCESS: mời theo dõi sức khỏe 24–72h và khai báo phản ứng trên app.
-     * Idempotent theo NotificationType.AFTER_VACCINATION + detailId.
-     */
     @Transactional
     public void notifyPostVaccinationSurvey(VaccinationDetail detail) {
         if (detail.getResult() != VaccinationResult.SUCCESS) {
@@ -126,7 +204,8 @@ public class VaccinationReminderService {
         if (account == null) {
             return;
         }
-        if (notificationService.alreadyNotified(account.getAccountId(), detail.getDetailId(), NotificationType.AFTER_VACCINATION)) {
+        if (notificationService.alreadyNotified(
+                account.getAccountId(), detail.getDetailId(), NotificationType.AFTER_VACCINATION)) {
             return;
         }
 
@@ -151,12 +230,6 @@ public class VaccinationReminderService {
 
     // ===================== CRON: NHẮC LỊCH + QUÁ HẠN (catch-up) =====================
 
-    /**
-     * Mỗi ngày 08:00:
-     * - nextDose trong [today - ∞, today + 3] (đã đến cửa sổ nhắc hoặc đã quá hạn)
-     * - chưa từng gửi REMINDER cho detail này → gửi 1 lần (nội dung phân nhánh sắp hạn / đến hạn / quá hạn)
-     * → bắt kịp nếu miss đúng ngày T-3.
-     */
     @Scheduled(cron = "0 0 8 * * *")
     @Transactional
     public void sendDueReminders() {
@@ -173,25 +246,32 @@ public class VaccinationReminderService {
 
         for (VaccinationDetail detail : latestDetails) {
             Vaccine vaccine = detail.getVaccine();
-            Optional<LocalDate> nextDoseDateOpt =
-                    calculateNextDoseDate(vaccine, detail.getDoseNumber(), detail.getInjectionDate(), protocolDetailsByVaccineId);
+            User user = detail.getHistory().getUser();
+            Integer ageMonths = ageInMonths(user.getDateOfBirth(), detail.getInjectionDate());
+
+            Optional<LocalDate> nextDoseDateOpt = calculateNextDoseDate(
+                    vaccine,
+                    detail.getDoseNumber(),
+                    detail.getInjectionDate(),
+                    protocolDetailsByVaccineId,
+                    ageMonths);
 
             if (nextDoseDateOpt.isEmpty()) {
                 continue;
             }
 
             LocalDate nextDoseDate = nextDoseDateOpt.get();
-            // Ngoài cửa sổ: còn xa hơn LEAD ngày → bỏ qua; đã quá hạn hoặc trong LEAD ngày → xử lý
             if (nextDoseDate.isAfter(windowEnd)) {
                 continue;
             }
 
-            var account = detail.getHistory().getUser().getAccount();
+            var account = user.getAccount();
             if (account == null) {
                 continue;
             }
 
-            if (notificationService.alreadyNotified(account.getAccountId(), detail.getDetailId(), NotificationType.REMINDER)) {
+            if (notificationService.alreadyNotified(
+                    account.getAccountId(), detail.getDetailId(), NotificationType.REMINDER)) {
                 continue;
             }
 
@@ -209,7 +289,7 @@ public class VaccinationReminderService {
                         + " ngày). Vui lòng đặt lịch sớm.";
                 emailService.sendOverdueDoseReminderEmail(
                         account.getEmail(),
-                        detail.getHistory().getUser().getFullName(),
+                        user.getFullName(),
                         vaccine.getVaccineName(),
                         nextDoseNumber,
                         nextDoseDate,
@@ -221,7 +301,7 @@ public class VaccinationReminderService {
                         + vaccine.getVaccineName() + ". Vui lòng đến cơ sở hoặc đặt lịch nếu chưa có lịch hẹn.";
                 emailService.sendNextDoseReminderEmail(
                         account.getEmail(),
-                        detail.getHistory().getUser().getFullName(),
+                        user.getFullName(),
                         vaccine.getVaccineName(),
                         nextDoseNumber,
                         nextDoseDate);
@@ -232,7 +312,7 @@ public class VaccinationReminderService {
                         + nextDoseDate.format(DATE_FMT) + "). VaxCare đã gửi email nhắc lịch cho bạn.";
                 emailService.sendNextDoseReminderEmail(
                         account.getEmail(),
-                        detail.getHistory().getUser().getFullName(),
+                        user.getFullName(),
                         vaccine.getVaccineName(),
                         nextDoseNumber,
                         nextDoseDate);
@@ -253,12 +333,6 @@ public class VaccinationReminderService {
 
     // ===================== CRON: NHẮC KHẢO SÁT SAU TIÊM (24–72h) =====================
 
-    /**
-     * Mỗi ngày 09:00: mũi SUCCESS có injectionDate trong [today-3, today-1],
-     * chưa có phản ứng khai báo, chưa gửi AFTER_VACCINATION → gửi nhắc khảo sát.
-     * (Lần gửi ngay sau tiêm dùng cùng type → alreadyNotified sẽ chặn trùng nếu đã gửi lúc complete.)
-     * Nếu lúc complete chưa gửi được mail, cron này bắt kịp trong cửa sổ 24–72h.
-     */
     @Scheduled(cron = "0 0 9 * * *")
     @Transactional
     public void sendPostVaccinationSurveyReminders() {
@@ -271,7 +345,7 @@ public class VaccinationReminderService {
 
         for (VaccinationDetail detail : details) {
             if (reactionRepository.existsByDetail_DetailId(detail.getDetailId())) {
-                continue; // đã khai báo phản ứng
+                continue;
             }
 
             var account = detail.getHistory().getUser().getAccount();

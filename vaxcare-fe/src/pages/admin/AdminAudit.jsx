@@ -5,6 +5,15 @@ import { Overlay, Modal } from "../../components/ui/Modal";
 import { useToast } from "../../components/ui/Toast";
 import * as adminService from "../../services/adminService";
 
+function formatTodayVi() {
+  const d = new Date();
+  const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  return `${days[d.getDay()]}, ${dd}/${mm}/${yyyy}`;
+}
+
 const tagMap = { VACCINATION: 'ok', INVENTORY: 'warn', USER: 'info', CONFIG: 'neutral', SECURITY: 'danger' };
 const TABS = [
   { f: 'all', label: 'Tất cả' },
@@ -57,7 +66,7 @@ export default function Audit() {
     <>
       <Topbar
         title="Nhật ký audit"
-        subtitle="Thứ Ba, 18/08/2026 · audit_logs"
+        subtitle={`${formatTodayVi()} · audit_logs`}
         showSearch={false}
       />
       <div className="content">
