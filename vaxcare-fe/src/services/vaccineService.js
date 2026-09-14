@@ -21,3 +21,8 @@ export function getVaccineById(id, facilityId) {
   const qs = facilityId ? `?facilityId=${facilityId}` : "";
   return apiClient.request(`/vaccines/${id}${qs}`, { method: "GET", auth: false });
 }
+
+// GET /api/v1/protocols/vaccine/{vaccineId} -> ProtocolResponse[]
+export function getProtocolsByVaccine(vaccineId) {
+  return apiClient.request(`/protocols/vaccine/${vaccineId}`, { method: "GET", auth: false });
+}

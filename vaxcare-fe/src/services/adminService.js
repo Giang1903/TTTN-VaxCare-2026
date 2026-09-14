@@ -72,6 +72,7 @@ export function mapVaccineToUi(v) {
     priceRaw: v.currentPrice,
     bookings: v.totalBookings ?? 0,
     rating: v.averageRating ?? "",
+    imageUrl: v.imageUrl || "",
     _raw: v,
   };
 }
