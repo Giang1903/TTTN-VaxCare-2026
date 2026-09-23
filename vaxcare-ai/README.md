@@ -8,7 +8,7 @@ Dịch vụ này cung cấp hai phân hệ thông minh chính cho backend VaxCar
 
 ---
 
-## 🛠 Công Nghệ Sử Dụng
+## Công Nghệ Sử Dụng
 
 - **Core & API Framework**: Python 3.11, FastAPI (v0.115.8), Uvicorn (v0.34.0), Pydantic v2 (v2.10.6), pydantic-settings (v2.7.1)
 - **Data & Machine Learning**: NumPy (v2.2.3), Pandas (v2.2.3), Scikit-Learn (v1.6.1), XGBoost (v2.1.4), Joblib (v1.4.2)
@@ -131,7 +131,7 @@ Hiện tại các pipeline huấn luyện model được triển khai dạng **J
 
 ---
 
-##  Danh Sách API Chính
+## Danh Sách API Chính
 
 FastAPI tự động khởi tạo tài liệu Swagger UI tại: `http://localhost:8000/docs`
 
@@ -144,7 +144,7 @@ FastAPI tự động khởi tạo tài liệu Swagger UI tại: `http://localhos
 
 ---
 
-##  Đường Dẫn Lưu Model AI Artifacts
+## Đường Dẫn Lưu Model AI Artifacts
 
 Các model được serialize bằng `joblib` và lưu trữ tại thư mục `models/`:
 - **AI1 Model Artifact**: `models/schedule_waittime.joblib` (Chứa object model XGBoost, danh sách feature, metrics MAE/RMSE/R², và model_version `"ai1-xgboost-v1"`).
