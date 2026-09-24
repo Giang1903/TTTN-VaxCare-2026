@@ -106,12 +106,9 @@ export default function StaffInventoryPage() {
     return rows.filter((r) => {
       const flags = String(r.f || '');
       if (tab === 'low') {
-        // Tồn thấp / hết hàng
-        if (!(flags.includes('low') || r.fillClass === 'warn' || r.fillClass === 'danger')) return false;
-        // Ưu tiên lô còn liên quan tồn (không chỉ hết hạn còn nhiều)
-        if (flags.includes('expiring') && !flags.includes('low') && (r.stock || 0) > 0 && r.fillClass === 'ok') {
-          return false;
-        }
+        // Chỉ tồn thấp thật (stock < ngưỡng) hoặc hết hàng — không gồm lô chỉ sắp hết hạn
+        const low = r.isLowStock === true || flags.includes('low') || (r.stock != null && r.stock <= 0);
+        if (!low) return false;
       } else if (tab === 'expiring') {
         if (!(flags.includes('expiring') || String(r.status || '').toUpperCase() === 'NEAR_EXPIRY' || String(r.status || '').toUpperCase() === 'EXPIRED')) {
           return false;
@@ -148,7 +145,7 @@ export default function StaffInventoryPage() {
   };
 
   const kpiTotal = rows.length;
-  const kpiLow = rows.filter((r) => r.fillClass === 'warn' || r.fillClass === 'danger').length;
+  const kpiLow = rows.filter((r) => r.isLowStock || (String(r.f || '').includes('low') && !r.isNearExpiry && !r.isExpired)).length;
   const kpiStock = rows.reduce((s, r) => s + (r.stock || 0), 0);
 
   /** Cảnh báo thật từ tồn kho (không hardcode) */
@@ -192,11 +189,11 @@ export default function StaffInventoryPage() {
         });
       }
 
+      // Chỉ tồn thấp khi stock < ngưỡng (KHÔNG gộp lô sắp hết hạn còn nhiều hàng)
       const isLow =
-        (thr != null && stock > 0 && stock < thr) ||
-        r.fillClass === 'warn' ||
-        r.fillClass === 'danger';
-      if (isLow && stock > 0 && status !== 'EXPIRED') {
+        r.isLowStock === true ||
+        (thr != null && !Number.isNaN(thr) && stock > 0 && stock < thr);
+      if (isLow && stock > 0 && status !== 'EXPIRED' && !(daysLeft != null && daysLeft < 0)) {
         items.push({
           key: `low-${r.id}`,
           cls: 'warn',

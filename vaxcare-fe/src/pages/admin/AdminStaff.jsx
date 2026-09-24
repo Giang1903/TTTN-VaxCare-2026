@@ -5,6 +5,14 @@ import Topbar from '../../components/layout/Topbar';
 import { Overlay, Modal } from '../../components/ui/Modal';
 import { useToast } from '../../components/ui/Toast';
 
+function formatTodayVi() {
+  const d = new Date();
+  const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  return `${days[d.getDay()]}, ${dd}/${mm}/${yyyy}`;
+}
 export default function Staff() {
   const showToast = useToast();
   const [list, setList] = useState([]);
@@ -166,7 +174,7 @@ export default function Staff() {
 
   return (
     <>
-      <Topbar title="Nhân viên y tế" subtitle="Thứ Ba, 18/08/2026 · medical_staff" onSearch={setQ} searchPlaceholder="Tìm tên, mã NV, chuyên môn…" />
+      <Topbar title="Nhân viên y tế" subtitle={`${formatTodayVi()} · medical_staff`} onSearch={setQ} searchPlaceholder="Tìm tên, mã NV, chuyên môn…" />
       <div className="content">
         <section className="kpi-row">
           <div className="kpi c1"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg></span></div><div className="num">{kpiTotal}</div><div className="lbl">Tổng nhân viên</div></div>

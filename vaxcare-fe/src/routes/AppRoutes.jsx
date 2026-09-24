@@ -12,6 +12,8 @@ import LoginPage from "../pages/auth/LoginPage";
 import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "../pages/auth/ResetPasswordPage";
 import RegisterPage from "../pages/auth/RegisterPage";
+import TermsPage from "../pages/legal/TermsPage";
+import PrivacyPage from "../pages/legal/PrivacyPage";
 import VerifyEmailPage from "../pages/auth/VerifyEmailPage";
 
 // ===== PUBLIC =====
@@ -112,6 +114,8 @@ export default function AppRoutes() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
     </Routes>
   );

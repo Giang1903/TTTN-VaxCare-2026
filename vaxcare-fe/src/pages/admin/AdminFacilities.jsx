@@ -5,6 +5,14 @@ import { Overlay, Modal } from '../../components/ui/Modal';
 import { useToast } from '../../components/ui/Toast';
 import * as adminService from '../../services/adminService';
 
+function formatTodayVi() {
+  const d = new Date();
+  const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  return `${days[d.getDay()]}, ${dd}/${mm}/${yyyy}`;
+}
 export default function Facilities() {
   const showToast = useToast();
   const [list, setList] = useState([]);
@@ -102,7 +110,7 @@ export default function Facilities() {
 
   return (
     <>
-      <Topbar title="Cơ sở tiêm chủng" subtitle="Thứ Ba, 18/08/2026 · vaccination_facilities" onSearch={setQ} searchPlaceholder="Tìm tên, địa chỉ, SĐT…" />
+      <Topbar title="Cơ sở tiêm chủng" subtitle={`${formatTodayVi()} · vaccination_facilities`} onSearch={setQ} searchPlaceholder="Tìm tên, địa chỉ, SĐT…" />
       <div className="content">
         <section className="kpi-row">
           <div className="kpi c1"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 21h18M5 21V7l7-4 7 4v14" /></svg></span></div><div className="num">{kpiTotal}</div><div className="lbl">Tổng cơ sở</div></div>

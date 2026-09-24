@@ -20,8 +20,14 @@ function isExpiringSoon(expStr) {
   const diff = (exp - now) / (1000 * 60 * 60 * 24);
   return diff >= 0 && diff <= 180;
 }
-
-
+function formatTodayVi() {
+  const d = new Date();
+  const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  return `${days[d.getDay()]}, ${dd}/${mm}/${yyyy}`;
+}
 
 export default function Inventory() {
   const showToast = useToast();
@@ -123,7 +129,7 @@ export default function Inventory() {
 
   return (
     <>
-      <Topbar title="Kho & lô toàn mạng" subtitle="Thứ Ba, 18/08/2026 · vaccine_batches" onSearch={setQ} />
+      <Topbar title="Kho & lô toàn mạng" subtitle={`${formatTodayVi()} · vaccine_batches`} onSearch={setQ} />
       <div className="content">
         <section className="kpi-row">
           <div className="kpi c1"><div className="top"><span className="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 8 12 3 3 8m18 0-9 5" /></svg></span></div><div className="num">{kpiTotalBatches}</div><div className="lbl">Lô toàn mạng</div></div>

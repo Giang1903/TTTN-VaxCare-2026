@@ -466,8 +466,8 @@ export default function RegisterPage() {
                 onChange={handleChange}
               />
               <span>
-                Tôi đồng ý với <a href="#terms">Điều khoản sử dụng</a> và{" "}
-                <a href="#privacy">Chính sách bảo mật</a> của VaxCare.
+                Tôi đồng ý với <Link to="/terms" target="_blank" rel="noopener noreferrer">Điều khoản sử dụng</Link> và{" "}
+                <Link to="/privacy" target="_blank" rel="noopener noreferrer">Chính sách bảo mật</Link> của VaxCare.
               </span>
             </label>
 
