@@ -246,12 +246,12 @@ def forecast_demand(req: ForecastRequest) -> ForecastResponse:
     horizon = req.horizon_days
     period_days = req.period_days
 
-    # ngày bắt đầu dự báo = ngày sau điểm history cuối (hoặc hôm nay nếu rỗng)
-    if series.empty:
-        start = date.today()
-    else:
-        last = series.index.max().date()
-        start = last + timedelta(days=1)
+    today = date.today()
+    # Thứ 2 tuần tới
+    days_until_monday = (7 - today.weekday()) % 7
+    if days_until_monday == 0:
+        days_until_monday = 7
+    start = today + timedelta(days=days_until_monday)
 
     residual_std = _estimate_residual_std(series)
 
