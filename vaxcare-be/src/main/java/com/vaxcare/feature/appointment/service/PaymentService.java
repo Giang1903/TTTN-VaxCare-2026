@@ -6,8 +6,11 @@ import com.vaxcare.common.enums.PaymentStatus;
 import com.vaxcare.common.exception.BadRequestException;
 import com.vaxcare.common.exception.ResourceNotFoundException;
 import com.vaxcare.common.exception.UnauthorizedException;
+import com.vaxcare.common.enums.PaymentMethod;
+import com.vaxcare.config.MoMoConfig;
 import com.vaxcare.config.VNPayConfig;
 import com.vaxcare.feature.appointment.dto.CreatePaymentRequest;
+import com.vaxcare.feature.appointment.dto.MoMoUrlResponse;
 import com.vaxcare.feature.appointment.dto.PaymentResponse;
 import com.vaxcare.feature.appointment.dto.VNPayUrlResponse;
 import com.vaxcare.feature.appointment.entity.Appointment;
@@ -19,15 +22,18 @@ import com.vaxcare.feature.auth.repository.AccountRepository;
 import com.vaxcare.common.enums.NotificationType;
 import com.vaxcare.feature.notification.service.EmailService;
 import com.vaxcare.feature.notification.service.NotificationService;
+import com.vaxcare.utils.MoMoUtil;
 import com.vaxcare.utils.QRCodeUtil;
 import com.vaxcare.utils.VNPayUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.web.client.RestClient;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -54,11 +60,11 @@ public class PaymentService {
     private final AccountRepository accountRepository;
     private final VaccineBatchRepository vaccineBatchRepository;
     private final VNPayConfig vnPayConfig;
+    private final MoMoConfig moMoConfig;
     private final ObjectMapper objectMapper;
     private final EmailService emailService;
     private final NotificationService notificationService;
-
-    // ===================== TẠO URL THANH TOÁN =====================
+    private final RestClient.Builder restClientBuilder;
 
     @Transactional
     public VNPayUrlResponse createVnpayPaymentUrl(Long currentAccountId, CreatePaymentRequest request,
@@ -90,10 +96,12 @@ public class PaymentService {
                     .appointment(appointment)
                     .amount(appointment.getPrice())
                     .status(PaymentStatus.PENDING)
+                    .paymentMethod(PaymentMethod.VNPAY)
                     .build();
         } else {
             payment.setAmount(appointment.getPrice());
             payment.setStatus(PaymentStatus.PENDING);
+            payment.setPaymentMethod(PaymentMethod.VNPAY);
         }
         payment.setTransactionId(txnRef);
         payment = paymentRepository.save(payment);
@@ -105,6 +113,280 @@ public class PaymentService {
                 .paymentId(payment.getPaymentId())
                 .txnRef(txnRef)
                 .build();
+    }
+
+    @Transactional
+    public MoMoUrlResponse createMomoPaymentUrl(Long currentAccountId, CreatePaymentRequest request) {
+        Appointment appointment = findAppointmentOrThrow(request.getAppointmentId());
+        checkOwnership(appointment, currentAccountId);
+
+        if (!PAYABLE_STATUSES.contains(appointment.getStatus())) {
+            throw new BadRequestException(
+                    "Không thể thanh toán lịch hẹn đang ở trạng thái " + appointment.getStatus());
+        }
+        if (appointment.getPrice() == null || appointment.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BadRequestException("Lịch hẹn này chưa có giá vắc xin hợp lệ để thanh toán");
+        }
+
+        ensureSlotAvailableForPayment(appointment);
+
+        Payment payment = paymentRepository.findByAppointment_AppointmentId(appointment.getAppointmentId())
+                .orElse(null);
+
+        if (payment != null && payment.getStatus() == PaymentStatus.SUCCESS) {
+            throw new BadRequestException("Lịch hẹn này đã được thanh toán thành công trước đó");
+        }
+
+        String orderId = MoMoUtil.generateOrderId();
+        String requestId = MoMoUtil.generateRequestId();
+
+        if (payment == null) {
+            payment = Payment.builder()
+                    .appointment(appointment)
+                    .amount(appointment.getPrice())
+                    .status(PaymentStatus.PENDING)
+                    .paymentMethod(PaymentMethod.MOMO)
+                    .build();
+        } else {
+            payment.setAmount(appointment.getPrice());
+            payment.setStatus(PaymentStatus.PENDING);
+            payment.setPaymentMethod(PaymentMethod.MOMO);
+        }
+        payment.setTransactionId(orderId);
+        payment = paymentRepository.save(payment);
+
+        String paymentUrl = callMoMoCreatePayment(payment, orderId, requestId);
+
+        return MoMoUrlResponse.builder()
+                .paymentUrl(paymentUrl)
+                .paymentId(payment.getPaymentId())
+                .orderId(orderId)
+                .build();
+    }
+
+    @SuppressWarnings("unchecked")
+    private String callMoMoCreatePayment(Payment payment, String orderId, String requestId) {
+        // MoMo amount: số nguyên VND (không nhân 100)
+        long amountLong = payment.getAmount().longValue();
+        String amount = String.valueOf(amountLong);
+        String orderInfo = "Thanh toan lich hen tiem chung #" + payment.getAppointment().getAppointmentId();
+        String extraData = "";
+        String partnerCode = moMoConfig.getPartnerCode();
+        String accessKey = moMoConfig.getAccessKey();
+        String redirectUrl = moMoConfig.getRedirectUrl();
+        String ipnUrl = moMoConfig.getIpnUrl();
+        String requestType = MoMoConfig.REQUEST_TYPE;
+
+        String rawSignature = MoMoUtil.buildCreateSignatureRaw(
+                accessKey, amount, extraData, ipnUrl, orderId, orderInfo,
+                partnerCode, redirectUrl, requestId, requestType);
+        String signature = MoMoUtil.hmacSHA256(moMoConfig.getSecretKey(), rawSignature);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("partnerCode", partnerCode);
+        body.put("accessKey", accessKey);
+        body.put("requestId", requestId);
+        body.put("amount", amountLong);
+        body.put("orderId", orderId);
+        body.put("orderInfo", orderInfo);
+        body.put("redirectUrl", redirectUrl);
+        body.put("ipnUrl", ipnUrl);
+        body.put("extraData", extraData);
+        body.put("requestType", requestType);
+        body.put("lang", MoMoConfig.LANG);
+        body.put("signature", signature);
+
+        try {
+            RestClient client = restClientBuilder.build();
+            Map<String, Object> response = client.post()
+                    .uri(moMoConfig.getCreateUrl())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(body)
+                    .retrieve()
+                    .body(Map.class);
+
+            if (response == null) {
+                throw new BadRequestException("MoMo không trả về phản hồi");
+            }
+
+            Object resultCode = response.get("resultCode");
+            int code = resultCode instanceof Number n ? n.intValue() : -1;
+            if (code != 0) {
+                String msg = String.valueOf(response.getOrDefault("message", "Lỗi tạo thanh toán MoMo"));
+                log.error("MoMo create failed: resultCode={}, message={}, response={}", code, msg, response);
+                throw new BadRequestException("MoMo: " + msg + " (code=" + code + ")");
+            }
+
+            Object payUrl = response.get("payUrl");
+            if (payUrl == null || String.valueOf(payUrl).isBlank()) {
+                throw new BadRequestException("MoMo không trả về payUrl");
+            }
+            return String.valueOf(payUrl);
+        } catch (BadRequestException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Lỗi gọi API tạo thanh toán MoMo", e);
+            throw new BadRequestException("Không thể kết nối cổng thanh toán MoMo: " + e.getMessage());
+        }
+    }
+
+    @Transactional
+    public String handleMomoReturn(Map<String, String> params) {
+        CallbackResult result;
+        try {
+            result = verifyAndProcessMomo(params);
+        } catch (Exception e) {
+            log.error("Lỗi xử lý MoMo return callback, params={}", params, e);
+            result = new CallbackResult(false, "99", "Có lỗi xảy ra khi xử lý kết quả thanh toán", null);
+        }
+
+        String base = moMoConfig.getFrontendResultUrl();
+        StringBuilder redirect = new StringBuilder(base)
+                .append(base.contains("?") ? "&" : "?")
+                .append("status=").append(result.success ? "success" : "failed")
+                .append("&message=").append(java.net.URLEncoder.encode(result.message, java.nio.charset.StandardCharsets.UTF_8));
+        if (result.appointmentId != null) {
+            redirect.append("&appointmentId=").append(result.appointmentId);
+        }
+        return redirect.toString();
+    }
+
+    @Transactional
+    public Map<String, Object> handleMomoIpn(Map<String, String> params) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            CallbackResult result = verifyAndProcessMomo(params);
+            response.put("resultCode", result.success || "02".equals(result.rspCode) ? 0 : Integer.parseInt(result.rspCode.replaceAll("\\D", "99")));
+            response.put("message", result.message);
+        } catch (Exception e) {
+            log.error("Lỗi xử lý MoMo IPN", e);
+            response.put("resultCode", 99);
+            response.put("message", "Unknown error");
+        }
+        return response;
+    }
+
+    private CallbackResult verifyAndProcessMomo(Map<String, String> params) {
+        String receivedSignature = params.get("signature");
+        if (receivedSignature == null || receivedSignature.isBlank()) {
+            return new CallbackResult(false, "97", "Thiếu chữ ký xác thực", null);
+        }
+
+        String rawSignature = MoMoUtil.buildCallbackSignatureRaw(
+                moMoConfig.getAccessKey(),
+                params.get("amount"),
+                params.get("extraData"),
+                params.get("message"),
+                params.get("orderId"),
+                params.get("orderInfo"),
+                params.get("orderType"),
+                params.get("partnerCode"),
+                params.get("payType"),
+                params.get("requestId"),
+                params.get("responseTime"),
+                params.get("resultCode"),
+                params.get("transId"));
+        String calculated = MoMoUtil.hmacSHA256(moMoConfig.getSecretKey(), rawSignature);
+
+        if (!calculated.equalsIgnoreCase(receivedSignature)) {
+            log.warn("MoMo callback: chữ ký không hợp lệ, orderId={}", params.get("orderId"));
+            return new CallbackResult(false, "97", "Chữ ký không hợp lệ", null);
+        }
+
+        String orderId = params.get("orderId");
+        if (orderId == null || orderId.isBlank()) {
+            return new CallbackResult(false, "01", "Không tìm thấy giao dịch", null);
+        }
+
+        Payment payment = paymentRepository.findByTransactionIdForUpdate(orderId).orElse(null);
+        if (payment == null) {
+            return new CallbackResult(false, "01", "Không tìm thấy giao dịch", null);
+        }
+
+        if (payment.getStatus() == PaymentStatus.SUCCESS) {
+            return new CallbackResult(true, "02", "Giao dịch đã được xác nhận trước đó",
+                    payment.getAppointment().getAppointmentId());
+        }
+
+        // MoMo amount là VND nguyên (không *100)
+        long expectedAmount = payment.getAmount().longValue();
+        long receivedAmount;
+        try {
+            receivedAmount = params.get("amount") == null ? -1 : Long.parseLong(params.get("amount"));
+        } catch (NumberFormatException e) {
+            return new CallbackResult(false, "04", "Số tiền không hợp lệ", null);
+        }
+        if (expectedAmount != receivedAmount) {
+            return new CallbackResult(false, "04", "Số tiền không hợp lệ", null);
+        }
+
+        String resultCode = params.get("resultCode");
+        boolean isSuccess = "0".equals(resultCode);
+
+        try {
+            payment.setRawResponse(objectMapper.writeValueAsString(params));
+        } catch (Exception e) {
+            log.warn("Không thể serialize raw response MoMo", e);
+        }
+
+        Appointment appointment = payment.getAppointment();
+
+        if (isSuccess) {
+            payment.setStatus(PaymentStatus.SUCCESS);
+            payment.setPaymentMethod(PaymentMethod.MOMO);
+            payment.setPaymentTime(LocalDateTime.now(ZoneId.of(moMoConfig.getTimezone())));
+            // Lưu transId MoMo nếu có (ghép vào transactionId hoặc giữ orderId)
+            String transId = params.get("transId");
+            if (transId != null && !transId.isBlank()) {
+                // Giữ orderId làm transactionId chính (đã unique); raw_response đã có transId
+            }
+            paymentRepository.save(payment);
+
+            if (!PAYABLE_STATUSES.contains(appointment.getStatus())) {
+                log.warn("MoMo báo thanh toán THÀNH CÔNG cho appointment #{} nhưng lịch hẹn đã ở trạng thái {} "
+                                + "-> KHÔNG cấp QR/confirm lại. Cần đối soát và hoàn tiền thủ công. orderId={}",
+                        appointment.getAppointmentId(), appointment.getStatus(), orderId);
+                return new CallbackResult(true, "00",
+                        "Thanh toán thành công nhưng lịch hẹn đã không còn hiệu lực (" + appointment.getStatus()
+                                + "). Vui lòng liên hệ tổng đài để được hoàn tiền.",
+                        appointment.getAppointmentId());
+            }
+
+            var facility = appointment.getFacility();
+            long bookedCount = appointmentRepository.countBookingsInSlot(
+                    facility.getFacilityId(),
+                    appointment.getAppointmentDate(),
+                    appointment.getTimeSlot(),
+                    appointment.getAppointmentId());
+            int capacity = facility.getCapacityPerSlot() != null ? facility.getCapacityPerSlot() : 0;
+            if (bookedCount >= capacity) {
+                log.warn("MoMo thanh toán THÀNH CÔNG cho appointment #{} nhưng slot đã hết.",
+                        appointment.getAppointmentId());
+                return new CallbackResult(true, "00",
+                        "Thanh toán thành công nhưng khung giờ này đã hết slot. Vui lòng liên hệ tổng đài VaxCare để được hỗ trợ hoàn tiền hoặc đổi lịch.",
+                        appointment.getAppointmentId());
+            }
+
+            if (appointment.getStatus() == AppointmentStatus.PENDING) {
+                appointment.setStatus(AppointmentStatus.CONFIRMED);
+            }
+            if (appointment.getQrCode() == null) {
+                appointment.setQrCode(QRCodeUtil.generateToken());
+            }
+            appointmentRepository.save(appointment);
+
+            sendPaymentSuccessNotifications(payment, appointment);
+
+            return new CallbackResult(true, "00", "Thanh toán thành công", appointment.getAppointmentId());
+        } else {
+            payment.setStatus(PaymentStatus.FAILED);
+            payment.setPaymentMethod(PaymentMethod.MOMO);
+            paymentRepository.save(payment);
+            String msg = params.get("message");
+            return new CallbackResult(false, "00",
+                    msg != null && !msg.isBlank() ? msg : "Thanh toán thất bại hoặc bị hủy",
+                    appointment.getAppointmentId());
+        }
     }
 
     private String buildPaymentUrl(Payment payment, String txnRef, HttpServletRequest httpRequest) {
@@ -133,8 +415,6 @@ public class PaymentService {
         return vnPayConfig.getPayUrl() + "?" + hashData + "&vnp_SecureHash=" + secureHash;
     }
 
-    // ===================== XỬ LÝ RETURN (redirect trình duyệt) =====================
-
     @Transactional
     public String handleReturn(Map<String, String> params) {
 
@@ -157,8 +437,6 @@ public class PaymentService {
         return redirect.toString();
     }
 
-    // ===================== XỬ LÝ IPN (server-to-server, nguồn xác nhận chính thức) =====================
-
     @Transactional
     public Map<String, String> handleIpn(Map<String, String> params) {
         Map<String, String> response = new HashMap<>();
@@ -173,8 +451,6 @@ public class PaymentService {
         }
         return response;
     }
-
-    // ===================== LOGIC CHUNG CHO RETURN + IPN =====================
 
     private record CallbackResult(boolean success, String rspCode, String message, Long appointmentId) {
     }
@@ -237,6 +513,7 @@ public class PaymentService {
 
         if (isSuccess) {
             payment.setStatus(PaymentStatus.SUCCESS);
+            payment.setPaymentMethod(PaymentMethod.VNPAY);
             payment.setPaymentTime(LocalDateTime.now(ZoneId.of(vnPayConfig.getTimezone())));
             paymentRepository.save(payment);
 
@@ -317,7 +594,6 @@ public class PaymentService {
         final java.math.BigDecimal amount = payment.getAmount();
         final String txnId = payment.getTransactionId();
 
-        // Notification in-app ngay trong transaction (nhanh, ít lỗi)
         try {
             Account account = null;
             if (userId != null) {
@@ -340,7 +616,6 @@ public class PaymentService {
             log.error("[Payment] Notification failed appointment #{}: {}", appointmentId, e.getMessage(), e);
         }
 
-        // Email SAU khi commit — tránh mail bị nuốt khi TX/session đóng, và không ảnh hưởng thanh toán
         final Long uid = userId;
         Runnable sendMail = () -> {
             try {
@@ -380,8 +655,6 @@ public class PaymentService {
         }
     }
 
-    // ===================== TRA CỨU =====================
-
     @Transactional(readOnly = true)
     public PaymentResponse getPaymentByAppointment(Long appointmentId, Long currentAccountId) {
         Appointment appointment = findAppointmentOrThrow(appointmentId);
@@ -392,8 +665,6 @@ public class PaymentService {
 
         return mapToResponse(payment);
     }
-
-    // ===================== HELPERS =====================
 
     private void checkOwnership(Appointment appointment, Long currentAccountId) {
         Account account = accountRepository.findById(currentAccountId)

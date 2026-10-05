@@ -1,10 +1,13 @@
 import { Link } from 'react-router-dom';
+import PaymentMethodPicker from './PaymentMethodPicker';
 
 // ============ STEP 4: CONFIRM + SUCCESS ============
 export default function StepConfirm({
   active,
   agree,
   onAgreeChange,
+  paymentMethod,
+  onPaymentMethodChange,
   onBack,
   onConfirm,
   success,
@@ -35,7 +38,7 @@ export default function StepConfirm({
               alignItems: 'flex-start',
               fontSize: '13px',
               color: 'var(--gray-700)',
-              marginBottom: '18px',
+              marginBottom: '16px',
               cursor: 'pointer',
             }}
           >
@@ -51,6 +54,24 @@ export default function StepConfirm({
               Tôi xác nhận thông tin chính xác và đồng ý với điều khoản đặt lịch của VaxCare.
             </span>
           </label>
+
+          <div style={{ marginBottom: 18 }}>
+            <p
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: 'var(--gray-700)',
+                marginBottom: 8,
+              }}
+            >
+              Phương thức thanh toán
+            </p>
+            <PaymentMethodPicker
+              value={paymentMethod || 'VNPAY'}
+              onChange={onPaymentMethodChange}
+              disabled={submitting}
+            />
+          </div>
 
           {submitError && (
             <p className="form-error" style={{ marginBottom: '12px' }}>
@@ -75,7 +96,9 @@ export default function StepConfirm({
               disabled={!agree || submitting}
               onClick={onConfirm}
             >
-              {submitting ? 'Đang đặt lịch…' : 'Xác nhận đặt lịch'}
+              {submitting
+                ? 'Đang đặt lịch…'
+                : `Xác nhận & thanh toán ${paymentMethod === 'MOMO' ? 'MoMo' : 'VNPay'}`}
             </button>
           </div>
         </div>

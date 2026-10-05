@@ -56,6 +56,14 @@ export function createVnpayPayment(appointmentId) {
   });
 }
 
+/** POST /api/v1/payments/create-momo — tạo URL thanh toán MoMo */
+export function createMomoPayment(appointmentId) {
+  return apiClient.request("/payments/create-momo", {
+    method: "POST",
+    body: { appointmentId: Number(appointmentId) },
+  });
+}
+
 /** GET /api/v1/payments/appointments/{id} */
 export function getPaymentByAppointment(appointmentId) {
   return apiClient.request(`/payments/appointments/${appointmentId}`, {

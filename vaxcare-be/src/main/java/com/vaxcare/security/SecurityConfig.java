@@ -64,17 +64,19 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers("/api/v1/payments/vnpay-return", "/api/v1/payments/vnpay-ipn").permitAll()
+                        .requestMatchers(
+                                "/api/v1/payments/vnpay-return",
+                                "/api/v1/payments/vnpay-ipn",
+                                "/api/v1/payments/momo-return",
+                                "/api/v1/payments/momo-ipn"
+                        ).permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**","/v3/api-docs", "/swagger-ui.html").permitAll()
-                        // Các route quản trị phải xét TRƯỚC route public GET để không bị permitAll "nuốt" mất
                         .requestMatchers(HttpMethod.GET, "/api/v1/facilities/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/facilities/**").permitAll()
-                        // Vắc xin & bảng giá: tra cứu (GET) là public, còn quản trị (POST/PUT/DELETE) yêu cầu đăng nhập + phân quyền qua @PreAuthorize
                         .requestMatchers(HttpMethod.GET, "/api/v1/vaccine-categories/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/vaccines/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/price-lists").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/protocols/**").permitAll()
-                        // Tra cứu khung giờ trống + AI gợi ý: public (FE gọi khi đặt lịch, không bắt buộc token)
+                          .requestMatchers(HttpMethod.GET, "/api/v1/protocols/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/appointments/available-slots").permitAll()
                         .anyRequest().authenticated()
                 );
