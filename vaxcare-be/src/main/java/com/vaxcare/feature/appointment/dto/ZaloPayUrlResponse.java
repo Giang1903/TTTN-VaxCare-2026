@@ -7,8 +7,9 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MoMoUrlResponse {
+public class ZaloPayUrlResponse {
     private String paymentUrl;
     private Long paymentId;
-    private String orderId;
+    private String appTransId;
+    private String orderToken;
 }

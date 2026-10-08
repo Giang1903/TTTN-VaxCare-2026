@@ -211,15 +211,38 @@ CREATE TABLE `payments` (
   `payment_id` bigint NOT NULL,
   `appointment_id` bigint NOT NULL,
   `transaction_id` varchar(100) DEFAULT NULL,
+  `gateway_transaction_id` varchar(100) DEFAULT NULL,
   `amount` decimal(12,2) NOT NULL,
-  `payment_method` enum('VNPAY','MOMO','CASH') DEFAULT 'VNPAY',
-  `status` enum('PENDING','SUCCESS','FAILED','REFUNDED') DEFAULT 'PENDING',
+  `refunded_amount` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `payment_method` enum('VNPAY','ZALOPAY','CASH') DEFAULT 'VNPAY',
+  `status` enum('PENDING','SUCCESS','FAILED','REFUNDING','REFUNDED') DEFAULT 'PENDING',
   `payment_time` datetime DEFAULT NULL,
   `raw_response` json DEFAULT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
+
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `refunds`
+--
+
+CREATE TABLE `refunds` (
+  `refund_id` bigint NOT NULL,
+  `payment_id` bigint NOT NULL,
+  `request_id` varchar(100) NOT NULL,
+  `amount` decimal(12,2) NOT NULL,
+  `reason` varchar(500) DEFAULT NULL,
+  `status` enum('PENDING','SUCCESS','FAILED') DEFAULT 'PENDING',
+  `gateway_refund_id` varchar(100) DEFAULT NULL,
+  `raw_response` json DEFAULT NULL,
+  `created_by` varchar(100) DEFAULT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `refunded_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Cấu trúc bảng cho bảng `post_vaccination_reactions`
@@ -760,6 +783,17 @@ ALTER TABLE `payments`
   ADD KEY `idx_payments_status_time` (`status`,`payment_time` DESC);
 
 --
+-- Chỉ mục cho bảng `refunds`
+--
+ALTER TABLE `refunds`
+  ADD PRIMARY KEY (`refund_id`),
+  ADD UNIQUE KEY `request_id` (`request_id`),
+  ADD KEY `idx_refunds_payment` (`payment_id`),
+  ADD KEY `idx_refunds_status` (`status`,`created_at` DESC);
+
+
+
+--
 -- Chỉ mục cho bảng `post_vaccination_reactions`
 --
 ALTER TABLE `post_vaccination_reactions`
@@ -914,6 +948,14 @@ ALTER TABLE `payments`
   MODIFY `payment_id` bigint NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT cho bảng `refunds`
+--
+ALTER TABLE `refunds`
+  MODIFY `refund_id` bigint NOT NULL AUTO_INCREMENT;
+
+
+
+--
 -- AUTO_INCREMENT cho bảng `post_vaccination_reactions`
 --
 ALTER TABLE `post_vaccination_reactions`
@@ -1048,6 +1090,14 @@ ALTER TABLE `notifications`
 --
 ALTER TABLE `payments`
   ADD CONSTRAINT `payments_ibfk_1` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`appointment_id`);
+
+--
+-- Ràng buộc cho bảng `refunds`
+--
+ALTER TABLE `refunds`
+  ADD CONSTRAINT `refunds_ibfk_1` FOREIGN KEY (`payment_id`) REFERENCES `payments` (`payment_id`);
+
+
 
 --
 -- Ràng buộc cho bảng `post_vaccination_reactions`

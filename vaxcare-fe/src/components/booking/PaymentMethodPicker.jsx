@@ -1,6 +1,6 @@
 export default function PaymentMethodPicker({ value, onChange, disabled }) {
   const isVnpay = value === 'VNPAY';
-  const isMomo = value === 'MOMO';
+  const isZalopay = value === 'ZALOPAY';
 
   const cardBase = {
     display: 'flex',
@@ -51,21 +51,24 @@ export default function PaymentMethodPicker({ value, onChange, disabled }) {
       <button
         type="button"
         disabled={disabled}
-        onClick={() => onChange?.('MOMO')}
+        onClick={() => onChange?.('ZALOPAY')}
         style={{
           ...cardBase,
-          border: isMomo ? '2px solid #e11d8c' : '1px solid #e2e8f0',
-          background: isMomo ? '#fdf2f8' : '#fff',
-          color: isMomo ? '#9d174d' : '#64748b',
-          boxShadow: isMomo ? '0 0 0 1px rgba(225,29,140,0.12)' : 'none',
+          border: isZalopay ? '2px solid #0068ff' : '1px solid #e2e8f0',
+          background: isZalopay ? '#eff6ff' : '#fff',
+          color: isZalopay ? '#0052cc' : '#64748b',
+          boxShadow: isZalopay ? '0 0 0 1px rgba(0,104,255,0.15)' : 'none',
         }}
       >
         <img
-          src="/assets/momo.png"
-          alt="MoMo"
+          src="/assets/ZaloPay.png"
+          alt="ZaloPay"
           style={{ ...logoStyle, borderRadius: 8 }}
+          onError={(e) => {
+            e.currentTarget.style.display = 'none';
+          }}
         />
-        <span>MoMo</span>
+        <span>ZaloPay</span>
       </button>
     </div>
   );

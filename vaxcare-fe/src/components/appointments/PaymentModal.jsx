@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   createVnpayPayment,
-  createMomoPayment,
+  createZalopayPayment,
   getPaymentByAppointment,
 } from '../../services/appointmentService';
 import PaymentMethodPicker from '../booking/PaymentMethodPicker';
@@ -12,12 +12,14 @@ function statusVi(s) {
   if (u === 'PENDING') return 'Chờ thanh toán';
   if (u === 'FAILED') return 'Thất bại';
   if (u === 'CANCELLED') return 'Đã hủy';
+  if (u === 'REFUNDED') return 'Đã hoàn tiền';
+  if (u === 'REFUNDING') return 'Đang hoàn tiền';
   return s || '—';
 }
 
 function methodLabel(m) {
   const u = String(m || '').toUpperCase();
-  if (u === 'MOMO') return 'MoMo';
+  if (u === 'ZALOPAY') return 'ZaloPay';
   if (u === 'VNPAY') return 'VNPay';
   if (u === 'CASH') return 'Tiền mặt';
   return m || '—';
@@ -46,13 +48,12 @@ export default function PaymentModal({ open, appointmentId, title, onClose }) {
   const [paying, setPaying] = useState(false);
   const [error, setError] = useState('');
   const [payment, setPayment] = useState(null);
-  /** 'VNPAY' | 'MOMO' */
+  /** 'VNPAY' | 'ZALOPAY' */
   const [method, setMethod] = useState('VNPAY');
 
   useEffect(() => {
     if (!open || !appointmentId) return;
     let cancelled = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError('');
     setPayment(null);
@@ -81,16 +82,16 @@ export default function PaymentModal({ open, appointmentId, title, onClose }) {
     setError('');
     try {
       const pay =
-        method === 'MOMO'
-          ? await createMomoPayment(appointmentId)
+        method === 'ZALOPAY'
+          ? await createZalopayPayment(appointmentId)
           : await createVnpayPayment(appointmentId);
       if (pay?.paymentUrl) {
         window.location.href = pay.paymentUrl;
         return;
       }
       setError(
-        method === 'MOMO'
-          ? 'Không nhận được link MoMo.'
+        method === 'ZALOPAY'
+          ? 'Không nhận được link ZaloPay.'
           : 'Không nhận được link VNPay.'
       );
     } catch (err) {
@@ -211,8 +212,8 @@ export default function PaymentModal({ open, appointmentId, title, onClose }) {
               {paying
                 ? 'Đang chuyển…'
                 : st === 'FAILED'
-                  ? `Thanh toán lại (${method === 'MOMO' ? 'MoMo' : 'VNPay'})`
-                  : `Thanh toán ${method === 'MOMO' ? 'MoMo' : 'VNPay'}`}
+                  ? `Thanh toán lại (${method === 'ZALOPAY' ? 'ZaloPay' : 'VNPay'})`
+                  : `Thanh toán ${method === 'ZALOPAY' ? 'ZaloPay' : 'VNPay'}`}
             </button>
           )}
           <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>

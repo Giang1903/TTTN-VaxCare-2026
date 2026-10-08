@@ -10,7 +10,7 @@ import BookingSummary from '../../components/booking/BookingSummary';
 import {
   bookAppointment,
   createVnpayPayment,
-  createMomoPayment,
+  createZalopayPayment,
 } from '../../services/appointmentService';
 import { getVaccineById } from '../../services/vaccineService';
 import { getFacilityById } from '../../services/facilityService';
@@ -43,7 +43,7 @@ export default function BookingPage() {
   const [date, setDate] = useState(null);
   const [slot, setSlot] = useState(null);
   const [agree, setAgree] = useState(false);
-  /** 'VNPAY' | 'MOMO' */
+  /** 'VNPAY' | 'ZALOPAY' */
   const [paymentMethod, setPaymentMethod] = useState('VNPAY');
   const [success, setSuccess] = useState(false);
   const [bookingCode, setBookingCode] = useState('');
@@ -177,7 +177,7 @@ export default function BookingPage() {
         Number(result?.price) === 0 ||
         String(result?.status || '').toUpperCase() === 'CONFIRMED';
 
-      // Đặt lại miễn phí sau FAILED → không gọi VNPay
+      // Đặt lại miễn phí sau FAILED → không gọi cổng thanh toán
       if (isFreeRebook) {
         if (result?.freeRebookMessage) {
           setSubmitError(''); // clear
@@ -190,20 +190,20 @@ export default function BookingPage() {
         return;
       }
 
-      // Thanh toán VNPay / MoMo (lịch thường)
+      // Thanh toán VNPay / ZaloPay (lịch thường)
       if (appointmentId) {
         try {
           const pay =
-            paymentMethod === 'MOMO'
-              ? await createMomoPayment(appointmentId)
+            paymentMethod === 'ZALOPAY'
+              ? await createZalopayPayment(appointmentId)
               : await createVnpayPayment(appointmentId);
           if (pay?.paymentUrl) {
             window.location.href = pay.paymentUrl;
             return;
           }
           setSubmitError(
-            (paymentMethod === 'MOMO'
-              ? 'Không nhận được link MoMo.'
+            (paymentMethod === 'ZALOPAY'
+              ? 'Không nhận được link ZaloPay.'
               : 'Không nhận được link VNPay.') +
               ' Lịch đã được tạo — bạn có thể thanh toán sau trong mục Lịch hẹn.'
           );

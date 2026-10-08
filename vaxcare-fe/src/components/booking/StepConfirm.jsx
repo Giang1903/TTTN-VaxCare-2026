@@ -98,7 +98,7 @@ export default function StepConfirm({
             >
               {submitting
                 ? 'Đang đặt lịch…'
-                : `Xác nhận & thanh toán ${paymentMethod === 'MOMO' ? 'MoMo' : 'VNPay'}`}
+                : `Xác nhận & thanh toán ${paymentMethod === 'ZALOPAY' ? 'ZaloPay' : 'VNPay'}`}
             </button>
           </div>
         </div>

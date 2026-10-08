@@ -67,8 +67,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/v1/payments/vnpay-return",
                                 "/api/v1/payments/vnpay-ipn",
-                                "/api/v1/payments/momo-return",
-                                "/api/v1/payments/momo-ipn"
+                                "/api/v1/payments/zalopay-callback",
+                                "/api/v1/payments/zalopay-return"
                         ).permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**","/v3/api-docs", "/swagger-ui.html").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/facilities/admin/**").hasRole("ADMIN")

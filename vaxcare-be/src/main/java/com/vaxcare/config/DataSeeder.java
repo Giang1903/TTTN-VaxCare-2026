@@ -351,7 +351,7 @@ public class DataSeeder implements CommandLineRunner {
                 .transactionId("SEED-TXN-" + appt.getAppointmentId() + "-"
                         + UUID.randomUUID().toString().substring(0, 6).toUpperCase())
                 .amount(price)
-                .paymentMethod(rnd.nextBoolean() ? PaymentMethod.VNPAY : PaymentMethod.MOMO)
+                .paymentMethod(rnd.nextBoolean() ? PaymentMethod.VNPAY : PaymentMethod.ZALOPAY)
                 .status(pStatus)
                 .paymentTime(date.atTime(time).minusHours(1 + rnd.nextInt(12)))
                 .build());

@@ -56,9 +56,9 @@ export function createVnpayPayment(appointmentId) {
   });
 }
 
-/** POST /api/v1/payments/create-momo — tạo URL thanh toán MoMo */
-export function createMomoPayment(appointmentId) {
-  return apiClient.request("/payments/create-momo", {
+/** POST /api/v1/payments/create-zalopay — tạo URL thanh toán ZaloPay */
+export function createZalopayPayment(appointmentId) {
+  return apiClient.request("/payments/create-zalopay", {
     method: "POST",
     body: { appointmentId: Number(appointmentId) },
   });
@@ -74,4 +74,22 @@ export function getPaymentByAppointment(appointmentId) {
 /** GET /api/v1/appointments/{id}/qr-code → { qrCodeToken, qrCodeImageBase64 } */
 export function getAppointmentQrCode(appointmentId) {
   return apiClient.request(`/appointments/${appointmentId}/qr-code`, { method: "GET" });
+}
+
+/** POST /api/v1/payments/{paymentId}/refund — tạo yêu cầu hoàn tiền (ADMIN/STAFF) */
+export function createRefund(paymentId, { amount, reason }) {
+  return apiClient.request(`/payments/${paymentId}/refund`, {
+    method: "POST",
+    body: JSON.stringify({ amount: amount ?? null, reason }),
+  });
+}
+
+/** GET /api/v1/payments/{paymentId}/refunds */
+export function getRefundsByPayment(paymentId) {
+  return apiClient.request(`/payments/${paymentId}/refunds`);
+}
+
+/** GET /api/v1/payments/refunds/by-appointment/{appointmentId} */
+export function getRefundsByAppointment(appointmentId) {
+  return apiClient.request(`/payments/refunds/by-appointment/${appointmentId}`);
 }
