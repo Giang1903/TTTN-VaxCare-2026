@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
-import { createVnpayPayment, getPaymentByAppointment } from '../../services/appointmentService';
+import {
+  createVnpayPayment,
+  createZalopayPayment,
+  getPaymentByAppointment,
+} from '../../services/appointmentService';
+import PaymentMethodPicker from '../booking/PaymentMethodPicker';
 
 function statusVi(s) {
   const u = String(s || '').toUpperCase();
@@ -7,7 +12,17 @@ function statusVi(s) {
   if (u === 'PENDING') return 'Chờ thanh toán';
   if (u === 'FAILED') return 'Thất bại';
   if (u === 'CANCELLED') return 'Đã hủy';
+  if (u === 'REFUNDED') return 'Đã hoàn tiền';
+  if (u === 'REFUNDING') return 'Đang hoàn tiền';
   return s || '—';
+}
+
+function methodLabel(m) {
+  const u = String(m || '').toUpperCase();
+  if (u === 'ZALOPAY') return 'ZaloPay';
+  if (u === 'VNPAY') return 'VNPay';
+  if (u === 'CASH') return 'Tiền mặt';
+  return m || '—';
 }
 
 function formatMoney(n) {
@@ -33,11 +48,12 @@ export default function PaymentModal({ open, appointmentId, title, onClose }) {
   const [paying, setPaying] = useState(false);
   const [error, setError] = useState('');
   const [payment, setPayment] = useState(null);
+  /** 'VNPAY' | 'ZALOPAY' */
+  const [method, setMethod] = useState('VNPAY');
 
   useEffect(() => {
     if (!open || !appointmentId) return;
     let cancelled = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError('');
     setPayment(null);
@@ -65,12 +81,19 @@ export default function PaymentModal({ open, appointmentId, title, onClose }) {
     setPaying(true);
     setError('');
     try {
-      const pay = await createVnpayPayment(appointmentId);
+      const pay =
+        method === 'ZALOPAY'
+          ? await createZalopayPayment(appointmentId)
+          : await createVnpayPayment(appointmentId);
       if (pay?.paymentUrl) {
         window.location.href = pay.paymentUrl;
         return;
       }
-      setError('Không nhận được link VNPay.');
+      setError(
+        method === 'ZALOPAY'
+          ? 'Không nhận được link ZaloPay.'
+          : 'Không nhận được link VNPay.'
+      );
     } catch (err) {
       setError(err.message || 'Không tạo được thanh toán.');
     } finally {
@@ -104,7 +127,7 @@ export default function PaymentModal({ open, appointmentId, title, onClose }) {
           background: '#fff',
           borderRadius: 16,
           padding: '28px 24px',
-          maxWidth: 400,
+          maxWidth: 420,
           width: '100%',
           boxShadow: '0 20px 50px rgba(0,0,0,0.15)',
         }}
@@ -134,7 +157,7 @@ export default function PaymentModal({ open, appointmentId, title, onClose }) {
               <strong>Số tiền:</strong> {formatMoney(payment.amount)}
             </div>
             <div>
-              <strong>Phương thức:</strong> {payment.paymentMethod || 'VNPay'}
+              <strong>Phương thức:</strong> {methodLabel(payment.paymentMethod)}
             </div>
             {payment.transactionId && (
               <div style={{ wordBreak: 'break-all' }}>
@@ -152,14 +175,31 @@ export default function PaymentModal({ open, appointmentId, title, onClose }) {
 
         {!loading && !payment && (
           <p style={{ fontSize: 14, color: '#64748b', marginBottom: 16 }}>
-            Chưa có giao dịch thanh toán cho lịch này. Bạn có thể thanh toán qua VNPay.
+            Chưa có giao dịch thanh toán cho lịch này. Chọn phương thức bên dưới để thanh toán.
           </p>
+        )}
+
+        {canPay && !loading && (
+          <div style={{ marginBottom: 16 }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: '#475569', marginBottom: 8 }}>
+              Chọn phương thức thanh toán
+            </p>
+            <PaymentMethodPicker
+              value={method}
+              onChange={setMethod}
+              disabled={paying}
+            />
+          </div>
         )}
 
         {error && !payment && (
           <p style={{ fontSize: 13, color: '#64748b', marginBottom: 12 }}>{error}</p>
         )}
-        {error && payment && <p className="form-error" style={{ marginBottom: 12 }}>{error}</p>}
+        {error && payment && (
+          <p className="form-error" style={{ marginBottom: 12 }}>
+            {error}
+          </p>
+        )}
 
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           {canPay && (
@@ -169,7 +209,11 @@ export default function PaymentModal({ open, appointmentId, title, onClose }) {
               disabled={paying}
               onClick={handlePay}
             >
-              {paying ? 'Đang chuyển…' : st === 'FAILED' ? 'Thanh toán lại' : 'Thanh toán VNPay'}
+              {paying
+                ? 'Đang chuyển…'
+                : st === 'FAILED'
+                  ? `Thanh toán lại (${method === 'ZALOPAY' ? 'ZaloPay' : 'VNPay'})`
+                  : `Thanh toán ${method === 'ZALOPAY' ? 'ZaloPay' : 'VNPay'}`}
             </button>
           )}
           <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>

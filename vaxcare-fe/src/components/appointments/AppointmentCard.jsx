@@ -87,7 +87,7 @@ export default function AppointmentCard({ appt, onRescheduled }) {
   async function handleCancelSubmit() {
     if (!appt.appointmentId) return;
     if (raw === "CONFIRMED" && !(cancelReason || "").trim()) {
-      setCancelError("Vui lòng nhập lý do hủy. Lịch đã thanh toán sẽ không được hoàn tiền.");
+      setCancelError("Vui lòng nhập lý do hủy. Hệ thống sẽ tự động hoàn tiền toàn bộ sau khi hủy thành công.");
       return;
     }
     setCancelling(true);
@@ -411,8 +411,8 @@ export default function AppointmentCard({ appt, onRescheduled }) {
                 ⚠️ Khung giờ tiêm này sẽ được trả lại ngay lập tức cho hệ thống để người khác có thể đăng ký.
               </span>
               {raw === "CONFIRMED" && (
-                <span style={{ color: "#dc2626", fontWeight: 700, marginTop: "8px", display: "block" }}>
-                  Lịch này đã thanh toán. Khi hủy, bạn sẽ KHÔNG được hoàn tiền.
+                <span style={{ color: "#059669", fontWeight: 700, marginTop: "8px", display: "block" }}>
+                  Lịch này đã thanh toán. Khi hủy (trước giờ tiêm), hệ thống sẽ tự động hoàn tiền toàn bộ qua cổng thanh toán.
                 </span>
               )}
             </p>

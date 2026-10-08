@@ -41,6 +41,7 @@ import java.util.Set;
 
 import com.vaxcare.common.enums.PaymentStatus;
 import com.vaxcare.feature.appointment.dto.CancelAppointmentRequest;
+import com.vaxcare.feature.appointment.dto.CreateRefundRequest;
 import com.vaxcare.feature.appointment.entity.Payment;
 import com.vaxcare.feature.appointment.repository.PaymentRepository;
 
@@ -50,10 +51,7 @@ import com.vaxcare.feature.appointment.repository.PaymentRepository;
 public class AppointmentService {
 
     private static final int SLOT_DURATION_MINUTES = 30;
-
-    /** Số ngày được đặt lại miễn phí sau mũi FAILED (cùng vắc xin + cơ sở). */
     private static final int FREE_REBOOK_WINDOW_DAYS = 14;
-
     private static final Set<AppointmentStatus> ACTIVE_STATUSES =
             Set.of(AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED, AppointmentStatus.CHECKED_IN);
 
@@ -66,8 +64,7 @@ public class AppointmentService {
     private final VaccineBatchRepository vaccineBatchRepository;
     private final VaccinationDetailRepository vaccinationDetailRepository;
     private final PaymentRepository paymentRepository;
-
-    // ===================== KHUNG GIỜ TRỐNG =====================
+    private final PaymentService paymentService;
 
     @Transactional(readOnly = true)
     public List<AppointmentSlotResponse> getAvailableSlots(Long facilityId, LocalDate date) {
@@ -111,8 +108,6 @@ public class AppointmentService {
             return slots;
         }
     }
-
-    // ===================== ĐẶT / XEM LỊCH HẸN =====================
 
     @Transactional
     public List<AppointmentResponse> getMyAppointments(Long currentUserId) {
@@ -177,7 +172,6 @@ public class AppointmentService {
         ensureUserHasNoOverlappingSlot(user.getUserId(), request.getAppointmentDate(), request.getTimeSlot());
         enforceProtocolLimits(user.getUserId(), vaccine, request.getAppointmentDate());
 
-        // --- Đặt lại miễn phí sau mũi FAILED (14 ngày, cùng vắc xin + cơ sở) ---
         FreeRebookInfo freeInfo = resolveFreeRebookEligibility(
                 user.getUserId(), vaccine.getVaccineId(), facility.getFacilityId());
 
@@ -255,7 +249,6 @@ public class AppointmentService {
         if (failedDate == null) {
             return FreeRebookInfo.none();
         }
-        // since = đầu ngày mũi FAILED (tránh trùng suất)
         LocalDateTime since = failedDate.atStartOfDay();
         boolean alreadyUsed = appointmentRepository.existsFreeRebookSince(
                 userId, vaccineId, facilityId, since);
@@ -277,8 +270,6 @@ public class AppointmentService {
         if (request.getTimeSlot() == null) {
             throw new BadRequestException("Khung giờ không được để trống");
         }
-
-        // Chỉ đổi ngày + giờ; giữ nguyên cơ sở, vắc xin, giá, QR, trạng thái thanh toán
         VaccinationFacility facility = appointment.getFacility();
         Vaccine vaccine = appointment.getVaccine();
         LocalDate newDate = request.getAppointmentDate();
@@ -324,16 +315,28 @@ public class AppointmentService {
         }
 
         Payment payment = paymentRepository.findByAppointment_AppointmentId(appointmentId).orElse(null);
-        boolean isPaid = payment != null && payment.getStatus() == PaymentStatus.SUCCESS;
+        boolean isPaid = payment != null
+                && (payment.getStatus() == PaymentStatus.SUCCESS
+                || payment.getStatus() == PaymentStatus.REFUNDING);
 
         String reason = request != null && request.getReason() != null ? request.getReason().trim() : "";
         if (isPaid) {
-            // Bắt buộc có lý do khi hủy lịch đã thanh toán; không hoàn tiền
             if (reason.isBlank()) {
-                throw new BadRequestException(
-                        "Vui lòng nhập lý do hủy. Lịch đã thanh toán khi hủy sẽ không được hoàn tiền.");
+                reason = "Người dùng hủy lịch hẹn";
             }
-            reason = reason + " [Không hoàn tiền — user hủy sau thanh toán]";
+            if (payment.getStatus() == PaymentStatus.REFUNDING) {
+                payment.setStatus(PaymentStatus.SUCCESS);
+                paymentRepository.save(payment);
+            }
+            CreateRefundRequest refundRequest = CreateRefundRequest.builder()
+                    .reason(reason)
+                    .build();
+            paymentService.refundPayment(
+                    payment.getPaymentId(),
+                    refundRequest,
+                    currentUserId,
+                    "user-cancel");
+            reason = reason + " [Đã hoàn tiền tự động khi hủy]";
         } else if (reason.isBlank()) {
             reason = "Người dùng chủ động hủy lịch hẹn chưa thanh toán (nhả slot)";
         }
@@ -341,6 +344,7 @@ public class AppointmentService {
         appointment.setStatus(AppointmentStatus.CANCELLED);
         appointment.setCancelledAt(LocalDateTime.now());
         appointment.setCancellationReason(reason);
+        payment = paymentRepository.findByAppointment_AppointmentId(appointmentId).orElse(payment);
         if (payment != null && payment.getStatus() == PaymentStatus.PENDING) {
             payment.setStatus(PaymentStatus.FAILED);
             paymentRepository.save(payment);
@@ -425,7 +429,6 @@ public class AppointmentService {
                             + "). Vui lòng hoàn tất hoặc hủy lịch hiện có trước khi đặt thêm.");
         }
 
-        // Tìm mốc ngày gần nhất của vắc xin này (từ lịch sử tiêm hoặc từ các lịch hẹn đang mở)
         LocalDate lastInjection = vaccinationDetailRepository.findLastInjectionDate(userId, vaccine.getVaccineId());
         LocalDate lastAppointment = appointmentRepository.findLatestAppointmentDateByUserAndVaccine(
                 userId, vaccine.getVaccineId(), ACTIVE_STATUSES);
