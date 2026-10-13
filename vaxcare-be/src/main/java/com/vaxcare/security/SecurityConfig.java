@@ -71,6 +71,7 @@ public class SecurityConfig {
                                 "/api/v1/payments/zalopay-return"
                         ).permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**","/v3/api-docs", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/ws/**", "/ws").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/facilities/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/facilities/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/vaccine-categories/**").permitAll()

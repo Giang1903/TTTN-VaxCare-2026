@@ -204,6 +204,22 @@ INSERT INTO `notifications` (`notification_id`, `account_id`, `title`, `content`
 -- --------------------------------------------------------
 
 --
+-- Cấu trúc bảng cho bảng `chat_messages`
+--
+
+CREATE TABLE `chat_messages` (
+  `message_id` bigint NOT NULL,
+  `sender_id` bigint NOT NULL,
+  `recipient_id` bigint NOT NULL,
+  `content` text NOT NULL,
+  `is_read` tinyint(1) NOT NULL DEFAULT '0',
+  `sent_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `read_at` datetime(6) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Cấu trúc bảng cho bảng `payments`
 --
 
@@ -773,6 +789,14 @@ ALTER TABLE `notifications`
   ADD KEY `idx_notifications_account_unread` (`account_id`,`is_read`,`sent_at` DESC);
 
 --
+-- Chỉ mục cho bảng `chat_messages`
+--
+ALTER TABLE `chat_messages`
+  ADD PRIMARY KEY (`message_id`),
+  ADD KEY `idx_chat_sender_recipient` (`sender_id`,`recipient_id`),
+  ADD KEY `idx_chat_recipient_read` (`recipient_id`,`is_read`);
+
+--
 -- Chỉ mục cho bảng `payments`
 --
 ALTER TABLE `payments`
@@ -942,6 +966,12 @@ ALTER TABLE `notifications`
   MODIFY `notification_id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
+-- AUTO_INCREMENT cho bảng `chat_messages`
+--
+ALTER TABLE `chat_messages`
+  MODIFY `message_id` bigint NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT cho bảng `payments`
 --
 ALTER TABLE `payments`
@@ -1084,6 +1114,13 @@ ALTER TABLE `medical_staff`
 --
 ALTER TABLE `notifications`
   ADD CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`account_id`);
+
+--
+-- Ràng buộc cho bảng `chat_messages`
+--
+ALTER TABLE `chat_messages`
+  ADD CONSTRAINT `fk_chat_sender` FOREIGN KEY (`sender_id`) REFERENCES `accounts` (`account_id`),
+  ADD CONSTRAINT `fk_chat_recipient` FOREIGN KEY (`recipient_id`) REFERENCES `accounts` (`account_id`);
 
 --
 -- Ràng buộc cho bảng `payments`
