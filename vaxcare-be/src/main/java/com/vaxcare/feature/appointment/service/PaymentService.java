@@ -28,12 +28,14 @@ import com.vaxcare.feature.auth.repository.AccountRepository;
 import com.vaxcare.feature.inventory.repository.VaccineBatchRepository;
 import com.vaxcare.feature.notification.service.EmailService;
 import com.vaxcare.feature.notification.service.NotificationService;
+import com.vaxcare.feature.realtime.service.RealtimeEventPublisher;
 import com.vaxcare.utils.QRCodeUtil;
 import com.vaxcare.utils.VNPayUtil;
 import com.vaxcare.utils.ZaloPayUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -74,6 +76,11 @@ public class PaymentService {
     private final EmailService emailService;
     private final NotificationService notificationService;
     private final RestClient.Builder restClientBuilder;
+    private final RealtimeEventPublisher realtimeEventPublisher;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    @Lazy
+    private AppointmentService appointmentService;
 
     @Transactional
     public VNPayUrlResponse createVnpayPaymentUrl(Long currentAccountId, CreatePaymentRequest request,
@@ -1268,6 +1275,18 @@ public class PaymentService {
         appointmentRepository.save(appointment);
 
         sendPaymentSuccessNotifications(payment, appointment);
+        try {
+            String userEmail = null;
+            if (appointment.getUser() != null && appointment.getUser().getAccount() != null) {
+                userEmail = appointment.getUser().getAccount().getEmail();
+            }
+            realtimeEventPublisher.publishAppointment(
+                    RealtimeEventPublisher.TYPE_PAYMENT_SUCCESS,
+                    appointmentService.mapToResponse(appointment),
+                    userEmail);
+        } catch (Exception e) {
+            log.warn("Realtime PAYMENT_SUCCESS publish failed: {}", e.getMessage());
+        }
         return new CallbackResult(true, "00", "Thanh toán thành công", appointment.getAppointmentId());
     }
 

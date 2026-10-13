@@ -19,6 +19,7 @@ import com.vaxcare.feature.auth.entity.MedicalStaff;
 import com.vaxcare.feature.auth.repository.AccountRepository;
 import com.vaxcare.feature.vaccination.dto.RecordVaccinationRequest;
 import com.vaxcare.feature.vaccination.service.VaccinationService;
+import com.vaxcare.feature.realtime.service.RealtimeEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +39,7 @@ public class StaffAppointmentService {
     private final AppointmentService appointmentService;
     private final VaccinationDetailRepository vaccinationDetailRepository;
     private final VaccinationService vaccinationService;
+    private final RealtimeEventPublisher realtimeEventPublisher;
 
     @Transactional(readOnly = true)
     public List<AppointmentResponse> searchAppointments(Long currentAccountId, Long facilityId,
@@ -81,14 +83,14 @@ public class StaffAppointmentService {
         }
         assignStaffIfPossible(account, appointment);
 
-        return appointmentService.mapToResponse(appointmentRepository.save(appointment));
+        AppointmentResponse response = appointmentService.mapToResponse(appointmentRepository.save(appointment));
+        realtimeEventPublisher.publishAppointment(
+                RealtimeEventPublisher.TYPE_APPOINTMENT_CONFIRMED,
+                response,
+                resolveUserEmail(appointment));
+        return response;
     }
 
-    
-
-    // ===================== CHECK-IN BẰNG QR CODE =====================
-
-    /** Độ dài khung giờ tiêm (phút) — khớp AppointmentService.SLOT_DURATION_MINUTES */
     private static final int SLOT_DURATION_MINUTES = 30;
 
     @Transactional
@@ -118,12 +120,14 @@ public class StaffAppointmentService {
         appointment.setStatus(AppointmentStatus.CHECKED_IN);
         assignStaffIfPossible(account, appointment);
 
-        return appointmentService.mapToResponse(appointmentRepository.save(appointment));
+        AppointmentResponse response = appointmentService.mapToResponse(appointmentRepository.save(appointment));
+        realtimeEventPublisher.publishAppointment(
+                RealtimeEventPublisher.TYPE_APPOINTMENT_CHECKED_IN,
+                response,
+                resolveUserEmail(appointment));
+        return response;
     }
 
-    /**
-     * Cho phép check-in trước tối đa 15 phút đến hết khung [giờ hẹn + SLOT_DURATION] của đúng ngày hẹn.
-     */
     private void assertCheckinTimeWindow(Appointment appointment) {
         LocalDate apptDate = appointment.getAppointmentDate();
         var timeSlot = appointment.getTimeSlot();
@@ -150,7 +154,6 @@ public class StaffAppointmentService {
         }
     }
 
-    // ===================== HOÀN TẤT TIÊM CHỦNG (TRỪ KHO TỰ ĐỘNG) =====================
     @Transactional
     public AppointmentResponse completeVaccination(Long appointmentId, Long currentAccountId) {
         vaccinationService.recordVaccination(
@@ -159,12 +162,15 @@ public class StaffAppointmentService {
                         .build(),
                 currentAccountId);
 
-        return appointmentService.mapToResponse(findAppointmentOrThrow(appointmentId));
+        Appointment appointment = findAppointmentOrThrow(appointmentId);
+        AppointmentResponse response = appointmentService.mapToResponse(appointment);
+        realtimeEventPublisher.publishAppointment(
+                RealtimeEventPublisher.TYPE_APPOINTMENT_COMPLETED,
+                response,
+                resolveUserEmail(appointment));
+        return response;
     }
 
-    /**
-     * Cập nhật ghi chú nhân viên trên lịch hẹn (không đổi trạng thái).
-     */
     @Transactional
     public AppointmentResponse updateNote(Long appointmentId, String note, Long currentAccountId) {
         Account account = findAccountOrThrow(currentAccountId);
@@ -189,10 +195,23 @@ public class StaffAppointmentService {
                     vaccinationDetailRepository.save(detail);
                 });
 
-        return appointmentService.mapToResponse(saved);
+        AppointmentResponse response = appointmentService.mapToResponse(saved);
+        realtimeEventPublisher.publishAppointment(
+                RealtimeEventPublisher.TYPE_APPOINTMENT_UPDATED,
+                response,
+                resolveUserEmail(saved));
+        return response;
     }
 
-    // ===================== HELPERS =====================
+    private String resolveUserEmail(Appointment appointment) {
+        try {
+            if (appointment.getUser() != null && appointment.getUser().getAccount() != null) {
+                return appointment.getUser().getAccount().getEmail();
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
 
     private Long resolveEffectiveFacilityId(Account account, Long requestedFacilityId) {
         if (account.getRole() == Role.MEDICAL_STAFF) {
@@ -211,10 +230,6 @@ public class StaffAppointmentService {
         }
     }
 
-
-    /**
-     * Phải thanh toán SUCCESS (hoặc giá 0 = miễn phí / free rebook) mới confirm / check-in / tiêm.
-     */
     private void assertPaidOrFree(Appointment appointment) {
         java.math.BigDecimal price = appointment.getPrice();
         boolean free = price == null || price.compareTo(java.math.BigDecimal.ZERO) == 0;

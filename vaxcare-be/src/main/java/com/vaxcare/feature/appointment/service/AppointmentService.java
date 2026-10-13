@@ -44,6 +44,7 @@ import com.vaxcare.feature.appointment.dto.CancelAppointmentRequest;
 import com.vaxcare.feature.appointment.dto.CreateRefundRequest;
 import com.vaxcare.feature.appointment.entity.Payment;
 import com.vaxcare.feature.appointment.repository.PaymentRepository;
+import com.vaxcare.feature.realtime.service.RealtimeEventPublisher;
 
 @Service
 @RequiredArgsConstructor
@@ -65,6 +66,7 @@ public class AppointmentService {
     private final VaccinationDetailRepository vaccinationDetailRepository;
     private final PaymentRepository paymentRepository;
     private final PaymentService paymentService;
+    private final RealtimeEventPublisher realtimeEventPublisher;
 
     @Transactional(readOnly = true)
     public List<AppointmentSlotResponse> getAvailableSlots(Long facilityId, LocalDate date) {
@@ -229,6 +231,10 @@ public class AppointmentService {
         } else {
             response.setFreeRebook(false);
         }
+        realtimeEventPublisher.publishAppointment(
+                RealtimeEventPublisher.TYPE_APPOINTMENT_CREATED,
+                response,
+                resolveUserEmail(saved));
         return response;
     }
 
@@ -291,7 +297,12 @@ public class AppointmentService {
 
         appointment.setAppointmentDate(newDate);
         appointment.setTimeSlot(newTimeSlot);
-        return mapToResponse(appointmentRepository.save(appointment));
+        AppointmentResponse response = mapToResponse(appointmentRepository.save(appointment));
+        realtimeEventPublisher.publishAppointment(
+                RealtimeEventPublisher.TYPE_APPOINTMENT_RESCHEDULED,
+                response,
+                resolveUserEmail(appointment));
+        return response;
     }
 
     @Transactional
@@ -350,7 +361,12 @@ public class AppointmentService {
             paymentRepository.save(payment);
         }
 
-        return mapToResponse(appointmentRepository.save(appointment));
+        AppointmentResponse response = mapToResponse(appointmentRepository.save(appointment));
+        realtimeEventPublisher.publishAppointment(
+                RealtimeEventPublisher.TYPE_APPOINTMENT_CANCELLED,
+                response,
+                resolveUserEmail(appointment));
+        return response;
     }
 
 
@@ -550,6 +566,24 @@ public class AppointmentService {
                 paymentRepository.save(p);
             }
         });
+        try {
+            realtimeEventPublisher.publishAppointment(
+                    RealtimeEventPublisher.TYPE_APPOINTMENT_CANCELLED,
+                    mapToResponse(appointment),
+                    resolveUserEmail(appointment));
+        } catch (Exception ignored) {
+        }
+    }
+
+    private String resolveUserEmail(Appointment appointment) {
+        try {
+            if (appointment.getUser() != null
+                    && appointment.getUser().getAccount() != null) {
+                return appointment.getUser().getAccount().getEmail();
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
     }
 
     public AppointmentResponse mapToResponse(Appointment appointment) {
