@@ -77,10 +77,14 @@ export function getAppointmentQrCode(appointmentId) {
 }
 
 /** POST /api/v1/payments/{paymentId}/refund — tạo yêu cầu hoàn tiền (ADMIN/STAFF) */
-export function createRefund(paymentId, { amount, reason }) {
+export function createRefund(paymentId, { amount, reason } = {}) {
   return apiClient.request(`/payments/${paymentId}/refund`, {
     method: "POST",
-    body: JSON.stringify({ amount: amount ?? null, reason }),
+    body: {
+      // null / omit amount = hoàn toàn bộ theo logic BE
+      amount: amount == null ? null : amount,
+      reason: reason || undefined,
+    },
   });
 }
 
