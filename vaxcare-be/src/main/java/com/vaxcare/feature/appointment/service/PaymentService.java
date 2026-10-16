@@ -364,6 +364,18 @@ public class PaymentService {
         } else {
             payment.setStatus(PaymentStatus.FAILED);
             paymentRepository.save(payment);
+            try {
+                String userEmail = null;
+                if (appointment.getUser() != null && appointment.getUser().getAccount() != null) {
+                    userEmail = appointment.getUser().getAccount().getEmail();
+                }
+                realtimeEventPublisher.publishAppointment(
+                        RealtimeEventPublisher.TYPE_PAYMENT_FAILED,
+                        appointmentService.mapToResponse(appointment),
+                        userEmail);
+            } catch (Exception e) {
+                log.warn("Realtime PAYMENT_FAILED publish failed: {}", e.getMessage());
+            }
             return new CallbackResult(false, "00", "Thanh toán thất bại hoặc bị hủy", appointment.getAppointmentId());
         }
     }
@@ -507,6 +519,22 @@ public class PaymentService {
                             paymentRepository.save(payment);
                             message = String.valueOf(queryResult.getOrDefault(
                                     "return_message", "Thanh toán thất bại hoặc bị hủy"));
+                            try {
+                                Appointment appt = payment.getAppointment();
+                                String userEmail = null;
+                                if (appt != null && appt.getUser() != null
+                                        && appt.getUser().getAccount() != null) {
+                                    userEmail = appt.getUser().getAccount().getEmail();
+                                }
+                                if (appt != null) {
+                                    realtimeEventPublisher.publishAppointment(
+                                            RealtimeEventPublisher.TYPE_PAYMENT_FAILED,
+                                            appointmentService.mapToResponse(appt),
+                                            userEmail);
+                                }
+                            } catch (Exception ex) {
+                                log.warn("Realtime PAYMENT_FAILED publish failed: {}", ex.getMessage());
+                            }
                         }
                     } catch (Exception e) {
                         log.error("Lỗi query ZaloPay order appTransId={}", appTransId, e);
@@ -1049,6 +1077,21 @@ public class PaymentService {
         payment.setRefundedAmount(refundAmount);
         payment.setStatus(PaymentStatus.REFUNDED);
         paymentRepository.save(payment);
+        try {
+            Appointment appointment = payment.getAppointment();
+            if (appointment != null) {
+                String userEmail = null;
+                if (appointment.getUser() != null && appointment.getUser().getAccount() != null) {
+                    userEmail = appointment.getUser().getAccount().getEmail();
+                }
+                realtimeEventPublisher.publishAppointment(
+                        RealtimeEventPublisher.TYPE_PAYMENT_REFUNDED,
+                        appointmentService.mapToResponse(appointment),
+                        userEmail);
+            }
+        } catch (Exception e) {
+            log.warn("Realtime PAYMENT_REFUNDED publish failed: {}", e.getMessage());
+        }
     }
 
     private void restorePaymentStatusAfterFailedRefund(Payment payment) {

@@ -7,6 +7,7 @@ import com.vaxcare.feature.auth.entity.Account;
 import com.vaxcare.feature.notification.dto.NotificationResponse;
 import com.vaxcare.feature.notification.entity.Notification;
 import com.vaxcare.feature.notification.repository.NotificationRepository;
+import com.vaxcare.feature.realtime.service.RealtimeEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,7 @@ import java.util.List;
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final RealtimeEventPublisher realtimeEventPublisher;
 
     @Transactional
     public Notification create(Account account, String title, String content, NotificationType type, Long relatedId) {
@@ -29,7 +31,18 @@ public class NotificationService {
                 .relatedId(relatedId)
                 .isRead(false)
                 .build();
-        return notificationRepository.save(notification);
+        notification = notificationRepository.save(notification);
+
+        try {
+            NotificationResponse response = mapToResponse(notification);
+            String email = account != null ? account.getEmail() : null;
+            Long accountId = account != null ? account.getAccountId() : null;
+            realtimeEventPublisher.publishNotification(response, accountId, email);
+        } catch (Exception ignored) {
+            // never fail notification create due to realtime
+        }
+
+        return notification;
     }
 
     @Transactional(readOnly = true)
