@@ -29,8 +29,9 @@ export default function StaffReactionsPage() {
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(true);
 
-  const loadList = useCallback(async () => {
-    setLoading(true);
+  const loadList = useCallback(async (opts = {}) => {
+    const silent = opts.silent === true;
+    if (!silent) setLoading(true);
     try {
       const list = await staffService.listReactions();
       const mapped = {};
@@ -39,28 +40,32 @@ export default function StaffReactionsPage() {
         mapped[String(item.id)] = item;
       });
       setData(mapped);
-      const keys = Object.keys(mapped);
-      if (keys.length) {
-        const first = mapped[keys[0]];
-        setActiveId(keys[0]);
-        setSeverity(first.severity || 'MILD');
-        setStatus(first.status || 'PENDING');
-        setNote(first.note || '');
-      } else {
-        setActiveId(null);
-      }
+      setActiveId((prev) => {
+        const keys = Object.keys(mapped);
+        if (!keys.length) return null;
+        // Giữ case đang chọn nếu vẫn còn; không nhảy lung tung khi poll
+        if (prev && mapped[prev]) return prev;
+        return keys[0];
+      });
     } catch (err) {
       console.error(err);
-      showToast(err.message || 'Không tải được phản ứng sau tiêm', 'warn');
-      setData({});
+      if (!silent) {
+        showToast(err.message || 'Không tải được phản ứng sau tiêm', 'warn');
+        setData({});
+      }
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [showToast]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadList();
+  }, [loadList]);
+
+  useEffect(() => {
+    const t = setInterval(() => loadList({ silent: true }), 3000);
+    return () => clearInterval(t);
   }, [loadList]);
 
   const load = (id) => {
@@ -72,9 +77,14 @@ export default function StaffReactionsPage() {
     setNote(d.note || '');
   };
 
-  // Backend chỉ lưu processingStatus + staffNote (xem ProcessReactionRequest),
-  // KHÔNG có API cập nhật mức độ (severity) — nên severity không được gửi lên
-  // và không được ghi đè trong state cục bộ để tránh sai lệch dữ liệu sau khi tải lại trang.
+  useEffect(() => {
+    if (!activeId || !data[activeId]) return;
+    const d = data[activeId];
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSeverity(d.severity || 'MILD');
+    setStatus(d.status || 'PENDING');
+    setNote(d.note || '');
+  }, [activeId]); 
   const applyForm = async (id, nextStatus, nextNote) => {
     try {
       await staffService.processReaction(id, {

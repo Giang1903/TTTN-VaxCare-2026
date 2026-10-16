@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useAppointmentRealtime } from '../../hooks/useAppointmentRealtime';
 import DashHero from '../../components/dashboard/DashHero';
 import DashStats from '../../components/dashboard/DashStats';
 import AISuggestion from '../../components/dashboard/AISuggestion';
@@ -49,6 +50,16 @@ export default function DashboardPage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
   }, [load]);
+
+  useAppointmentRealtime({
+    enabled: true,
+    onEvent: (event) => {
+      const t = String(event?.type || '');
+      if (t.includes('APPOINTMENT') || t.includes('PAYMENT')) {
+        load();
+      }
+    },
+  });
 
   const { upcoming, completed, upcomingCards, recentCards, nextDateLabel } = useMemo(() => {
     const up = [];
