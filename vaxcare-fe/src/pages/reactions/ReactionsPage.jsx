@@ -63,9 +63,12 @@ export default function ReactionsPage() {
   const [successMsg, setSuccessMsg] = useState('');
   const [formError, setFormError] = useState('');
 
-  const load = useCallback(() => {
-    setLoading(true);
-    setError('');
+  const load = useCallback((opts = {}) => {
+    const silent = opts.silent === true;
+    if (!silent) {
+      setLoading(true);
+      setError('');
+    }
     Promise.all([getMyVaccinationHistory(), getMyReactions()])
       .then(([history, rx]) => {
         const list = history?.details || history?.detailList || [];
@@ -73,16 +76,25 @@ export default function ReactionsPage() {
         setReactions(Array.isArray(rx) ? rx : []);
       })
       .catch((err) => {
-        setError(err.message || 'Không tải được dữ liệu.');
-        setDetails([]);
-        setReactions([]);
+        if (!silent) {
+          setError(err.message || 'Không tải được dữ liệu.');
+          setDetails([]);
+          setReactions([]);
+        }
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!silent) setLoading(false);
+      });
   }, []);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
+  }, [load]);
+
+  useEffect(() => {
+    const t = setInterval(() => load({ silent: true }), 3000);
+    return () => clearInterval(t);
   }, [load]);
 
   const doseOptions = useMemo(() => {

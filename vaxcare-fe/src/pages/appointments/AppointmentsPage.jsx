@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useAppointmentRealtime } from '../../hooks/useAppointmentRealtime';
 import { Link } from 'react-router-dom';
 import SlimPageHero from '../../components/dashboard-shared/SlimPageHero';
 import AppointmentFilter from '../../components/appointments/AppointmentFilter';
@@ -130,9 +131,12 @@ export default function AppointmentsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const load = useCallback(() => {
-    setLoading(true);
-    setError('');
+  const load = useCallback((opts = {}) => {
+    const silent = opts.silent === true;
+    if (!silent) {
+      setLoading(true);
+      setError('');
+    }
     getMyAppointments()
       .then((data) => {
         const list = Array.isArray(data) ? data : [];
@@ -148,15 +152,28 @@ export default function AppointmentsPage() {
         setItems(mapped);
       })
       .catch((err) => {
-        setError(err.message || 'Không thể tải danh sách lịch tiêm.');
-        setItems([]);
+        if (!silent) {
+          setError(err.message || 'Không thể tải danh sách lịch tiêm.');
+          setItems([]);
+        }
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!silent) setLoading(false);
+      });
   }, []);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
+  }, [load]);
+  useAppointmentRealtime({
+    enabled: true,
+    onEvent: () => load({ silent: true }),
+  });
+
+  useEffect(() => {
+    const t = setInterval(() => load({ silent: true }), 3000);
+    return () => clearInterval(t);
   }, [load]);
 
   const filtered = useMemo(
