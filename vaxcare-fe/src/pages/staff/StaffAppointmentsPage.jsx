@@ -5,6 +5,7 @@ import useStaffToast from '../../hooks/useStaffToast';
 import { useAuth } from '../../context/AuthContext';
 import * as staffService from '../../services/staffService';
 import QrCameraScanner from '../../components/staff/QrCameraScanner';
+import RefundModal from '../../components/appointments/RefundModal';
 
 const STATUS_LABEL = {
   pending: 'Chờ xác nhận',
@@ -107,6 +108,8 @@ export default function StaffAppointmentsPage() {
   const [cameraOn, setCameraOn] = useState(false);
   const [noteDraft, setNoteDraft] = useState('');
   const [noteSaving, setNoteSaving] = useState(false);
+  const [refundOpen, setRefundOpen] = useState(false);
+  const [refundAppt, setRefundAppt] = useState(null);
 
   const loadAppointments = useCallback(async () => {
     setLoading(true);
@@ -707,6 +710,19 @@ export default function StaffAppointmentsPage() {
                   <button type="button" className="btn outline" onClick={closeDrawer}>
                     Đóng
                   </button>
+                  {String(drawerAppt.paymentStatus || '').toUpperCase() === 'SUCCESS' && (
+                    <button
+                      type="button"
+                      className="btn outline"
+                      style={{ borderColor: '#fca5a5', color: '#b91c1c' }}
+                      onClick={() => {
+                        setRefundAppt(drawerAppt);
+                        setRefundOpen(true);
+                      }}
+                    >
+                      Hoàn tiền
+                    </button>
+                  )}
                   <button
                     type="button"
                     className="btn primary"
@@ -724,6 +740,19 @@ export default function StaffAppointmentsPage() {
                   <button type="button" className="btn outline" onClick={closeDrawer}>
                     Đóng
                   </button>
+                  {String(drawerAppt.paymentStatus || '').toUpperCase() === 'SUCCESS' && (
+                    <button
+                      type="button"
+                      className="btn outline"
+                      style={{ borderColor: '#fca5a5', color: '#b91c1c' }}
+                      onClick={() => {
+                        setRefundAppt(drawerAppt);
+                        setRefundOpen(true);
+                      }}
+                    >
+                      Hoàn tiền
+                    </button>
+                  )}
                   <button
                     type="button"
                     className="btn primary"
@@ -741,6 +770,19 @@ export default function StaffAppointmentsPage() {
                   <button type="button" className="btn outline" onClick={closeDrawer}>
                     Đóng
                   </button>
+                  {String(drawerAppt.paymentStatus || '').toUpperCase() === 'SUCCESS' && (
+                    <button
+                      type="button"
+                      className="btn outline"
+                      style={{ borderColor: '#fca5a5', color: '#b91c1c' }}
+                      onClick={() => {
+                        setRefundAppt(drawerAppt);
+                        setRefundOpen(true);
+                      }}
+                    >
+                      Hoàn tiền
+                    </button>
+                  )}
                   <button
                     type="button"
                     className="btn primary"
@@ -761,10 +803,49 @@ export default function StaffAppointmentsPage() {
                   Đóng
                 </button>
               )}
+              {String(drawerAppt.paymentStatus || '').toUpperCase() === 'SUCCESS' && (
+                <button
+                  type="button"
+                  className="btn outline"
+                  style={{ borderColor: '#fca5a5', color: '#b91c1c' }}
+                  onClick={() => {
+                    setRefundAppt(drawerAppt);
+                    setRefundOpen(true);
+                  }}
+                >
+                  Hoàn tiền
+                </button>
+              )}
             </div>
           </>
         )}
       </aside>
+
+      <RefundModal
+        open={refundOpen}
+        appointmentId={refundAppt?.id}
+        patientName={refundAppt?.name}
+        onClose={() => {
+          setRefundOpen(false);
+          setRefundAppt(null);
+        }}
+        onSuccess={() => {
+          showToast('Hoàn tiền thành công', 'ok');
+          setAppts((list) =>
+            list.map((a) =>
+              a.id === refundAppt?.id
+                ? {
+                    ...a,
+                    paid: false,
+                    paymentStatus: 'REFUNDED',
+                    paymentLabel: 'Đã hoàn tiền',
+                  }
+                : a
+            )
+          );
+          loadAppointments();
+        }}
+      />
 
       <div className={`staff-toast${toast.show ? ' show' : ''}${toast.type ? ` ${toast.type}` : ''}`}>
         {toast.message}

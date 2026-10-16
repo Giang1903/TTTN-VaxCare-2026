@@ -1,19 +1,36 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
-import QrCodeModal from "./QrCodeModal";
+import { createPortal } from "react-dom";
+import QrInvoicePanel from "./QrInvoicePanel";
 import PaymentModal from "./PaymentModal";
 import { getAvailableSlots, rescheduleAppointment, cancelAppointment } from "../../services/appointmentService";
 // eslint-disable-next-line no-unused-vars
 import { formatTime } from "../../utils/format";
 
+const menuItemStyle = {
+  display: "block",
+  width: "100%",
+  textAlign: "left",
+  padding: "10px 12px",
+  border: "none",
+  background: "transparent",
+  borderRadius: 8,
+  fontSize: 13,
+  fontWeight: 600,
+  color: "#0f172a",
+  cursor: "pointer",
+};
+
 export default function AppointmentCard({ appt, onRescheduled }) {
-  const [qrOpen, setQrOpen] = useState(false);
+
+  const [panelOpen, setPanelOpen] = useState(false);
   const [payOpen, setPayOpen] = useState(false);
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState("");
+  const [actionMenu, setActionMenu] = useState(null);
   const [rescheduleDate, setRescheduleDate] = useState("");
   const [slots, setSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState("");
@@ -25,6 +42,20 @@ export default function AppointmentCard({ appt, onRescheduled }) {
   const canModify =
     appt.status === "upcoming" && (raw === "PENDING" || raw === "CONFIRMED");
   const showPay = canModify && (raw === "PENDING" || raw === "CONFIRMED");
+
+  const anyModalOpen =
+    panelOpen || payOpen || rescheduleOpen || cancelModalOpen;
+
+  useEffect(() => {
+    if (!anyModalOpen) return undefined;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.body.classList.add("vx-modal-open");
+    return () => {
+      document.body.style.overflow = prev;
+      document.body.classList.remove("vx-modal-open");
+    };
+  }, [anyModalOpen]);
 
   useEffect(() => {
     if (!rescheduleOpen || !rescheduleDate || !appt.facilityId) {
@@ -139,84 +170,107 @@ export default function AppointmentCard({ appt, onRescheduled }) {
             )}
           </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px", alignItems: "flex-end" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px", alignItems: "flex-end", position: "relative" }}>
           {canModify && (
             <>
-              {raw === "CONFIRMED" && appt.appointmentId && appt.paid && (
+              {/* Nút mở khung gộp QR + Hóa đơn */}
+              {((raw === "CONFIRMED" && appt.appointmentId && appt.paid) || showPay) && (
                 <button
                   type="button"
                   className="btn btn-primary btn-sm"
-                  onClick={() => setQrOpen(true)}
+                  onClick={() => {
+                    setActionMenu(null);
+                    setPanelOpen(true);
+                  }}
+                  style={{ minWidth: 140 }}
                 >
-                  Mã QR
+                  Mã QR & Hóa đơn
                 </button>
               )}
-              {showPay && (
+
+              {/* Nhóm 2: Đổi lịch + Hủy lịch */}
+              <div style={{ position: "relative" }}>
                 <button
                   type="button"
                   className="btn btn-ghost btn-sm"
-                  onClick={() => setPayOpen(true)}
+                  onClick={() => setActionMenu((m) => (m === "manage" ? null : "manage"))}
+                  style={{ minWidth: 140 }}
                 >
-                  {raw === "PENDING" ? "Thanh toán" : "Hóa đơn / TT"}
+                  Đổi / Hủy lịch
+                  <span style={{ marginLeft: 6, fontSize: 10 }}>▾</span>
                 </button>
-              )}
-              <button
-                type="button"
-                style={{
-                  fontSize: "13px",
-                  fontWeight: 600,
-                  color: "var(--teal-600)",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                }}
-                onClick={openReschedule}
-              >
-                Đổi ngày/giờ
-              </button>
-              {(raw === "PENDING" || raw === "CONFIRMED") && (
-                <button
-                  type="button"
-                  style={{
-                    fontSize: "13px",
-                    fontWeight: 600,
-                    color: "#ef4444",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => {
-                    setCancelReason(
-                      raw === "CONFIRMED"
-                        ? ""
-                        : "Người dùng chủ động hủy lịch hẹn chưa thanh toán"
-                    );
-                    setCancelError("");
-                    setCancelModalOpen(true);
-                  }}
-                >
-                  Hủy lịch
-                </button>
-              )}
+                {actionMenu === "manage" && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "calc(100% + 6px)",
+                      right: 0,
+                      zIndex: 20,
+                      minWidth: 168,
+                      background: "#fff",
+                      borderRadius: 12,
+                      border: "1px solid #e2e8f0",
+                      boxShadow: "0 10px 28px rgba(15,23,42,0.12)",
+                      padding: 6,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 2,
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActionMenu(null);
+                        openReschedule();
+                      }}
+                      style={{ ...menuItemStyle, color: "var(--teal-700)" }}
+                    >
+                      Đổi ngày/giờ
+                    </button>
+                    {(raw === "PENDING" || raw === "CONFIRMED") && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActionMenu(null);
+                          setCancelReason(
+                            raw === "CONFIRMED"
+                              ? ""
+                              : "Người dùng chủ động hủy lịch hẹn chưa thanh toán"
+                          );
+                          setCancelError("");
+                          setCancelModalOpen(true);
+                        }}
+                        style={{ ...menuItemStyle, color: "#ef4444" }}
+                      >
+                        Hủy lịch
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             </>
           )}
 
           {appt.status === "completed" && (
             <>
               {appt.hasCertificate !== false && (
-                <a href="/record" className="btn btn-primary btn-sm">
+                <a href="/record" className="btn btn-ghost btn-sm">
                   Xem chứng nhận
                 </a>
               )}
-              <button
-                type="button"
-                style={{ fontSize: "13px", fontWeight: 600, color: "var(--teal-600)", background: "none", border: "none", cursor: "pointer" }}
-                onClick={() => setPayOpen(true)}
+              <a
+                href="/reactions"
+                className="btn btn-primary btn-sm"
+                title="Khai báo triệu chứng / phản ứng sau tiêm để được hỗ trợ kịp thời"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  whiteSpace: "nowrap",
+                }}
               >
-                Xem hóa đơn
-              </button>
-              <a href="/reactions" style={{ fontSize: "13px", fontWeight: 600, color: "var(--teal-600)" }}>
-                Báo phản ứng
+                <span aria-hidden style={{ fontSize: 14, lineHeight: 1 }}></span>
+                Khai báo phản ứng
               </a>
             </>
           )}
@@ -241,11 +295,11 @@ export default function AppointmentCard({ appt, onRescheduled }) {
         </div>
       </div>
 
-      <QrCodeModal
-        open={qrOpen}
+      <QrInvoicePanel
+        open={panelOpen}
         appointmentId={appt.appointmentId}
         title={appt.title}
-        onClose={() => setQrOpen(false)}
+        onClose={() => setPanelOpen(false)}
       />
       <PaymentModal
         open={payOpen}
@@ -254,7 +308,8 @@ export default function AppointmentCard({ appt, onRescheduled }) {
         onClose={() => setPayOpen(false)}
       />
 
-      {rescheduleOpen && (
+      {rescheduleOpen &&
+        createPortal(
         <div
           role="dialog"
           aria-modal="true"
@@ -262,7 +317,7 @@ export default function AppointmentCard({ appt, onRescheduled }) {
             position: "fixed",
             inset: 0,
             background: "rgba(15,23,42,0.45)",
-            zIndex: 1000,
+            zIndex: 100000,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -372,9 +427,9 @@ export default function AppointmentCard({ appt, onRescheduled }) {
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
 
-      {cancelModalOpen && (
+      {cancelModalOpen && createPortal(
         <div
           role="dialog"
           aria-modal="true"
@@ -382,7 +437,7 @@ export default function AppointmentCard({ appt, onRescheduled }) {
             position: "fixed",
             inset: 0,
             background: "rgba(15,23,42,0.45)",
-            zIndex: 1000,
+            zIndex: 100000,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -404,18 +459,16 @@ export default function AppointmentCard({ appt, onRescheduled }) {
             <h3 style={{ margin: "0 0 8px", fontSize: 18, fontWeight: 700, color: "#dc2626" }}>
               Xác nhận hủy lịch hẹn
             </h3>
-            <p style={{ margin: "0 0 14px", fontSize: 13, color: "var(--gray-600)", lineHeight: 1.5 }}>
-              Bạn có chắc chắn muốn hủy lịch hẹn tiêm <strong>{appt.title}</strong> vào ngày <strong>{appt.appointmentDate}</strong> ({appt.time})?
-              <br />
-              <span style={{ color: "#d97706", fontWeight: 600, marginTop: "6px", display: "block" }}>
-                ⚠️ Khung giờ tiêm này sẽ được trả lại ngay lập tức cho hệ thống để người khác có thể đăng ký.
-              </span>
-              {raw === "CONFIRMED" && (
-                <span style={{ color: "#059669", fontWeight: 700, marginTop: "8px", display: "block" }}>
-                  Lịch này đã thanh toán. Khi hủy (trước giờ tiêm), hệ thống sẽ tự động hoàn tiền toàn bộ qua cổng thanh toán.
-                </span>
-              )}
+            <p style={{ margin: "0 0 10px", fontSize: 13, color: "var(--gray-600)", lineHeight: 1.5 }}>
+              Bạn có chắc chắn muốn hủy lịch hẹn tiêm <strong>{appt.title}</strong> vào ngày{" "}
+              <strong>{appt.appointmentDate}</strong> ({appt.time})?
             </p>
+
+            {raw === "CONFIRMED" && (
+              <p style={{ color: "#059669", fontWeight: 700, fontSize: 13, margin: "0 0 10px", lineHeight: 1.5 }}>
+                Lịch này đã thanh toán. Khi hủy (trước giờ tiêm), hệ thống sẽ tự động hoàn tiền toàn bộ qua cổng thanh toán.
+              </p>
+            )}
 
             <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
               Lý do hủy {raw === "CONFIRMED" ? "(bắt buộc)" : "(không bắt buộc)"}:
@@ -431,7 +484,7 @@ export default function AppointmentCard({ appt, onRescheduled }) {
                 padding: "10px 12px",
                 borderRadius: 10,
                 border: "1px solid #e2e8f0",
-                marginBottom: 14,
+                marginBottom: 12,
                 fontSize: 13,
               }}
             />
@@ -441,6 +494,11 @@ export default function AppointmentCard({ appt, onRescheduled }) {
                 {cancelError}
               </p>
             )}
+
+            {/* Cảnh báo vàng — đặt ngay trước 2 nút */}
+            <p style={{ color: "#d97706", fontWeight: 600, fontSize: 13, margin: "0 0 14px", lineHeight: 1.5 }}>
+              ⚠️ Khung giờ tiêm này sẽ được trả lại ngay lập tức cho hệ thống để người khác có thể đăng ký.
+            </p>
 
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
               <button
@@ -471,7 +529,7 @@ export default function AppointmentCard({ appt, onRescheduled }) {
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
     </>
   );
 }
