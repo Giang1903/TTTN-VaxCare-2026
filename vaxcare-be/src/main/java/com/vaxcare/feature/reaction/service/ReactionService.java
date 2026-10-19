@@ -16,6 +16,7 @@ import com.vaxcare.feature.reaction.entity.PostVaccinationReaction;
 import com.vaxcare.feature.reaction.repository.ReactionRepository;
 import com.vaxcare.feature.vaccination.entity.VaccinationDetail;
 import com.vaxcare.feature.vaccination.repository.VaccinationDetailRepository;
+import com.vaxcare.feature.realtime.service.RealtimeEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @SuppressWarnings("null")
 public class ReactionService {
+
+    private final RealtimeEventPublisher realtimeEventPublisher;
 
     private final ReactionRepository reactionRepository;
     private final VaccinationDetailRepository detailRepository;
@@ -50,7 +53,29 @@ public class ReactionService {
                 .symptoms(request.getSymptoms())
                 .build();
 
-        return mapToResponse(reactionRepository.save(reaction));
+        ReactionResponse response = mapToResponse(reactionRepository.save(reaction));
+        try {
+            Long facilityId = null;
+            if (detail.getAppointment() != null && detail.getAppointment().getFacility() != null) {
+                facilityId = detail.getAppointment().getFacility().getFacilityId();
+            }
+            String userEmail = null;
+            try {
+                if (detail.getHistory() != null && detail.getHistory().getUser() != null
+                        && detail.getHistory().getUser().getAccount() != null) {
+                    userEmail = detail.getHistory().getUser().getAccount().getEmail();
+                }
+            } catch (Exception ignored) {
+            }
+            realtimeEventPublisher.publishReaction(
+                    RealtimeEventPublisher.TYPE_REACTION_SUBMITTED,
+                    response,
+                    facilityId,
+                    currentAccountId,
+                    userEmail);
+        } catch (Exception ignored) {
+        }
+        return response;
     }
 
     // ===================== USER: XEM PHẢN ỨNG CỦA CHÍNH MÌNH =====================
@@ -95,7 +120,34 @@ public class ReactionService {
             reaction.setStaffNote(request.getStaffNote());
         }
 
-        return mapToResponse(reactionRepository.save(reaction));
+        ReactionResponse response = mapToResponse(reactionRepository.save(reaction));
+        try {
+            Long facilityId = null;
+            Appointment appt = reaction.getDetail() != null ? reaction.getDetail().getAppointment() : null;
+            if (appt != null && appt.getFacility() != null) {
+                facilityId = appt.getFacility().getFacilityId();
+            }
+            String userEmail = null;
+            Long userAccountId = null;
+            try {
+                if (reaction.getDetail() != null && reaction.getDetail().getHistory() != null
+                        && reaction.getDetail().getHistory().getUser() != null
+                        && reaction.getDetail().getHistory().getUser().getAccount() != null) {
+                    var acc = reaction.getDetail().getHistory().getUser().getAccount();
+                    userEmail = acc.getEmail();
+                    userAccountId = acc.getAccountId();
+                }
+            } catch (Exception ignored) {
+            }
+            realtimeEventPublisher.publishReaction(
+                    RealtimeEventPublisher.TYPE_REACTION_PROCESSED,
+                    response,
+                    facilityId,
+                    userAccountId,
+                    userEmail);
+        } catch (Exception ignored) {
+        }
+        return response;
     }
 
     // ===================== HELPERS =====================

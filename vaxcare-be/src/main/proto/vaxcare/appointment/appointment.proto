@@ -1,0 +1,111 @@
+syntax = "proto3";
+
+package vaxcare.appointment;
+
+option java_multiple_files = true;
+option java_package = "com.vaxcare.grpc.appointment";
+option java_outer_classname = "AppointmentProto";
+
+import "vaxcare/common/common.proto";
+
+message AvailableSlotsRequest {
+  int64 facility_id = 1;
+  string date = 2;   
+}
+
+message GetAppointmentRequest {
+  int64 id = 1;
+}
+
+message BookAppointmentRequest {
+  int64 facility_id = 1;
+  int64 vaccine_id = 2;
+  string appointment_date = 3;  
+  string time_slot = 4;         
+  string note = 5;
+}
+
+message CancelAppointmentRequest {
+  int64 id = 1;
+  string reason = 2;
+}
+
+message RescheduleAppointmentRequest {
+  int64 id = 1;
+  string appointment_date = 2;
+  string time_slot = 3;
+}
+
+message AppointmentSlot {
+  string time_slot = 1;
+  int32 available_capacity = 2;
+  int32 max_capacity = 3;
+  bool available = 4;
+}
+
+message AppointmentResponse {
+  int64 appointment_id = 1;
+  int64 user_id = 2;
+  string user_full_name = 3;
+  int64 facility_id = 4;
+  string facility_name = 5;
+  string user_phone = 6;
+  int64 vaccine_id = 7;
+  string vaccine_name = 8;
+  int64 staff_id = 9;
+  string staff_name = 10;
+  string price = 11;              
+  bool recommended_by_ai = 12;
+  int64 prediction_id = 13;
+  string appointment_date = 14;
+  string time_slot = 15;
+  string status = 16;
+  string qr_code = 17;
+  string note = 18;
+  string created_at = 19;
+  string payment_status = 20;
+  bool paid = 21;
+  string cancelled_at = 22;
+  string cancellation_reason = 23;
+  bool free_rebook = 24;
+  string free_rebook_message = 25;
+  string vaccination_result = 26;
+  int64 vaccination_detail_id = 27;
+  bool has_certificate = 28;
+}
+
+message QrCodeResponse {
+  string qr_code = 1;
+  string appointment_code = 2;
+  string qr_code_image_base64 = 3;
+}
+
+message AvailableSlotsResponse {
+  repeated AppointmentSlot slots = 1;
+}
+
+message AppointmentListResponse {
+  repeated AppointmentResponse appointments = 1;
+}
+
+message AppointmentApiResponse {
+  string timestamp = 1;
+  int32 status = 2;
+  string message = 3;
+  oneof data {
+    AppointmentResponse appointment = 4;
+    AppointmentListResponse list = 5;
+    AvailableSlotsResponse slots = 6;
+    QrCodeResponse qr = 7;
+  }
+}
+
+service AppointmentService {
+  rpc GetAvailableSlots(AvailableSlotsRequest) returns (AppointmentApiResponse);
+  rpc GetMyAppointments(vaxcare.common.Empty) returns (AppointmentApiResponse);
+  rpc GetAppointmentById(GetAppointmentRequest) returns (AppointmentApiResponse);
+  rpc GetQrCode(GetAppointmentRequest) returns (AppointmentApiResponse);
+  rpc BookAppointment(BookAppointmentRequest) returns (AppointmentApiResponse);
+  rpc CancelAppointment(CancelAppointmentRequest) returns (AppointmentApiResponse);
+  rpc RescheduleAppointment(RescheduleAppointmentRequest) returns (AppointmentApiResponse);
+}

@@ -16,6 +16,7 @@ import com.vaxcare.feature.inventory.dto.VaccineBatchRequest;
 import com.vaxcare.feature.inventory.dto.VaccineBatchResponse;
 import com.vaxcare.feature.inventory.entity.VaccineBatch;
 import com.vaxcare.feature.inventory.entity.VaccineInventory;
+import com.vaxcare.feature.realtime.service.RealtimeEventPublisher;
 import com.vaxcare.feature.inventory.repository.VaccineBatchRepository;
 import com.vaxcare.feature.inventory.repository.VaccineInventoryRepository;
 import com.vaxcare.feature.vaccine.entity.Vaccine;
@@ -33,6 +34,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 @SuppressWarnings("null")
 public class InventoryService {
+
+    private final RealtimeEventPublisher realtimeEventPublisher;
 
     private final VaccineInventoryRepository inventoryRepository;
     private final VaccineBatchRepository batchRepository;
@@ -72,6 +75,14 @@ public class InventoryService {
                 .build();
 
         VaccineBatch saved = batchRepository.save(batch);
+        VaccineBatchResponse importedResponse = mapBatchToResponse(saved);
+        try {
+            realtimeEventPublisher.publishInventory(
+                    RealtimeEventPublisher.TYPE_INVENTORY_BATCH_IMPORTED,
+                    importedResponse,
+                    request.getFacilityId());
+        } catch (Exception ignored) {
+        }
         try {
             String summary = String.format(
                     "facilityId=%d,vaccineId=%d,batch=%s,qty=%d,expiry=%s",
@@ -228,6 +239,13 @@ public class InventoryService {
 
         batchRepository.saveAll(batches);
         try {
+            realtimeEventPublisher.publishInventory(
+                    RealtimeEventPublisher.TYPE_INVENTORY_STOCK_UPDATED,
+                    mapBatchToResponse(primaryBatch),
+                    facilityId);
+        } catch (Exception ignored) {
+        }
+        try {
             String summary = String.format(
                     "facilityId=%d,vaccineId=%d,qty=%d,batch=%s,remaining=%d",
                     facilityId,
@@ -246,13 +264,6 @@ public class InventoryService {
         return primaryBatch;
     }
 
-
-    // ===================== PHÂN QUYỀN THEO CƠ SỞ =====================
-
-    /**
-     * Staff chỉ được thao tác kho của cơ sở mình được phân công.
-     * Admin được thao tác mọi cơ sở.
-     */
     private void assertFacilityAccess(Long currentAccountId, Long facilityId) {
         if (currentAccountId == null || facilityId == null) {
             throw new UnauthorizedException("Không xác định được tài khoản hoặc cơ sở tiêm chủng");

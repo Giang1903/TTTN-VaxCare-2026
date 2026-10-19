@@ -26,6 +26,7 @@ import com.vaxcare.feature.vaccination.entity.VaccinationDetail;
 import com.vaxcare.feature.vaccination.entity.VaccinationHistory;
 import com.vaxcare.feature.vaccination.repository.VaccinationDetailRepository;
 import com.vaxcare.feature.vaccination.repository.VaccinationHistoryRepository;
+import com.vaxcare.feature.realtime.service.RealtimeEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +43,8 @@ public class VaccinationService {
 
     private static final Set<VaccinationResult> STOCK_DEDUCTING_RESULTS =
             Set.of(VaccinationResult.SUCCESS);
+
+    private final RealtimeEventPublisher realtimeEventPublisher;
 
     private final AppointmentRepository appointmentRepository;
     private final PaymentRepository paymentRepository;
@@ -159,7 +162,25 @@ public class VaccinationService {
             // không làm fail ghi nhận tiêm
         }
 
-        return mapToResponse(detail);
+        VaccinationDetailResponse response = mapToResponse(detail);
+        try {
+            Long facilityId = appointment.getFacility() != null
+                    ? appointment.getFacility().getFacilityId() : null;
+            String userEmail = null;
+            Long userAccountId = null;
+            if (appointment.getUser() != null && appointment.getUser().getAccount() != null) {
+                userEmail = appointment.getUser().getAccount().getEmail();
+                userAccountId = appointment.getUser().getAccount().getAccountId();
+            }
+            realtimeEventPublisher.publishVaccination(
+                    RealtimeEventPublisher.TYPE_VACCINATION_RECORDED,
+                    response,
+                    facilityId,
+                    userAccountId,
+                    userEmail);
+        } catch (Exception ignored) {
+        }
+        return response;
     }
 
     // ===================== TRA CỨU LỊCH SỬ TIÊM CHỦNG =====================
@@ -250,11 +271,6 @@ public class VaccinationService {
         return (rd != null && rd > 0) ? rd : 1;
     }
 
-
-    /**
-     * Ghi chú hiển thị cho user: ưu tiên note lúc ghi nhận tiêm,
-     * nếu trống thì lấy ghi chú staff trên lịch hẹn (appointment.note).
-     */
     private String resolveDisplayNote(VaccinationDetail detail) {
         if (detail.getNote() != null && !detail.getNote().isBlank()) {
             return detail.getNote().trim();

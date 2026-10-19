@@ -2,12 +2,15 @@ package com.vaxcare.feature.appointment.service;
 
 import com.vaxcare.common.enums.AppointmentStatus;
 import com.vaxcare.common.enums.PaymentStatus;
+import com.vaxcare.feature.appointment.dto.AppointmentResponse;
 import com.vaxcare.feature.appointment.entity.Appointment;
-import com.vaxcare.feature.appointment.entity.Payment;
 import com.vaxcare.feature.appointment.repository.AppointmentRepository;
 import com.vaxcare.feature.appointment.repository.PaymentRepository;
+import com.vaxcare.feature.realtime.service.RealtimeEventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,11 +38,12 @@ public class AppointmentExpiryService {
 
     private final AppointmentRepository appointmentRepository;
     private final PaymentRepository paymentRepository;
+    private final RealtimeEventPublisher realtimeEventPublisher;
 
-    /**
-     * Mỗi 5 phút: hủy lịch PENDING tạo cách đây ≥ 15 phút mà chưa thanh toán thành công.
-     * Status → CANCELLED → không còn tính vào capacity (trả chỗ).
-     */
+    @Autowired
+    @Lazy
+    private AppointmentService appointmentService;
+
     @Scheduled(cron = "0 */5 * * * *")
     @Transactional
     public void cancelUnpaidPendingAppointments() {
@@ -48,23 +52,19 @@ public class AppointmentExpiryService {
 
         List<Appointment> expired = appointmentRepository.findUnpaidPendingCreatedBefore(cutoff);
         int cancelled = 0;
-
         for (Appointment a : expired) {
-            // An toàn: chỉ hủy đúng PENDING
             if (a.getStatus() != AppointmentStatus.PENDING) {
                 continue;
             }
-            // Nếu đã có payment SUCCESS (edge race với IPN) → bỏ qua
             if (hasSuccessfulPayment(a.getAppointmentId())) {
                 continue;
             }
-
             a.setStatus(AppointmentStatus.CANCELLED);
             a.setCancelledAt(now);
             a.setCancellationReason(AUTO_CANCEL_REASON_UNPAID_TIMEOUT);
             appointmentRepository.save(a);
-
             markPaymentFailedIfPending(a.getAppointmentId());
+            publishCancelled(a);
             cancelled++;
         }
 
@@ -76,9 +76,6 @@ public class AppointmentExpiryService {
         }
     }
 
-    /**
-     * Mỗi 5 phút: hủy PENDING/CONFIRMED đã hết khung giờ hẹn (chưa check-in).
-     */
     @Scheduled(cron = "0 */5 * * * *")
     @Transactional
     public void cancelExpiredAppointments() {
@@ -118,9 +115,26 @@ public class AppointmentExpiryService {
             if (a.getStatus() == AppointmentStatus.CANCELLED) {
                 markPaymentFailedIfPending(a.getAppointmentId());
             }
+            publishCancelled(a);
             n++;
         }
         return n;
+    }
+
+    private void publishCancelled(Appointment a) {
+        try {
+            AppointmentResponse response = appointmentService.mapToResponse(a);
+            String userEmail = null;
+            if (a.getUser() != null && a.getUser().getAccount() != null) {
+                userEmail = a.getUser().getAccount().getEmail();
+            }
+            realtimeEventPublisher.publishAppointment(
+                    RealtimeEventPublisher.TYPE_APPOINTMENT_CANCELLED,
+                    response,
+                    userEmail);
+        } catch (Exception e) {
+            log.warn("Realtime auto-cancel publish failed appointmentId={}: {}", a.getAppointmentId(), e.getMessage());
+        }
     }
 
     private boolean isPastSlotEnd(Appointment a, LocalDateTime now) {

@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package vaxcare.vaccine;
+
+option java_multiple_files = true;
+option java_package = "com.vaxcare.grpc.vaccine";
+option java_outer_classname = "VaccineProto";
+
+import "vaxcare/common/common.proto";
+
+message SearchVaccinesRequest {
+  int64 category_id = 1;
+  string keyword = 2;
+  int32 age_months = 3;
+  int64 facility_id = 4;
+}
+
+message GetVaccineRequest {
+  int64 id = 1;
+  int64 facility_id = 2;
+}
+
+message GetCurrentPricesRequest {
+  int64 vaccine_id = 1;
+  int64 facility_id = 2;
+}
+
+message VaccineResponse {
+  int64 vaccine_id = 1;
+  int64 category_id = 2;
+  string category_name = 3;
+  string vaccine_name = 4;
+  string manufacturer = 5;
+  string target_disease = 6;
+  int32 required_doses = 7;
+  int32 dose_interval_days = 8;
+  string description = 9;
+  string image_url = 10;
+  string average_rating = 11;
+  int32 total_bookings = 12;
+  string status = 13;
+  string current_price = 14;
+}
+
+message VaccineListResponse {
+  repeated VaccineResponse vaccines = 1;
+}
+
+message VaccineCategoryResponse {
+  int64 category_id = 1;
+  string category_name = 2;
+  string description = 3;
+}
+
+message VaccineCategoryListResponse {
+  repeated VaccineCategoryResponse categories = 1;
+}
+
+message PriceItem {
+  int64 price_list_id = 1;
+  int64 vaccine_id = 2;
+  string vaccine_name = 3;
+  int64 facility_id = 4;
+  string facility_name = 5;
+  string price = 6;
+  string effective_date = 7;
+  string expiry_date = 8;
+  string status = 9;
+}
+
+message PriceListData {
+  repeated PriceItem prices = 1;
+}
+
+message VaccineApiResponse {
+  string timestamp = 1;
+  int32 status = 2;
+  string message = 3;
+  oneof data {
+    VaccineResponse vaccine = 4;
+    VaccineListResponse list = 5;
+    VaccineCategoryListResponse categories = 6;
+    PriceListData prices = 7;
+  }
+}
+
+service VaccineService {
+  rpc SearchVaccines(SearchVaccinesRequest) returns (VaccineApiResponse);
+  rpc GetVaccineById(GetVaccineRequest) returns (VaccineApiResponse);
+  rpc GetAllCategories(vaxcare.common.Empty) returns (VaccineApiResponse);
+  rpc GetCurrentPrices(GetCurrentPricesRequest) returns (VaccineApiResponse);
+}
