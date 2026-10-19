@@ -1,0 +1,101 @@
+syntax = "proto3";
+
+package vaxcare.auth;
+
+option java_multiple_files = true;
+option java_package = "com.vaxcare.grpc.auth";
+option java_outer_classname = "AuthProto";
+
+import "vaxcare/common/common.proto";
+
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+  string full_name = 3;
+  string phone = 4;
+  string date_of_birth = 5;  
+  string gender = 6;       
+  string address = 7;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message VerifyEmailRequest {
+  string token = 1;
+}
+
+message ResendVerificationRequest {
+  string email = 1;
+}
+
+message ForgotPasswordRequest {
+  string email = 1;
+}
+
+message ResetPasswordRequest {
+  string token = 1;
+  string new_password = 2;
+}
+
+message TokenRefreshRequest {
+  string refresh_token = 1;
+}
+
+message UpdateProfileRequest {
+  string full_name = 1;
+  string phone = 2;
+  string date_of_birth = 3;
+  string gender = 4;
+  string address = 5;
+}
+
+message AccountResponse {
+  int64 account_id = 1;
+  string email = 2;
+  string full_name = 3;
+  string role = 4;
+  string status = 5;
+  bool email_verified = 6;
+  string created_at = 7;
+}
+
+message AuthResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  string token_type = 3;
+  int64 account_id = 4;
+  string email = 5;
+  string full_name = 6;
+  string role = 7;
+}
+
+message TokenRefreshResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  string token_type = 3;
+}
+
+message AuthApiResponse {
+  string timestamp = 1;
+  int32 status = 2;
+  string message = 3;
+  oneof data {
+    AccountResponse account = 4;
+    AuthResponse auth = 5;
+    TokenRefreshResponse token = 6;
+  }
+}
+
+service AuthService {
+  rpc Register(RegisterRequest) returns (AuthApiResponse);
+  rpc Login(LoginRequest) returns (AuthApiResponse);
+  rpc VerifyEmail(VerifyEmailRequest) returns (AuthApiResponse);
+  rpc ResendVerification(ResendVerificationRequest) returns (AuthApiResponse);
+  rpc ForgotPassword(ForgotPasswordRequest) returns (AuthApiResponse);
+  rpc ResetPassword(ResetPasswordRequest) returns (AuthApiResponse);
+  rpc RefreshToken(TokenRefreshRequest) returns (AuthApiResponse);
+  rpc GetMe(vaxcare.common.Empty) returns (AuthApiResponse);
+}

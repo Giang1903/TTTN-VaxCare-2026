@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package vaxcare.user;
+
+option java_multiple_files = true;
+option java_package = "com.vaxcare.grpc.user";
+option java_outer_classname = "UserProto";
+
+import "vaxcare/common/common.proto";
+
+message UpdateProfileRequest {
+  string full_name = 1;
+  string phone = 2;
+  string date_of_birth = 3; // yyyy-MM-dd
+  string gender = 4;
+  string address = 5;
+  string avatar_url = 6;
+}
+
+message UserProfileData {
+  int64 user_id = 1;
+  string email = 2;
+  string phone = 3;
+  string full_name = 4;
+  string date_of_birth = 5;
+  string gender = 6;
+  string address = 7;
+  string avatar_url = 8;
+  string role = 9;
+  string height = 10;
+  string weight = 11;
+  string medical_history = 12;
+  string allergies = 13;
+  string health_note = 14;
+  int64 facility_id = 15;
+  string facility_name = 16;
+  string staff_code = 17;
+  string specialty = 18;
+}
+
+message UserApiResponse {
+  string timestamp = 1;
+  int32 status = 2;
+  string message = 3;
+  UserProfileData profile = 4;
+}
+
+service UserService {
+  rpc GetProfile(vaxcare.common.Empty) returns (UserApiResponse);
+  rpc UpdateProfile(UpdateProfileRequest) returns (UserApiResponse);
+}

@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package vaxcare.inventory;
+
+option java_multiple_files = true;
+option java_package = "com.vaxcare.grpc.inventory";
+option java_outer_classname = "InventoryProto";
+
+message FacilityIdRequest {
+  int64 facility_id = 1;
+}
+
+message ExpiringSoonRequest {
+  int64 facility_id = 1;
+  int32 within_days = 2;
+}
+
+message UpdateAlertThresholdRequest {
+  int64 facility_id = 1;
+  int32 alert_threshold = 2;
+}
+
+message ImportBatchRequest {
+  int64 facility_id = 1;
+  int64 vaccine_id = 2;
+  string batch_number = 3;
+  string manufacture_date = 4;
+  string expiry_date = 5;     
+  int32 imported_quantity = 6;
+  string import_price = 7;     
+  string import_date = 8;      
+}
+
+message ListBatchesRequest {
+  int64 facility_id = 1;
+  int64 vaccine_id = 2;  // 0 = all
+  string status = 3;     // BatchStatus name, empty = all
+}
+
+message BatchIdRequest {
+  int64 id = 1;
+}
+
+message StockSummaryItem {
+  int64 facility_id = 1;
+  string facility_name = 2;
+  int64 vaccine_id = 3;
+  string vaccine_name = 4;
+  int32 total_stock = 5;
+  int32 alert_threshold = 6;
+  bool is_low_stock = 7;
+}
+
+message StockSummaryList {
+  repeated StockSummaryItem items = 1;
+}
+
+message VaccineBatchData {
+  int64 batch_id = 1;
+  int64 inventory_id = 2;
+  int64 facility_id = 3;
+  int64 vaccine_id = 4;
+  string vaccine_name = 5;
+  string batch_number = 6;
+  string manufacture_date = 7;
+  string expiry_date = 8;
+  int32 imported_quantity = 9;
+  int32 stock_quantity = 10;
+  string import_price = 11;
+  string import_date = 12;
+  string status = 13;
+}
+
+message VaccineBatchList {
+  repeated VaccineBatchData batches = 1;
+}
+
+message InventoryApiResponse {
+  string timestamp = 1;
+  int32 status = 2;
+  string message = 3;
+  oneof data {
+    StockSummaryList stock_list = 4;
+    VaccineBatchList batch_list = 5;
+    VaccineBatchData batch = 6;
+  }
+}
+
+service InventoryService {
+  rpc GetStockSummary(FacilityIdRequest) returns (InventoryApiResponse);
+  rpc GetLowStockAlerts(FacilityIdRequest) returns (InventoryApiResponse);
+  rpc GetExpiringSoon(ExpiringSoonRequest) returns (InventoryApiResponse);
+  rpc UpdateAlertThreshold(UpdateAlertThresholdRequest) returns (InventoryApiResponse);
+  rpc ImportBatch(ImportBatchRequest) returns (InventoryApiResponse);
+  rpc ListBatches(ListBatchesRequest) returns (InventoryApiResponse);
+  rpc GetBatchById(BatchIdRequest) returns (InventoryApiResponse);
+}

@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package vaxcare.vaccination;
+
+option java_multiple_files = true;
+option java_package = "com.vaxcare.grpc.vaccination";
+option java_outer_classname = "VaccinationProto";
+
+import "vaxcare/common/common.proto";
+
+message GetHistoryByUserRequest {
+  int64 user_id = 1;
+}
+
+message RecordVaccinationRequest {
+  int64 appointment_id = 1;
+  int32 dose_number = 2;       
+  string injection_date = 3;   
+  string result = 4;           // SUCCESS | FAILED | PARTIAL
+  string note = 5;
+}
+
+message VaccinationDetail {
+  int64 detail_id = 1;
+  int64 history_id = 2;
+  int64 appointment_id = 3;
+  int64 vaccine_id = 4;
+  string vaccine_name = 5;
+  int64 batch_id = 6;
+  string batch_number = 7;
+  int64 facility_id = 8;
+  string facility_name = 9;
+  int64 staff_id = 10;
+  string staff_name = 11;
+  int32 dose_number = 12;
+  int32 required_doses = 13;
+  string injection_date = 14;
+  string result = 15;
+  string note = 16;
+  string certificate_code = 17;
+  string created_at = 18;
+}
+
+message VaccinationHistoryResponse {
+  int64 history_id = 1;
+  int64 user_id = 2;
+  string user_full_name = 3;
+  int32 total_doses = 4;
+  repeated VaccinationDetail details = 5;
+}
+
+message VaccinationApiResponse {
+  string timestamp = 1;
+  int32 status = 2;
+  string message = 3;
+  oneof data {
+    VaccinationHistoryResponse history = 4;
+    VaccinationDetail detail = 5;
+  }
+}
+
+service VaccinationService {
+  rpc GetMyHistory(vaxcare.common.Empty) returns (VaccinationApiResponse);
+  rpc GetHistoryByUserId(GetHistoryByUserRequest) returns (VaccinationApiResponse);
+  rpc RecordVaccination(RecordVaccinationRequest) returns (VaccinationApiResponse);
+}

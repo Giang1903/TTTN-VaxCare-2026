@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package vaxcare.staff;
+
+option java_multiple_files = true;
+option java_package = "com.vaxcare.grpc.staff";
+option java_outer_classname = "StaffAppointmentProto";
+
+import "vaxcare/appointment/appointment.proto";
+
+message SearchAppointmentsRequest {
+  int64 facility_id = 1;   
+  string date = 2;         
+  string status = 3;       
+  string keyword = 4;      
+  bool paid_only = 5;
+}
+
+message UpdateNoteRequest {
+  int64 id = 1;
+  string note = 2;
+}
+
+message CheckinRequest {
+  string qr_code = 1;
+}
+
+message AppointmentIdRequest {
+  int64 id = 1;
+}
+
+service StaffAppointmentService {
+  rpc SearchAppointments(SearchAppointmentsRequest) returns (vaxcare.appointment.AppointmentApiResponse);
+  rpc ConfirmAppointment(AppointmentIdRequest) returns (vaxcare.appointment.AppointmentApiResponse);
+  rpc Checkin(CheckinRequest) returns (vaxcare.appointment.AppointmentApiResponse);
+  rpc CompleteVaccination(AppointmentIdRequest) returns (vaxcare.appointment.AppointmentApiResponse);
+  rpc UpdateNote(UpdateNoteRequest) returns (vaxcare.appointment.AppointmentApiResponse);
+}

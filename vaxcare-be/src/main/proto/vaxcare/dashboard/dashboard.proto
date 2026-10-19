@@ -1,0 +1,102 @@
+syntax = "proto3";
+
+package vaxcare.dashboard;
+
+option java_multiple_files = true;
+option java_package = "com.vaxcare.grpc.dashboard";
+option java_outer_classname = "DashboardProto";
+
+message StaffDashboardRequest {
+  int64 facility_id = 1;
+  string date = 2;
+}
+
+message AdminDashboardRequest {
+  string from = 1; 
+  string to = 2;   
+}
+
+message StatusCount {
+  string status = 1;
+  int64 count = 2;
+}
+
+message ResultCount {
+  string result = 1;
+  int64 count = 2;
+}
+
+message SeverityCount {
+  string severity = 1;
+  int64 count = 2;
+}
+
+message VaccineStockItem {
+  int64 vaccine_id = 1;
+  string vaccine_name = 2;
+  int32 stock_quantity = 3;
+  bool low_stock = 4;
+}
+
+message ExpiringBatchItem {
+  int64 batch_id = 1;
+  string vaccine_name = 2;
+  string batch_number = 3;
+  string expiry_date = 4;
+  int32 stock_quantity = 5;
+}
+
+message StaffDashboardData {
+  int64 facility_id = 1;
+  string facility_name = 2;
+  string date = 3;
+  repeated StatusCount appointments_today = 4;
+  int64 total_vaccinations_today = 5;
+  repeated ResultCount vaccinations_today_by_result = 6;
+  repeated VaccineStockItem inventory_summary = 7;
+  repeated ExpiringBatchItem expiring_soon_batches = 8;
+  int64 unresolved_reactions_count = 9;
+  repeated SeverityCount unresolved_reactions_by_severity = 10;
+}
+
+message RevenuePoint {
+  string period = 1;
+  string amount = 2;
+}
+
+message StockVsForecastItem {
+  int64 vaccine_id = 1;
+  string vaccine_name = 2;
+  int32 current_stock = 3;
+  int32 ai_forecasted_demand = 4; 
+  string note = 5;
+}
+
+message AdminDashboardData {
+  string from = 1;
+  string to = 2;
+  int64 total_users = 3;
+  int64 total_medical_staff = 4;
+  int64 total_active_facilities = 5;
+  int64 total_active_vaccines = 6;
+  string total_revenue = 7;
+  repeated RevenuePoint revenue_trend = 8;
+  int64 total_vaccinations = 9;
+  repeated StatusCount appointments_by_status = 10;
+  repeated StockVsForecastItem stock_vs_forecast = 11;
+}
+
+message DashboardApiResponse {
+  string timestamp = 1;
+  int32 status = 2;
+  string message = 3;
+  oneof data {
+    StaffDashboardData staff = 4;
+    AdminDashboardData admin = 5;
+  }
+}
+
+service DashboardService {
+  rpc GetStaffDashboard(StaffDashboardRequest) returns (DashboardApiResponse);
+  rpc GetAdminDashboard(AdminDashboardRequest) returns (DashboardApiResponse);
+}

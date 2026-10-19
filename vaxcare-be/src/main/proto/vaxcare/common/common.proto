@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package vaxcare.common;
+
+option java_multiple_files = true;
+option java_package = "com.vaxcare.grpc.common";
+option java_outer_classname = "CommonProto";
+
+message ApiResponse {
+  string timestamp = 1;  
+  int32 status = 2;
+  string message = 3;
+}
+
+message Empty {}
+
+message PageRequest {
+  int32 page = 1;
+  int32 size = 2;
+  string sort = 3;
+}

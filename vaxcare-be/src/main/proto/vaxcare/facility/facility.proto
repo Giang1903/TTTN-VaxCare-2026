@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package vaxcare.facility;
+
+option java_multiple_files = true;
+option java_package = "com.vaxcare.grpc.facility";
+option java_outer_classname = "FacilityProto";
+
+message ListFacilitiesRequest {
+  int64 vaccine_id = 1; // optional: only facilities with this vaccine in stock
+}
+
+message GetFacilityRequest {
+  int64 id = 1;
+}
+
+message FacilityData {
+  int64 facility_id = 1;
+  string facility_name = 2;
+  string address = 3;
+  string phone = 4;
+  string opening_time = 5;
+  string closing_time = 6;
+  int32 capacity_per_slot = 7;
+  string image_url = 8;
+  string status = 9;
+}
+
+message FacilityListResponse {
+  repeated FacilityData facilities = 1;
+}
+
+message FacilityApiResponse {
+  string timestamp = 1;
+  int32 status = 2;
+  string message = 3;
+  oneof data {
+    FacilityData facility = 4;
+    FacilityListResponse list = 5;
+  }
+}
+
+service FacilityService {
+  rpc ListFacilities(ListFacilitiesRequest) returns (FacilityApiResponse);
+  rpc GetFacilityById(GetFacilityRequest) returns (FacilityApiResponse);
+}
