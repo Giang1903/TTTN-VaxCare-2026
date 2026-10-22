@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { apiClient } from "../services/apiClient";
+import { disconnectRealtime } from "../services/realtimeClient";
 import * as authService from "../services/authService";
 
 const AuthContext = createContext(null);
@@ -7,7 +8,6 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  /** Tăng mỗi lần login/logout để bỏ kết quả loadProfile cũ (tránh lần 1 bị clearTokens sau khi đã login). */
   const sessionGen = useRef(0);
 
   const loadProfile = useCallback(async () => {
@@ -21,7 +21,7 @@ export function AuthProvider({ children }) {
     }
     try {
       const profile = await authService.getCurrentUser();
-      if (gen !== sessionGen.current) return; // đã login/logout trong lúc chờ
+      if (gen !== sessionGen.current) return; 
       setUser(profile);
     } catch {
       if (gen !== sessionGen.current) return;
@@ -41,10 +41,10 @@ export function AuthProvider({ children }) {
 
   async function login({ email, password }) {
     const data = await authService.login({ email, password });
-    // Vô hiệu hóa mọi loadProfile đang chạy (token hết hạn từ session trước)
     sessionGen.current += 1;
     const gen = sessionGen.current;
 
+    disconnectRealtime();
     apiClient.setTokens(data);
     setLoading(false);
 
@@ -54,7 +54,6 @@ export function AuthProvider({ children }) {
         setUser(profile);
       }
     } catch {
-      // Fallback từ AuthResponse nếu /me lỗi tạm thời
       if (gen === sessionGen.current) {
         setUser({
           userId: data.accountId,
@@ -73,6 +72,7 @@ export function AuthProvider({ children }) {
 
   function logout() {
     sessionGen.current += 1;
+    disconnectRealtime();
     apiClient.clearTokens();
     setUser(null);
     setLoading(false);

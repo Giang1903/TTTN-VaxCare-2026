@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { getUnreadCount } from "../../services/notificationService";
+import { useNotificationRealtime } from "../../hooks/useRealtime";
 
 // ============ NAVBAR (LOGGED IN) ============
 export default function LoggedInNavbar({ onOpenMobileNav }) {
@@ -11,9 +12,18 @@ export default function LoggedInNavbar({ onOpenMobileNav }) {
   const userName = user?.fullName || user?.email || "Người dùng";
   const [unread, setUnread] = useState(0);
 
+  const refreshUnread = () => {
+    if (pathname === "/notifications") {
+      setUnread(0);
+      return;
+    }
+    getUnreadCount()
+      .then((n) => setUnread(Number(n) || 0))
+      .catch(() => setUnread(0));
+  };
+
   useEffect(() => {
     let cancelled = false;
-    // Khi đang ở trang /notifications, số chưa đọc đã được mark-all → 0
     if (pathname === "/notifications") {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setUnread(0);
@@ -32,6 +42,15 @@ export default function LoggedInNavbar({ onOpenMobileNav }) {
       cancelled = true;
     };
   }, [pathname]);
+
+  useNotificationRealtime({
+    enabled: !!user,
+    onEvent: (event) => {
+      if (String(event?.type || "").includes("NOTIFICATION")) {
+        refreshUnread();
+      }
+    },
+  });
 
   // eslint-disable-next-line no-unused-vars
   function handleLogout() {

@@ -3,6 +3,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import * as staffService from '../../services/staffService';
 import StaffTopbar from '../../components/staff/StaffTopbar';
 import useStaffToast from '../../hooks/useStaffToast';
+import { useAuth } from '../../context/AuthContext';
+import { useFacilityRealtime } from '../../hooks/useRealtime';
 
 const SEV_MAP = {
   NONE: ['none', 'Không có'],
@@ -19,6 +21,7 @@ const ST_MAP = {
 
 export default function StaffReactionsPage() {
   const { toast, showToast } = useStaffToast();
+  const { user } = useAuth();
 
   const [data, setData] = useState({});
   const [activeId, setActiveId] = useState(null);
@@ -62,6 +65,16 @@ export default function StaffReactionsPage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadList();
   }, [loadList]);
+
+  useFacilityRealtime({
+    enabled: !!user?.facilityId,
+    facilityId: user?.facilityId,
+    onEvent: (event) => {
+      if (String(event?.type || '').includes('REACTION')) {
+        loadList({ silent: true });
+      }
+    },
+  });
 
   useEffect(() => {
     const t = setInterval(() => loadList({ silent: true }), 3000);

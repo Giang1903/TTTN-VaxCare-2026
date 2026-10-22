@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useAppointmentRealtime } from '../../hooks/useAppointmentRealtime';
+import { useAppointmentRealtime } from '../../hooks/useRealtime';
 import { Link } from 'react-router-dom';
 import SlimPageHero from '../../components/dashboard-shared/SlimPageHero';
 import AppointmentFilter from '../../components/appointments/AppointmentFilter';
@@ -9,7 +9,6 @@ import { formatTime } from '../../utils/format';
 
 const MONTHS = ['Th1', 'Th2', 'Th3', 'Th4', 'Th5', 'Th6', 'Th7', 'Th8', 'Th9', 'Th10', 'Th11', 'Th12'];
 
-/** Map backend AppointmentStatus + vaccinationResult → filter group + UI labels */
 function mapStatus(apiStatus, vaccinationResult) {
   const s = (apiStatus || '').toUpperCase();
   const result = String(vaccinationResult || '').toUpperCase();
@@ -59,7 +58,6 @@ function formatSlot(timeSlot) {
   return formatTime(typeof timeSlot === 'string' && timeSlot.length === 5 ? `${timeSlot}:00` : timeSlot);
 }
 
-/** Chuyển AppointmentResponse → shape dùng trong card */
 function mapAppointment(raw) {
   const dateStr = raw.appointmentDate; // "yyyy-MM-dd"
   let day = '—';

@@ -8,6 +8,7 @@ import {
   SEVERITY_OPTIONS,
   severityLabel,
 } from '../../services/reactionService';
+import { useReactionRealtime } from '../../hooks/useRealtime';
 
 function formatDate(d) {
   if (!d) return '—';
@@ -91,6 +92,15 @@ export default function ReactionsPage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
   }, [load]);
+
+  useReactionRealtime({
+    enabled: true,
+    onEvent: (event) => {
+      if (String(event?.type || '').includes('REACTION')) {
+        load({ silent: true });
+      }
+    },
+  });
 
   useEffect(() => {
     const t = setInterval(() => load({ silent: true }), 3000);

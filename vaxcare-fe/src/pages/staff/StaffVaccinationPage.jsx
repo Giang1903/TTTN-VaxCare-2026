@@ -5,6 +5,7 @@ import { useSearchParams } from 'react-router-dom';
 import StaffTopbar from '../../components/staff/StaffTopbar';
 import useStaffToast from '../../hooks/useStaffToast';
 import { useAuth } from '../../context/AuthContext';
+import { useFacilityRealtime } from '../../hooks/useRealtime';
 import * as staffService from '../../services/staffService';
 
 export default function StaffVaccinationPage() {
@@ -72,7 +73,6 @@ export default function StaffVaccinationPage() {
           status: 'CHECKED_IN',
         })) || [];
 
-      // Vào từ Lịch hẹn với ?id= — nếu không có trong hàng chờ hôm nay thì tìm rộng hơn
       if (qid && !list.some((a) => String(a.appointmentId) === String(qid))) {
         const broader =
           (await staffService.searchAppointments({ status: 'CHECKED_IN' })) || [];
@@ -110,7 +110,17 @@ export default function StaffVaccinationPage() {
     loadQueue();
   }, [loadQueue]);
 
-  // Load batches for current patient's vaccine when facility known
+  useFacilityRealtime({
+    enabled: !!user?.facilityId,
+    facilityId: user?.facilityId,
+    onEvent: (event) => {
+      const ty = String(event?.type || '');
+      if (ty.includes('APPOINTMENT') || ty.includes('VACCINATION')) {
+        loadQueue();
+      }
+    },
+  });
+
   useEffect(() => {
     const patient = queue.find((p) => p.id === currentId);
     if (!patient || !facilityId || !patient.vaccineId) {
@@ -122,7 +132,6 @@ export default function StaffVaccinationPage() {
     let cancelled = false;
     (async () => {
       try {
-        // Chỉ lấy lô còn dùng được; backend order FEFO (HSD tăng dần)
         const list = await staffService.getBatches(facilityId, {
           vaccineId: patient.vaccineId,
           status: 'AVAILABLE',
@@ -246,7 +255,6 @@ export default function StaffVaccinationPage() {
 
   const handleSubmit = async () => {
     if (!patient || submitting) return;
-    // Chặn double-click khi lag
     setSubmitting(true);
     try {
       const detail = await staffService.recordVaccination({
@@ -269,7 +277,6 @@ export default function StaffVaccinationPage() {
           : `Đã ghi nhận tiêm cho ${patient.name}`,
         isFailed ? 'warn' : 'ok',
       );
-      // refresh queue (remove completed)
       setQueue((list) => list.filter((p) => p.id !== patient.id));
     } catch (err) {
       showToast(err.message || 'Ghi nhận tiêm thất bại', 'warn');

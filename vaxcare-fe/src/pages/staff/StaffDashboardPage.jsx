@@ -5,6 +5,7 @@ import StaffTopbar from '../../components/staff/StaffTopbar';
 import useStaffToast from '../../hooks/useStaffToast';
 import * as staffService from '../../services/staffService';
 import { useAuth } from '../../context/AuthContext';
+import { useFacilityRealtime } from '../../hooks/useRealtime';
 import { formatTime } from '../../utils/format';
 
 export default function StaffDashboardPage() {
@@ -102,6 +103,15 @@ export default function StaffDashboardPage() {
     loadToday();
   }, [loadToday]);
 
+  useFacilityRealtime({
+    enabled: !!user?.facilityId,
+    facilityId: user?.facilityId,
+    onEvent: () => {
+      loadToday();
+    },
+  });
+
+
   const handleAction = async (appt) => {
     try {
       if (appt.status === 'pending' || appt.status === 'confirmed' || appt.status === 'checkedin') {
@@ -139,8 +149,6 @@ export default function StaffDashboardPage() {
         return;
       }
       if (appt.status === 'checkedin') {
-        // Chuyển sang trang Ghi nhận tiêm (form đầy đủ: SUCCESS/FAILED, ghi chú, PDF)
-        // Không complete nhanh tại dashboard
         navigate(`/staff/vaccination?id=${appt.id}`);
         return;
       }
