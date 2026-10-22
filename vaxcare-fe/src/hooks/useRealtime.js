@@ -12,7 +12,7 @@ export function useRealtime({ enabled = true, destinations = [], onEvent } = {})
   // eslint-disable-next-line react-hooks/refs
   onEventRef.current = onEvent;
 
-  const destKey = (destinations || []).filter(Boolean).sort().join('|');
+  const destKey = (destinations || []).filter(Boolean).map(String).sort().join('|');
 
   useEffect(() => {
     if (!enabled) return undefined;
@@ -59,20 +59,23 @@ export function useReactionRealtime({ enabled = true, onEvent } = {}) {
 }
 
 export function useFacilityRealtime({ enabled = true, facilityId, onEvent } = {}) {
-  const destinations = facilityId
-    ? [
-        REALTIME_DEST.facility('appointments', facilityId),
-        REALTIME_DEST.facility('inventory', facilityId),
-        REALTIME_DEST.facility('reactions', facilityId),
-        REALTIME_DEST.facility('vaccinations', facilityId),
-        REALTIME_DEST.appointmentsTopic,
-        REALTIME_DEST.inventoryTopic,
-        REALTIME_DEST.reactionsTopic,
-        REALTIME_DEST.vaccinationsTopic,
-      ]
-    : [];
+  const destinations = [
+    REALTIME_DEST.reactionsTopic, // quan trọng cho badge "Theo dõi sau tiêm"
+    REALTIME_DEST.appointmentsTopic,
+    REALTIME_DEST.inventoryTopic,
+    REALTIME_DEST.vaccinationsTopic,
+  ];
 
-  return useRealtime({ enabled: enabled && !!facilityId, destinations, onEvent });
+  if (facilityId != null && facilityId !== '') {
+    destinations.push(
+      REALTIME_DEST.facility('reactions', facilityId),
+      REALTIME_DEST.facility('appointments', facilityId),
+      REALTIME_DEST.facility('inventory', facilityId),
+      REALTIME_DEST.facility('vaccinations', facilityId),
+    );
+  }
+
+  return useRealtime({ enabled, destinations, onEvent });
 }
 
 export { REALTIME_DEST };
