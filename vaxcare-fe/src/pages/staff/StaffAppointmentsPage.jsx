@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import StaffTopbar from '../../components/staff/StaffTopbar';
 import useStaffToast from '../../hooks/useStaffToast';
 import { useAuth } from '../../context/AuthContext';
+import { useFacilityRealtime } from '../../hooks/useRealtime';
 import * as staffService from '../../services/staffService';
 import QrCameraScanner from '../../components/staff/QrCameraScanner';
 import RefundModal from '../../components/appointments/RefundModal';
@@ -130,6 +131,17 @@ export default function StaffAppointmentsPage() {
     loadAppointments();
   }, [loadAppointments]);
 
+  useFacilityRealtime({
+    enabled: !!user?.facilityId,
+    facilityId: user?.facilityId,
+    onEvent: (event) => {
+      const ty = String(event?.type || '');
+      if (ty.includes('APPOINTMENT') || ty.includes('PAYMENT') || ty.includes('VACCINATION')) {
+        loadAppointments();
+      }
+    },
+  });
+
   const counts = useMemo(() => countsOf(appts), [appts]);
 
   const filtered = useMemo(() => {
@@ -237,7 +249,6 @@ export default function StaffAppointmentsPage() {
         return;
       }
       if (action === 'checkin') {
-        // BE chỉ cho check-in khi CONFIRMED + đã TT + có QR + đúng khung giờ
         let qr = (appt.qr || '').trim();
         if (appt.status === 'pending') {
           await staffService.confirmAppointment(appt.id);
@@ -259,7 +270,6 @@ export default function StaffAppointmentsPage() {
       }
 
       if (action === 'vaccinate') {
-        // Chuyển sang trang ghi nhận tiêm chi tiết (PDF chứng nhận)
         navigate(`/staff/vaccination?id=${appt.id}`);
         return;
       }

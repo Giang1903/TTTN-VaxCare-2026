@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import SlimPageHero from '../../components/dashboard-shared/SlimPageHero';
 import { getMyNotifications, markAllNotificationsRead } from '../../services/notificationService';
+import { useNotificationRealtime } from '../../hooks/useRealtime';
 
 function formatDt(d) {
   if (!d) return '';
@@ -30,7 +31,6 @@ export default function NotificationsPage() {
     setLoading(true);
     setError('');
     try {
-      // Vào trang xem = đánh dấu đã đọc → badge chuông về 0
       await markAllNotificationsRead();
       const data = await getMyNotifications();
       setItems(Array.isArray(data) ? data : []);
@@ -46,6 +46,17 @@ export default function NotificationsPage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
   }, [load]);
+
+  useNotificationRealtime({
+    enabled: true,
+    onEvent: (event) => {
+      if (String(event?.type || '').includes('NOTIFICATION')) {
+        getMyNotifications()
+          .then((data) => setItems(Array.isArray(data) ? data : []))
+          .catch(() => {});
+      }
+    },
+  });
 
   return (
     <>

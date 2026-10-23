@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getUnreadCount } from '../../services/notificationService';
+import { useNotificationRealtime } from '../../hooks/useRealtime';
 
 // ============ MOBILE / SLIDE NAV ============
 export default function MobileNavPanel({ isOpen, onClose, userName: userNameProp }) {
@@ -11,7 +12,6 @@ export default function MobileNavPanel({ isOpen, onClose, userName: userNameProp
   const userName = userNameProp || user?.fullName || user?.email || 'Người dùng';
   const [unread, setUnread] = useState(0);
 
-  // Mỗi lần mở menu → refresh số thông báo chưa đọc
   useEffect(() => {
     if (!isOpen) return;
     let cancelled = false;
@@ -33,6 +33,20 @@ export default function MobileNavPanel({ isOpen, onClose, userName: userNameProp
       cancelled = true;
     };
   }, [isOpen, pathname]);
+
+  useNotificationRealtime({
+    enabled: !!user,
+    onEvent: (event) => {
+      if (!String(event?.type || '').includes('NOTIFICATION')) return;
+      if (pathname === '/notifications') {
+        setUnread(0);
+        return;
+      }
+      getUnreadCount()
+        .then((n) => setUnread(Number(n) || 0))
+        .catch(() => {});
+    },
+  });
 
   const initials = userName
     .split(' ')

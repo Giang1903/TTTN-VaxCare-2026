@@ -3,6 +3,7 @@ import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import * as staffService from '../../services/staffService';
 import { formatTime } from '../../utils/format';
+import { useFacilityRealtime } from '../../hooks/useRealtime';
 
 const icons = {
   overview: (
@@ -51,7 +52,6 @@ export default function StaffSidebar() {
   const facilityName = user?.facilityName || 'VaxCare';
   const staffCode = user?.staffCode || '';
 
-  // Ca làm việc lấy theo giờ hoạt động thực tế của cơ sở (không hardcode 07:30–17:00 nữa)
   const openTime = user?.facilityOpeningTime ? formatTime(user.facilityOpeningTime) : '';
   const closeTime = user?.facilityClosingTime ? formatTime(user.facilityClosingTime) : '';
   const shiftLabel = openTime && closeTime ? `Ca làm việc: ${openTime} – ${closeTime}` : null;
@@ -79,9 +79,40 @@ export default function StaffSidebar() {
   }, []);
 
   useEffect(() => {
+    if (!user) return undefined;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadBadges();
-  }, [loadBadges]);
+    const t = setInterval(loadBadges, 10000);
+    return () => clearInterval(t);
+  }, [user, loadBadges]);
+
+  const { connected } = useFacilityRealtime({
+    enabled: !!user,
+    facilityId: user?.facilityId,
+    onEvent: (event) => {
+      const ty = String(event?.type || '').toUpperCase();
+      console.info('[StaffSidebar] realtime event', ty, event);
+
+      if (ty.includes('REACTION_SUBMITTED')) {
+        setBadgeReaction((n) => n + 1);
+        loadBadges();
+        return;
+      }
+      if (ty.includes('REACTION_PROCESSED') || ty.includes('REACTION')) {
+        loadBadges();
+        return;
+      }
+      if (ty.includes('APPOINTMENT') || ty.includes('PAYMENT') || ty.includes('VACCINATION')) {
+        loadBadges();
+      }
+    },
+  });
+
+  useEffect(() => {
+    if (connected) {
+      console.info('[StaffSidebar] realtime connected — listening /topic/reactions');
+    }
+  }, [connected]);
 
   const links = [
     { to: '/staff', end: true, text: 'Tổng quan', icon: icons.overview },

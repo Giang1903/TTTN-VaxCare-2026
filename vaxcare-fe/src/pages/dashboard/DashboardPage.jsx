@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useAppointmentRealtime } from '../../hooks/useAppointmentRealtime';
+import { useAppointmentRealtime } from '../../hooks/useRealtime';
 import DashHero from '../../components/dashboard/DashHero';
 import DashStats from '../../components/dashboard/DashStats';
 import AISuggestion from '../../components/dashboard/AISuggestion';

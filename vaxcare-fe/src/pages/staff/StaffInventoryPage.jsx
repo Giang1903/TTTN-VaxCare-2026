@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import * as staffService from '../../services/staffService';
 import * as vaccineService from '../../services/vaccineService';
 import { useAuth } from '../../context/AuthContext';
+import { useFacilityRealtime } from '../../hooks/useRealtime';
 import StaffTopbar from '../../components/staff/StaffTopbar';
 import useStaffToast from '../../hooks/useStaffToast';
 
@@ -77,6 +78,17 @@ export default function StaffInventoryPage() {
     loadThreshold();
   }, [loadBatches, loadThreshold]);
 
+  useFacilityRealtime({
+    enabled: !!facilityId,
+    facilityId,
+    onEvent: (event) => {
+      if (String(event?.type || '').includes('INVENTORY')) {
+        loadBatches();
+        loadThreshold();
+      }
+    },
+  });
+
   useEffect(() => {
     let cancelled = false;
     vaccineService
@@ -148,7 +160,6 @@ export default function StaffInventoryPage() {
   const kpiLow = rows.filter((r) => r.isLowStock || (String(r.f || '').includes('low') && !r.isNearExpiry && !r.isExpired)).length;
   const kpiStock = rows.reduce((s, r) => s + (r.stock || 0), 0);
 
-  /** Cảnh báo thật từ tồn kho (không hardcode) */
   const realAlerts = useMemo(() => {
     const thr = alertThreshold != null ? Number(alertThreshold) : null;
     const items = [];
@@ -284,7 +295,6 @@ export default function StaffInventoryPage() {
       setAlertThreshold(value);
       setEditingThreshold(false);
       showToast('Đã cập nhật ngưỡng cảnh báo tồn kho', 'ok');
-      // Đồng bộ lại danh sách lô vì trạng thái "tồn thấp" phụ thuộc ngưỡng
       await loadBatches();
     } catch (err) {
       showToast(err.message || 'Cập nhật ngưỡng cảnh báo thất bại', 'warn');
