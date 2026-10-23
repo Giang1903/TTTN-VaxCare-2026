@@ -173,11 +173,6 @@ export default function StaffDashboardPage() {
 
   return (
     <>
-      <StaffTopbar
-        title="Bảng điều khiển"
-        subtitle={`${dateLabel}${shiftSuffix}`}
-        searchPlaceholder="Tìm bệnh nhân, lịch hẹn..."
-      />
 
       <div className="staff-content">
         <section className="welcome-banner">

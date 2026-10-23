@@ -24,11 +24,31 @@ const cardStyle = {
   background: '#fff',
   borderRadius: 20,
   border: '1px solid #e8eef5',
-  padding: '32px 28px',
+  padding: '28px 24px',
   boxShadow: '0 8px 28px rgba(15, 23, 42, 0.05)',
   minHeight: 320,
   display: 'flex',
   flexDirection: 'column',
+};
+
+/** Cột lịch sử: cao cố định → list cuộn bên trong (thanh cuộn luôn hiện khi tràn) */
+const listCardStyle = {
+  ...cardStyle,
+  height: 600,
+  maxHeight: 600,
+  overflow: 'hidden',
+};
+
+const listScrollStyle = {
+  flex: 1,
+  minHeight: 0,
+  overflowY: 'scroll',
+  overflowX: 'hidden',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 12,
+  paddingRight: 6,
+  WebkitOverflowScrolling: 'touch',
 };
 
 const fieldStyle = {
@@ -93,6 +113,11 @@ export default function ReactionsPage() {
     load();
   }, [load]);
 
+  useEffect(() => {
+    const t = setInterval(() => load({ silent: true }), 3000);
+    return () => clearInterval(t);
+  }, [load]);
+
   useReactionRealtime({
     enabled: true,
     onEvent: (event) => {
@@ -101,11 +126,6 @@ export default function ReactionsPage() {
       }
     },
   });
-
-  useEffect(() => {
-    const t = setInterval(() => load({ silent: true }), 3000);
-    return () => clearInterval(t);
-  }, [load]);
 
   const doseOptions = useMemo(() => {
     // Chỉ mũi SUCCESS mới được báo phản ứng sau tiêm (FAILED = chưa tiêm)
@@ -185,8 +205,8 @@ export default function ReactionsPage() {
             alignItems: 'stretch',
           }}
         >
-          {/* Card form */}
-          <div style={cardStyle}>
+          {/* Card form — cùng cao với cột list */}
+          <div style={{ ...cardStyle, height: 600, maxHeight: 600, overflow: 'hidden' }}>
             <div style={{ marginBottom: 20 }}>
               <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 8px', color: '#0f172a' }}>
                 Khai báo phản ứng
@@ -197,7 +217,7 @@ export default function ReactionsPage() {
               </p>
             </div>
 
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
               {loading ? (
                 <p style={{ color: '#64748b', margin: 'auto 0', textAlign: 'center' }}>Đang tải…</p>
               ) : doseOptions.length === 0 ? (
@@ -322,8 +342,8 @@ export default function ReactionsPage() {
             </div>
           </div>
 
-          {/* Card lịch sử */}
-          <div style={cardStyle}>
+          {/* Card lịch sử — cố định chiều cao, list cuộn */}
+          <div style={listCardStyle}>
             <div style={{ marginBottom: 20 }}>
               <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 8px', color: '#0f172a' }}>
                 Phản hồi đã gửi
@@ -333,7 +353,7 @@ export default function ReactionsPage() {
               </p>
             </div>
 
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
               {loading && (
                 <p style={{ color: '#64748b', margin: 'auto 0', textAlign: 'center' }}>Đang tải…</p>
               )}
@@ -378,7 +398,7 @@ export default function ReactionsPage() {
                 </div>
               )}
               {!loading && reactions.length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto' }}>
+                <div style={listScrollStyle}>
                   {reactions.map((r) => (
                     <div
                       key={r.reactionId}
@@ -404,7 +424,14 @@ export default function ReactionsPage() {
                       )}
                       {r.processingStatus && (
                         <div style={{ fontSize: 12.5, marginTop: 8, color: '#64748b' }}>
-                          Trạng thái: <strong style={{ color: '#1e293b' }}>{r.processingStatus}</strong>
+                          Trạng thái:{' '}
+                          <strong style={{ color: '#1e293b' }}>
+                            {String(r.processingStatus).toUpperCase() === 'PENDING'
+                              ? 'Chờ xử lý'
+                              : String(r.processingStatus).toUpperCase() === 'RESOLVED'
+                                ? 'Đã xử lý'
+                                : r.processingStatus}
+                          </strong>
                           {r.staffNote ? ` — ${r.staffNote}` : ''}
                         </div>
                       )}
