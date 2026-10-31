@@ -1,0 +1,209 @@
+- id: tcmr-001
+  vaccine_id: null
+  topic: pham_vi
+  text: 'Thông tư 10/2024/TT-BYT ngày 13/6/2024 của Bộ Y tế ban hành danh mục bệnh truyền nhiễm, đối tượng và phạm
+    vi phải sử dụng vắc xin, sinh phẩm y tế bắt buộc. Thông tư có hiệu lực từ 01/8/2024 và thay thế Thông tư 38/2017/TT-BYT.
+    Các vắc xin trong danh mục Chương trình tiêm chủng mở rộng (TCMR) được triển khai toàn quốc cho trẻ em và phụ
+    nữ có thai. Danh mục TCMR gồm 11 bệnh: viêm gan B, lao, bạch hầu, ho gà, uốn ván, bại liệt, Hib, sởi, viêm não
+    Nhật Bản B, rubella và tiêu chảy do rota virus.'
+  source_id: V01
+  source_file: byt/10_2024_TT-BYT_613510.pdf
+  source_pages: Điều 1, Điều 3, Điều 4
+  source_year: '2024'
+  scope_note: Chỉ là vắc xin trong chương trình TCMR (đối tượng bắt buộc). Các vắc xin dịch vụ như HPV, phế cầu,
+    thủy đậu, zona không nằm trong thông tư này.
+- id: tcmr-002
+  vaccine_id: 2
+  topic: lich_so_sinh
+  text: 'Lịch cho trẻ sơ sinh theo TCMR: vắc xin viêm gan B đơn giá tiêm trong vòng 24 giờ sau sinh (liều sơ sinh);
+    vắc xin lao (BCG) tiêm một lần trong vòng 01 tháng sau sinh.'
+  source_id: V01
+  source_file: byt/10_2024_TT-BYT_613510.pdf
+  source_pages: Điều 1 khoản 1 (mục 1, 2)
+  source_year: '2024'
+- id: tcmr-003
+  vaccine_id: null
+  topic: lich_2_thang
+  text: 'Từ khi trẻ đủ 02 tháng tuổi, lịch TCMR gồm: vắc xin phối hợp có thành phần viêm gan B, vắc xin phối hợp
+    có thành phần bạch hầu, ho gà, uốn ván, vắc xin Hib, vắc xin bại liệt uống và vắc xin Rota (uống). Các vắc xin
+    tiêm/uống 3 lần (viêm gan B phối hợp, bạch hầu-ho gà-uốn ván, Hib, bại liệt uống): lần 1 khi đủ 02 tháng, lần
+    2 ít nhất 01 tháng sau lần 1, lần 3 ít nhất 01 tháng sau lần 2. Rota uống 2 lần: lần 1 khi đủ 02 tháng, lần
+    2 ít nhất 01 tháng sau lần 1. Khoảng cách mỗi 01 tháng được tính ít nhất là 28 ngày.'
+  source_id: V01
+  source_file: byt/10_2024_TT-BYT_613510.pdf
+  source_pages: Điều 1 khoản 1 và chú thích (*)
+  source_year: '2024'
+- id: tcmr-004
+  vaccine_id: 4
+  topic: lich_5_9_thang
+  text: 'Vắc xin bại liệt tiêm (IPV) theo TCMR: lần 1 khi trẻ đủ 5 tháng tuổi, lần 2 khi trẻ đủ 9 tháng tuổi. Vắc
+    xin có thành phần sởi tiêm khi trẻ đủ 9 tháng tuổi.'
+  source_id: V01
+  source_file: byt/10_2024_TT-BYT_613510.pdf
+  source_pages: Điều 1 khoản 1 (mục 6, 8)
+  source_year: '2024'
+- id: tcmr-005
+  vaccine_id: 9
+  topic: lich_12_thang_vnnb
+  text: 'Vắc xin viêm não Nhật Bản B theo TCMR tiêm 3 lần: lần 1 khi trẻ đủ 01 tuổi, lần 2 cách lần 1 từ 1 đến 2
+    tuần, lần 3 cách lần 1 một năm.'
+  source_id: V01
+  source_file: byt/10_2024_TT-BYT_613510.pdf
+  source_pages: Điều 1 khoản 1 (mục 9)
+  source_year: '2024'
+- id: tcmr-006
+  vaccine_id: 6
+  topic: lich_18_thang
+  text: 'Khi trẻ đủ 18 tháng tuổi: tiêm nhắc lại vắc xin phối hợp có thành phần bạch hầu, ho gà và uốn ván; và tiêm
+    vắc xin phối hợp có thành phần sởi và rubella (sởi và rubella cùng tiêm lúc 18 tháng).'
+  source_id: V01
+  source_file: byt/10_2024_TT-BYT_613510.pdf
+  source_pages: Điều 1 khoản 1 (mục 3, 4, 5, 8, 10)
+  source_year: '2024'
+- id: tcmr-007
+  vaccine_id: 3
+  topic: lich_7_tuoi
+  text: Khi trẻ đủ 7 tuổi tiêm nhắc lại vắc xin phối hợp có thành phần bạch hầu giảm liều và vắc xin phối hợp có
+    thành phần uốn ván. Ho gà chỉ nhắc lúc 18 tháng, không có mũi nhắc ho gà lúc 7 tuổi trong TCMR.
+  source_id: V01
+  source_file: byt/10_2024_TT-BYT_613510.pdf
+  source_pages: Điều 1 khoản 1 (mục 3, 4, 5)
+  source_year: '2024'
+  conflict_note: WHO (W03, W05) nhắc lúc 12-23 tháng, 4-7 tuổi, 9-15 tuổi. Lịch Việt Nam là 18 tháng và 7 tuổi,
+    nên ưu tiên lịch Việt Nam khi tư vấn TCMR.
+- id: tcmr-008
+  vaccine_id: 3
+  topic: thai_phu_uon_van
+  text: 'Tiêm vắc xin có thành phần uốn ván cho phụ nữ có thai theo 4 tình huống. (1) Chưa tiêm, chưa đủ 3 lần liều
+    cơ bản hoặc không rõ tiền sử: lần 1 tiêm sớm khi có thai; lần 2 ít nhất 01 tháng sau lần 1; lần 3 ở kỳ có thai
+    lần sau, ít nhất 6 tháng sau lần 2; lần 4 ở kỳ có thai lần sau, ít nhất 01 năm sau lần 3; lần 5 ở kỳ có thai
+    lần sau, ít nhất 01 năm sau lần 4. (2) Đã tiêm đủ 3 lần liều cơ bản: lần 1 sớm khi có thai; lần 2 ít nhất 01
+    tháng sau lần 1; lần 3 ở kỳ có thai lần sau, ít nhất 01 năm sau lần 2. (3) Đã đủ 3 lần cơ bản và 01 liều nhắc:
+    lần 1 sớm khi có thai; lần 2 ở kỳ có thai lần sau, ít nhất 01 năm sau lần 1. (4) Đã đủ 3 lần cơ bản và 02 liều
+    nhắc: tiêm sớm 1 lần khi có thai. Ở mọi tình huống, từ lần 2 trở lên phải tiêm trước ngày dự kiến sinh tối thiểu
+    02 tuần. Liều cơ bản là các liều tiêm trước khi đủ 01 tuổi.'
+  source_id: V01
+  source_file: byt/10_2024_TT-BYT_613510.pdf
+  source_pages: Điều 1 khoản 1 (mục 5) và chú thích (**)
+  source_year: '2024'
+- id: tcmr-009
+  vaccine_id: null
+  topic: tiem_bu_chien_dich
+  text: Nếu chưa tiêm đúng lịch hoặc chưa đủ liều thì tiêm bù càng sớm càng tốt, nhưng phải phù hợp với đối tượng
+    theo hướng dẫn của Bộ Y tế và nhà sản xuất. Việc tiêm chủng chiến dịch hoặc tiêm bổ sung thực hiện theo hướng
+    dẫn của Bộ Y tế trong từng trường hợp cụ thể.
+  source_id: V01
+  source_file: byt/10_2024_TT-BYT_613510.pdf
+  source_pages: Điều 1 khoản 2, 3
+  source_year: '2024'
+- id: tcmr-010
+  vaccine_id: 10
+  topic: vung_co_dich
+  text: 'Người có nguy cơ mắc bệnh truyền nhiễm tại vùng có dịch hoặc đến vùng có dịch phải sử dụng vắc xin bắt
+    buộc đối với 10 bệnh: bạch hầu, bại liệt, ho gà, rubella, sởi, tả, viêm não Nhật Bản B, dại, cúm và COVID-19.
+    Việc xác định đối tượng và phạm vi do Sở Y tế trình UBND tỉnh, thành phố quyết định hoặc theo chỉ đạo của Bộ
+    Y tế, dựa trên tình hình dịch, điều kiện cung ứng vắc xin và nguồn lực địa phương.'
+  source_id: V01
+  source_file: byt/10_2024_TT-BYT_613510.pdf
+  source_pages: Điều 2, Điều 3 khoản 2
+  source_year: '2024'
+  scope_note: Cúm và COVID-19 chỉ bắt buộc ở vùng có dịch theo quyết định địa phương, không thuộc lịch TCMR thường
+    quy.
+- id: scr-001
+  vaccine_id: null
+  topic: pham_vi_muc_dich
+  text: Quyết định byt/1575/QĐ-BYT ngày 27/3/2023 ban hành Hướng dẫn khám sàng lọc trước tiêm chủng đối với trẻ em,
+    áp dụng tại các cơ sở tiêm chủng và cơ sở khám bệnh, chữa bệnh trong cả nước. Hướng dẫn nhằm quyết định trẻ
+    có chống chỉ định, đủ tiêu chuẩn, tạm hoãn tiêm tại cơ sở, hoặc phải chuyển khám sàng lọc tại bệnh viện. Quyết
+    định có hiệu lực từ ngày ký, bãi bỏ Quyết định 2470/QĐ-BYT năm 2019; bảng kiểm trước tiêm COVID-19 cho trẻ em
+    theo Quyết định 5002/QĐ-BYT năm 2021 vẫn tiếp tục thực hiện.
+  source_id: V07
+  source_file: byt/1575_QD-BYT_560859.pdf
+  source_pages: Điều 1-4; Mục I
+  source_year: '2023'
+  scope_note: Chỉ áp dụng cho trẻ em, chưa có hướng dẫn tương đương cho người lớn.
+- id: scr-002
+  vaccine_id: null
+  topic: chong_chi_dinh
+  text: 'Chống chỉ định tiêm chủng ở trẻ từ 1 tháng tuổi: tiền sử phản vệ độ III trở lên sau lần tiêm trước (vắc
+    xin cùng thành phần); tiền sử lồng ruột thì chống chỉ định vắc xin Rota; suy giảm miễn dịch bẩm sinh thì chống
+    chỉ định vắc xin bại liệt uống (OPV); và các trường hợp chống chỉ định khác theo hướng dẫn của nhà sản xuất
+    từng vắc xin.'
+  source_id: V07
+  source_file: byt/1575_QD-BYT_560859.pdf
+  source_pages: Phần II mục 1.1
+  source_year: '2023'
+- id: scr-003
+  vaccine_id: null
+  topic: tam_hoan_co_so_ngoai_benh_vien
+  text: 'Các trường hợp tạm hoãn tại cơ sở ngoài bệnh viện (trẻ từ 1 tháng tuổi): suy chức năng cơ quan, bệnh cấp
+    tính hoặc nhiễm trùng, sốt từ 38 độ C hoặc hạ thân nhiệt từ 35,5 độ C trở xuống (đo ở nách) thì tiêm khi sức
+    khỏe và thân nhiệt ổn định. Trẻ mới dùng globulin miễn dịch trong 3 tháng (trừ kháng huyết thanh viêm gan B)
+    thì tạm hoãn vắc xin sống giảm độc lực đến khi đủ 3 tháng. Trẻ đang hoặc mới kết thúc corticoid toàn thân liều
+    cao (tương đương prednison từ 2 mg/kg/ngày), hóa trị, xạ trị trong 14 ngày thì tạm hoãn vắc xin sống giảm độc
+    lực, tiêm sau khi kết thúc điều trị 14 ngày.'
+  source_id: V07
+  source_file: byt/1575_QD-BYT_560859.pdf
+  source_pages: Phần II mục 1.2
+  source_year: '2023'
+- id: scr-004
+  vaccine_id: null
+  topic: chuyen_benh_vien
+  text: 'Các trường hợp ở cơ sở ngoài bệnh viện cần chuyển khám sàng lọc và tiêm tại bệnh viện: tiền sử phản vệ
+    độ II sau lần tiêm trước (cùng thành phần); trẻ dưới 2000 g (từ 2000 g trở lên được sàng lọc và tiêm tại cơ
+    sở ngoài bệnh viện); tiền sử phản ứng tăng dần sau các lần tiêm cùng loại vắc xin; nghi ngờ hoặc mắc suy giảm
+    miễn dịch bẩm sinh chưa xác định mức độ hoặc suy giảm miễn dịch thể nặng (tạm hoãn vắc xin sống giảm độc lực);
+    bệnh bẩm sinh hoặc mạn tính ở tim, phổi, tiêu hóa, tiết niệu, máu, thần kinh, ung thư chưa ổn định; trẻ có tiền
+    sử phản ứng với thuốc, sữa, thức ăn hoặc dị nguyên khác.'
+  source_id: V07
+  source_file: byt/1575_QD-BYT_560859.pdf
+  source_pages: Phần II mục 1.2 và 3.2
+  source_year: '2023'
+- id: scr-005
+  vaccine_id: null
+  topic: benh_nhe_van_tiem
+  text: Theo bảng kiểm trước tiêm chủng của hướng dẫn, không hoãn tiêm vắc xin đối với trẻ có bệnh nhẹ như ho, sổ
+    mũi, tiêu chảy mức độ nhẹ và không sốt, bú tốt, ăn tốt. Ghi chú về corticoid/hóa trị/xạ trị/globulin trong bảng
+    kiểm chỉ áp dụng với vắc xin sống giảm độc lực.
+  source_id: V07
+  source_file: byt/1575_QD-BYT_560859.pdf
+  source_pages: Phụ lục I (chú thích * và **)
+  source_year: '2023'
+- id: scr-006
+  vaccine_id: null
+  topic: tre_duoi_1_thang
+  text: 'Trẻ dưới 1 tháng tuổi: trẻ sinh non tuổi thai dưới 34 tuần tạm hoãn BCG, tiêm khi đủ 34 tuần (tuổi thai
+    hiệu chỉnh). Trẻ sinh non dưới 34 tuần: nếu mẹ HBsAg âm tính thì tạm hoãn viêm gan B sơ sinh đến khi đủ 34 tuần;
+    nếu mẹ HBsAg dương tính hoặc không xét nghiệm thì chuyển khám và tiêm tại bệnh viện. Tại bệnh viện, trẻ tuổi
+    thai dưới 28 tuần tiêm viêm gan B khi đủ 28 tuần. Trẻ dưới 2000 g chuyển khám sàng lọc tại bệnh viện. Trẻ nghi
+    hoặc mắc suy giảm miễn dịch thể nặng: tạm hoãn BCG và chuyển bệnh viện; dùng IPV thay cho OPV.'
+  source_id: V07
+  source_file: byt/1575_QD-BYT_560859.pdf
+  source_pages: Phần II mục 2.2, Phần III mục 2.2 và 3.2
+  source_year: '2023'
+- id: scr-007
+  vaccine_id: null
+  topic: tre_phoi_nhiem_hiv
+  text: Trẻ phơi nhiễm HIV chưa có biểu hiện lâm sàng được chỉ định tiêm chủng. Trẻ có triệu chứng nghi nhiễm HIV
+    thì tạm hoãn cho đến khi khẳng định tình trạng nhiễm. Các vắc xin không phải vắc xin sống giảm độc lực thì chỉ
+    định như trẻ bình thường; vắc xin sống giảm độc lực (BCG, OPV, Rota, sởi-rubella-quai bị) cần xét theo mức độ
+    suy giảm miễn dịch (CD4) và việc điều trị ARV. Cần theo dõi trẻ sau tiêm BCG để phát hiện loét, viêm hạch hoặc
+    bệnh BCG lan tỏa.
+  source_id: V07
+  source_file: byt/1575_QD-BYT_560859.pdf
+  source_pages: Phần II mục 3.1; Phụ lục VIII, IX
+  source_year: '2023'
+- id: scr-008
+  vaccine_id: null
+  topic: suy_giam_mien_dich_bam_sinh
+  text: 'Trẻ suy giảm miễn dịch bẩm sinh: thể suy giảm tế bào T (suy giảm miễn dịch kết hợp nặng, hội chứng Wiskott-Aldrich...)
+    chống chỉ định tất cả vắc xin sống giảm độc lực; thể suy giảm tế bào B chống chỉ định vắc xin sốt vàng, OPV,
+    varicella, thận trọng với BCG, và vẫn có thể tiêm DTP, Hib, IPV, MMR, cúm bất hoạt, phế cầu; thể thiếu hụt bổ
+    thể có thể tiêm Hib, phế cầu, não mô cầu; thể rối loạn thực bào (bệnh u hạt mạn...) chống chỉ định BCG và vắc
+    xin Salmonella typhi sống, các vắc xin khác tiêm được. Người thân sống chung nên tiêm phòng, tránh vắc xin sống
+    cho người tiếp xúc gần với bệnh nhân suy giảm miễn dịch kết hợp nặng (trừ MMR và BCG), và dùng IPV thay OPV.'
+  source_id: V07
+  source_file: byt/1575_QD-BYT_560859.pdf
+  source_pages: Phụ lục VII
+  source_year: '2023'
+  scope_note: Bảng này dựa trên khuyến cáo IPOPI 2013; cần bác sĩ miễn dịch quyết định cho từng bệnh nhân.

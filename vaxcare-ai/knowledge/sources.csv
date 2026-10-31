@@ -1,0 +1,44 @@
+﻿doc_id,title,issuer,tier,year,url,accessed_date,vaccine_ids
+V01,"Thông tư ban hành danh mục bệnh truyền nhiễm, đối tượng và phạm vi phải sử dụng vắc xin, sinh phẩm y tế bắt buộc",Bộ Y tế,A,2024,https://thuvienphapluat.vn/van-ban/The-thao-Y-te/Thong-tu-10-2024-TT-BYT-benh-truyen-nhiem-pham-vi-phai-su-dung-sinh-pham-y-te-bat-buoc-613510.aspx,,1;2;3;4;5;6;9;10;12
+V02,Nghị định quy định về hoạt động tiêm chủng,Chính phủ,A,2016,https://thuvienphapluat.vn/van-ban/The-thao-Y-te/Decree-104-2016-ND-CP-on-vaccination-321152.aspx,,
+V03,"Nghị định sửa đổi, bổ sung một số điều của Nghị định 104/2016/NĐ-CP",Chính phủ,A,2024,https://caselaw.vn/van-ban-phap-luat/116562-nghi-dinh-104-2016-nd-cp-quy-dinh-ve-hoat-dong-tiem-chung,,
+V04,"Nghị định sửa đổi, bổ sung một số quy định về điều kiện đầu tư kinh doanh thuộc phạm vi quản lý của Bộ Y tế",Chính phủ,A,2018,https://vneconomy.vn/bo-y-te-thong-tin-ve-dieu-kien-de-cac-co-so-y-te-duoc-tiem-chung.htm,,
+V05,Thông tư quy định chi tiết một số điều của Nghị định 104/2016/NĐ-CP về hoạt động tiêm chủng,Bộ Y tế,A,2018,https://thuvienphapluat.vn/van-ban/The-thao-Y-te/Circular-34-2018-TT-BYT-elaboration-Decree-104-2016-ND-CP-on-vaccination-430355.aspx,,
+V06,"Thông tư hướng dẫn phòng, chẩn đoán và xử trí phản vệ",Bộ Y tế,A,2017,https://thuvienphapluat.vn/van-ban/the-thao-y-te/thong-tu-51-2017-tt-byt-huong-dan-phong-chan-doan-va-xu-tri-phan-ve-320095.aspx,,
+V07,Hướng dẫn khám sàng lọc trước tiêm chủng đối với trẻ em,Bộ Y tế,A,2023,https://luatvietnam.vn/y-te/quyet-dinh-1575-qd-byt-247533-d1.html,,1;2;3;4;5;6;7;8;9;10;11
+V08,Hướng dẫn tạm thời khám sàng lọc trước tiêm chủng vắc xin phòng COVID-19 dành cho người từ 18 tuổi trở lên,Bộ Y tế,A,2021,https://thuvienphapluat.vn/van-ban/The-thao-Y-te/Decision-5785-QD-BYT-2021-COVID19-immunization-screening-for-people-aged-18-or-more-501229.aspx,,12
+V09,"Kế hoạch triển khai chiến dịch tiêm chủng vắc xin phòng, chống dịch Sởi năm 2024",Bộ Y tế,A,2024,https://cdn.lawnet.vn/uploads/phapluat/NTMH/24082024/quyet-dinh-2495.pdf,,6
+V10,Kế hoạch Tiêm chủng mở rộng giai đoạn 03 năm 2026-2028,Bộ Y tế,A,,https://static.luatvietnam.vn/xem-noi-dung-file-quyet-dinh-2780-qd-byt-cua-bo-y-te-ban-hanh-ke-hoach-tiem-chung-mo-rong-giai-doan-03-nam-2026-2028-410147-d1/uploaded/vietlawfile/2025/9/2780_qd_byt_030925134105.pdf.aspx,,
+I01,Table 1: Summary of WHO Position Papers - Recommendations for Routine Immunization,WHO,B,2025,https://www.who.int/publications/m/item/table-1-who-recommendations-for-routine-immunization,,1;2;3;4;5;6;7;8;9;10;11;12;13
+I02,WHO Vaccine Position Papers (trang danh mục),WHO,B,,https://www.who.int/teams/immunization-vaccines-and-biologicals/policies/position-papers,,1;2;3;4;5;6;7;8;9;10;11;12;13
+I03,Adult Immunization Schedule by Age (CDC),CDC (Hoa Kỳ),B,2026,https://www.cdc.gov/vaccines/hcp/imz-schedules/adult-age-compliant.html,,2;3;6;7;8;10;11;12;13
+I04,SHINGRIX prescribing information,GSK / FDA,C,,https://www.fda.gov/media/108597/download,,13
+I05,GARDASIL 9 prescribing information,MSD / FDA,C,,https://www.fda.gov/media/90064/download,,11
+W01,WHO position paper: BCG,WHO,B,2018,https://www.who.int/teams/immunization-vaccines-and-biologicals/policies/position-papers/bcg,,1
+W02,WHO position paper: Hepatitis B,WHO,B,2017,https://www.who.int/teams/immunization-vaccines-and-biologicals/policies/position-papers/hepatitis-b,,2
+W03,WHO position paper: Diphtheria,WHO,B,2017,https://www.who.int/teams/immunization-vaccines-and-biologicals/policies/position-papers/diphtheria,,3
+W04,WHO position paper: Pertussis,WHO,B,2015,https://www.who.int/teams/immunization-vaccines-and-biologicals/policies/position-papers/pertussis,,3
+W05,WHO position paper: Tetanus,WHO,B,2017,https://www.who.int/teams/immunization-vaccines-and-biologicals/policies/position-papers/tetanus,,3
+W06,WHO position paper: Polio,WHO,B,2022,https://www.who.int/teams/immunization-vaccines-and-biologicals/policies/position-papers/polio,,4
+W07,WHO position paper: Haemophilus influenzae type b,WHO,B,2013,https://www.who.int/teams/immunization-vaccines-and-biologicals/policies/position-papers/haemophilus-influenzae-type-b,,5
+W08,WHO position paper: Measles,WHO,B,2017,https://www.who.int/teams/immunization-vaccines-and-biologicals/policies/position-papers/measles,,6
+W09,WHO position paper: Mumps,WHO,B,2024,https://www.who.int/teams/immunization-vaccines-and-biologicals/policies/position-papers/mumps,,6
+W10,WHO position paper: Rubella,WHO,B,2020,https://www.who.int/teams/immunization-vaccines-and-biologicals/policies/position-papers/rubella,,6
+W11,WHO position paper: Varicella,WHO,B,2025,https://www.who.int/teams/immunization-vaccines-and-biologicals/policies/position-papers/varicella,,7
+W12,WHO position paper: Pneumococcus,WHO,B,2025,https://www.who.int/teams/immunization-vaccines-and-biologicals/policies/position-papers/pneumococcus,,8
+W13,WHO position paper: Japanese encephalitis,WHO,B,2015,https://www.who.int/teams/immunization-vaccines-and-biologicals/policies/position-papers/japanese-encephalitis,,9
+W14,WHO position paper: Influenza,WHO,B,2022,https://www.who.int/teams/immunization-vaccines-and-biologicals/policies/position-papers/influenza,,10
+W15,WHO position paper: Human papillomavirus (HPV),WHO,B,2022,https://www.who.int/teams/immunization-vaccines-and-biologicals/policies/position-papers/human-papillomavirus-%28hpv%29,,11
+W16,WHO position paper: COVID-19 (coronavirus),WHO,B,2026,https://www.who.int/teams/immunization-vaccines-and-biologicals/policies/position-papers/covid-19-%28coronavirus%29,,12
+W17,WHO position paper: Herpes Zoster,WHO,B,2025,https://www.who.int/teams/immunization-vaccines-and-biologicals/policies/position-papers/herpes-zoster,,13
+H01,Tờ hướng dẫn sử dụng Adacel (Tdap),Nhà sản xuất / Cục Quản lý Dược (xem trên tờ),C,,,,3
+H02,Tờ hướng dẫn sử dụng Vaccine BCG,Nhà sản xuất / Cục Quản lý Dược (xem trên tờ),C,,,,1
+H03,Tờ hướng dẫn sử dụng Gardasil 9,Nhà sản xuất / Cục Quản lý Dược (xem trên tờ),C,,,,11
+H04,Tờ hướng dẫn sử dụng Imojev,Nhà sản xuất / Cục Quản lý Dược (xem trên tờ),C,,,,9
+H05,Tờ hướng dẫn sử dụng Imovax Polio,Nhà sản xuất / Cục Quản lý Dược (xem trên tờ),C,,,,4
+H06,Tờ hướng dẫn sử dụng Influvac Tetra,Nhà sản xuất / Cục Quản lý Dược (xem trên tờ),C,,,,10
+H07,Tờ hướng dẫn sử dụng M-M-R II,Nhà sản xuất / Cục Quản lý Dược (xem trên tờ),C,,,,6
+H08,Tờ hướng dẫn sử dụng Prevenar 20,Nhà sản xuất / Cục Quản lý Dược (xem trên tờ),C,,,,8
+H09,Tờ hướng dẫn sử dụng Shingrix,Nhà sản xuất / Cục Quản lý Dược (xem trên tờ),C,,,,13
+H10,Tờ hướng dẫn sử dụng Varivax,Nhà sản xuất / Cục Quản lý Dược (xem trên tờ),C,,,,7
+H11,Tờ hướng dẫn sử dụng Tetraxim,Nhà sản xuất / Cục Quản lý Dược (xem trên tờ),C,,,,3;4

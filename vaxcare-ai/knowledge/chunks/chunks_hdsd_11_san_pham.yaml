@@ -1,0 +1,264 @@
+- id: var-hdsd-001
+  vaccine_id: 7
+  topic: chi_dinh
+  text: Varivax được chỉ định tiêm phòng thủy đậu cho người từ 12 tháng tuổi trở lên. Vaccine cũng dùng cho người
+    nhạy cảm đã phơi nhiễm thủy đậu, tiêm trong vòng 3 ngày và có thể đến 5 ngày sau khi tiếp xúc.
+  source_id: H10
+  source_file: leaflets/Varivax.pdf
+  source_pages: theo mục tương ứng trong tờ HDSD 
+  source_year: HDSD bản Việt Nam
+- id: var-hdsd-002
+  vaccine_id: 7
+  topic: lieu
+  text: Trẻ từ 12 tháng đến 12 tuổi tiêm một liều đơn 0,5 ml dưới da. Thanh thiếu niên từ 13 tuổi trở lên và người
+    lớn tiêm 2 liều 0,5 ml dưới da, liều thứ hai cách liều đầu 4 đến 8 tuần. Không tiêm tĩnh mạch.
+  source_id: H10
+  source_file: leaflets/Varivax.pdf
+  source_pages: theo mục tương ứng trong tờ HDSD 
+  source_year: HDSD bản Việt Nam
+  conflict_note: Tờ HDSD Việt Nam ghi trẻ 12 tháng-12 tuổi chỉ 1 liều, còn WHO (W11) khuyến cáo 2 liều cho mọi lứa
+    tuổi và DB ghi 2 liều cách 28 ngày. Khi trả lời phải nêu rõ nguồn và để bác sĩ quyết định.
+- id: var-hdsd-003
+  vaccine_id: 7
+  topic: chong_chi_dinh
+  text: Chống chỉ định khi quá mẫn với thành phần vaccine (kể cả gelatin) hoặc từng phản vệ với neomycin; bệnh ác
+    tính về máu hoặc hệ bạch huyết; suy giảm miễn dịch nguyên phát hoặc mắc phải, kể cả đang dùng thuốc ức chế miễn
+    dịch hay corticosteroid liều cao (corticosteroid tại chỗ hoặc liều thấp không phải chống chỉ định); nhiễm HIV
+    có triệu chứng (trừ trẻ không triệu chứng có CD4 trên 25%); tiền sử gia đình suy giảm miễn dịch bẩm sinh chưa
+    được loại trừ; lao hoạt động chưa điều trị; bệnh có sốt trên 38,5 độ C (sốt nhẹ không chống chỉ định).
+  source_id: H10
+  source_file: leaflets/Varivax.pdf
+  source_pages: theo mục tương ứng trong tờ HDSD 
+  source_year: HDSD bản Việt Nam
+- id: var-hdsd-004
+  vaccine_id: 7
+  topic: thai_ky
+  text: Không được dùng Varivax cho phụ nữ có thai và cần tránh mang thai trong 3 tháng sau khi tiêm. Chưa rõ vaccine
+    có bài tiết vào sữa mẹ hay không nên cần thận trọng khi dùng cho phụ nữ cho con bú.
+  source_id: H10
+  source_file: leaflets/Varivax.pdf
+  source_pages: theo mục tương ứng trong tờ HDSD 
+  source_year: HDSD bản Việt Nam
+- id: bcg-hdsd-001
+  vaccine_id: 1
+  topic: chi_dinh_lieu
+  text: 'Vaccine BCG chỉ định cho trẻ sơ sinh, trẻ dưới 1 tuổi và trẻ lớn hơn 1 tuổi chưa tiêm (chưa có sẹo đặc
+    trưng) hoặc có phản ứng tuberculin âm tính. Tiêm trong da. Trẻ sơ sinh và dưới 1 tuổi: 1 liều 0,1 ml chứa 0,05
+    mg BCG; trẻ trên 1 tuổi có thể dùng liều gấp đôi (0,1 ml chứa 0,1 mg).'
+  source_id: H02
+  source_file: leaflets/BCG.pdf
+  source_pages: theo mục tương ứng trong tờ HDSD 
+  source_year: HDSD bản Việt Nam
+- id: bcg-hdsd-002
+  vaccine_id: 1
+  topic: chong_chi_dinh
+  text: Chống chỉ định với người đang mắc lao hoạt động hoặc phản ứng tuberculin dương tính cao, người vừa tiêm
+    vaccine đậu mùa, người bị bỏng, người đang dùng thuốc chống lao; người giảm gammaglobulin máu, suy giảm miễn
+    dịch bẩm sinh, sarcoid, bệnh bạch cầu, u lympho, bệnh ác tính lan tỏa, nhiễm HIV có triệu chứng hoặc bất kỳ
+    bệnh nào làm tổn thương đáp ứng miễn dịch; người ức chế miễn dịch kéo dài do điều trị (corticosteroid, thuốc
+    chống ung thư, tia xạ).
+  source_id: H02
+  source_file: leaflets/BCG.pdf
+  source_pages: theo mục tương ứng trong tờ HDSD 
+  source_year: HDSD bản Việt Nam
+- id: bcg-hdsd-003
+  vaccine_id: 1
+  topic: thai_ky
+  text: Chưa rõ vaccine có gây hại cho thai khi dùng cho phụ nữ mang thai hay không; chỉ dùng khi lợi ích vượt nguy
+    cơ. Chưa rõ vaccine có qua sữa mẹ không nên cần thận trọng khi tiêm cho phụ nữ cho con bú.
+  source_id: H02
+  source_file: leaflets/BCG.pdf
+  source_pages: theo mục tương ứng trong tờ HDSD 
+  source_year: HDSD bản Việt Nam
+- id: mmr-hdsd-001
+  vaccine_id: 6
+  topic: chi_dinh_lich
+  text: M-M-R II dùng để tiêm phòng đồng thời sởi, quai bị và rubella cho trẻ từ 12 tháng tuổi trở lên. Liều xấp
+    xỉ 0,5 ml tiêm dưới da hoặc tiêm bắp (đùi trước bên cho trẻ nhỏ, cơ delta cho trẻ lớn và người lớn); không tiêm
+    bắp ở người giảm tiểu cầu hoặc rối loạn đông máu. Người tiêm từ 12 tháng cần tái chủng lúc 4-6 tuổi. Khi có
+    dịch sởi, trẻ 6-12 tháng có thể được tiêm theo khuyến cáo của cơ quan y tế, nhưng cần liều thứ hai lúc 12-15
+    tháng và tái chủng lúc 4-6 tuổi.
+  source_id: H07
+  source_file: leaflets/M-M-R II.pdf
+  source_pages: theo mục tương ứng trong tờ HDSD 
+  source_year: HDSD bản Việt Nam
+- id: mmr-hdsd-002
+  vaccine_id: 6
+  topic: chong_chi_dinh
+  text: Chống chỉ định khi quá mẫn với thành phần vaccine (kể cả gelatin) hoặc phản vệ với neomycin; phụ nữ mang
+    thai (phụ nữ sau dậy thì cần tránh mang thai trong 1 tháng sau tiêm); bệnh hô hấp có sốt hoặc nhiễm trùng có
+    sốt đang tiến triển; lao đang tiến triển chưa điều trị; người đang dùng thuốc ức chế miễn dịch; suy giảm miễn
+    dịch tiên phát hoặc mắc phải; tiền sử gia đình suy giảm miễn dịch bẩm sinh hoặc di truyền cho đến khi chứng
+    minh được miễn dịch của người nhận.
+  source_id: H07
+  source_file: leaflets/M-M-R II.pdf
+  source_pages: theo mục tương ứng trong tờ HDSD 
+  source_year: HDSD bản Việt Nam
+- id: zos-hdsd-001
+  vaccine_id: 13
+  topic: chi_dinh_lich
+  text: Shingrix chỉ định phòng herpes zoster (zona) và biến chứng cho người lớn từ 50 tuổi trở lên và người lớn
+    từ 18 tuổi trở lên có nguy cơ cao mắc zona. Lịch cơ bản 2 liều 0,5 ml, liều thứ hai cách liều đầu 2 đến 6 tháng;
+    nếu cần lịch ngắn hơn (người suy giảm miễn dịch hoặc sắp suy giảm) có thể tiêm liều hai sau 1 đến 2 tháng. Không
+    chỉ định để phòng thủy đậu nguyên phát. Chống chỉ định khi quá mẫn với hoạt chất hoặc bất kỳ thành phần nào.
+  source_id: H09
+  source_file: leaflets/Shingrix.pdf
+  source_pages: theo mục tương ứng trong tờ HDSD 
+  source_year: HDSD bản Việt Nam
+- id: tdap-hdsd-001
+  vaccine_id: 3
+  topic: chi_dinh_lieu
+  text: Adacel (Tdap) chỉ định tiêm nhắc để phòng uốn ván, bạch hầu, ho gà cho người từ 4 đến 64 tuổi; không có
+    chỉ định cho trẻ dưới 4 tuổi. Có thể dùng làm liều thứ 5 của DTaP cho trẻ 4-6 tuổi theo khuyến cáo quốc gia.
+    Liều 0,5 ml tiêm bắp (nên ở cơ delta), không chia nhỏ liều. Nên nhắc giải độc tố uốn ván và bạch hầu mỗi 10
+    năm; ở người lớn có thể dùng Adacel để nhắc sau 10 năm thay cho vaccine chỉ có uốn ván và bạch hầu. Người đã
+    mắc bệnh vẫn cần tiêm chủng.
+  source_id: H01
+  source_file: leaflets/Adacel.pdf
+  source_pages: theo mục tương ứng trong tờ HDSD 
+  source_year: HDSD bản Việt Nam
+- id: tdap-hdsd-002
+  vaccine_id: 3
+  topic: chong_chi_dinh_thai_ky
+  text: Chống chỉ định khi từng có phản ứng quá mẫn toàn thân với thành phần vaccine; nên hoãn khi bị bệnh cấp tính
+    hoặc sốt. Cần cân nhắc kỹ nếu từng bị hội chứng Guillain-Barré trong vòng 6 tuần sau khi tiêm vaccine chứa giải
+    độc tố uốn ván. Không khuyến cáo tiêm trong thai kỳ trừ khi thật sự có nguy cơ mắc bệnh.
+  source_id: H01
+  source_file: leaflets/Adacel.pdf
+  source_pages: theo mục tương ứng trong tờ HDSD 
+  source_year: HDSD bản Việt Nam
+- id: je-hdsd-001
+  vaccine_id: 9
+  topic: chi_dinh_lieu
+  text: Imojev chỉ định phòng viêm não Nhật Bản cho người từ 9 tháng tuổi trở lên, liều cơ bản 1 liều 0,5 ml tiêm
+    dưới da. Trẻ em (đến 18 tuổi) nếu muốn bảo vệ lâu dài nên tiêm nhắc 1 liều, tốt nhất 1 năm sau liều cơ bản và
+    có thể đến 24 tháng sau; miễn dịch ở trẻ duy trì ở mức cao ít nhất 3 năm. Người lớn không cần nhắc đến 5 năm
+    sau liều đơn.
+  source_id: H04
+  source_file: leaflets/Imojev.pdf
+  source_pages: theo mục tương ứng trong tờ HDSD 
+  source_year: HDSD bản Việt Nam
+- id: je-hdsd-002
+  vaccine_id: 9
+  topic: chong_chi_dinh
+  text: Cần hoãn tiêm khi sốt hoặc bệnh cấp tính. Chống chỉ định ở người suy giảm miễn dịch bẩm sinh hoặc mắc phải
+    làm suy yếu miễn dịch tế bào (kể cả hóa trị, corticosteroid toàn thân liều cao từ 14 ngày trở lên), người nhiễm
+    HIV có triệu chứng hoặc có bằng chứng suy giảm miễn dịch, phụ nữ có thai và phụ nữ đang cho con bú (theo tờ
+    HDSD Việt Nam).
+  source_id: H04
+  source_file: leaflets/Imojev.pdf
+  source_pages: theo mục tương ứng trong tờ HDSD 
+  source_year: HDSD bản Việt Nam
+- id: ipv-hdsd-001
+  vaccine_id: 4
+  topic: chi_dinh_lich
+  text: 'Imovax Polio là vaccine bại liệt bất hoạt (IPV), tiêm bắp hoặc dưới da, chỉ định cho trẻ nhỏ, thiếu niên
+    và người lớn, cả liều cơ bản và nhắc lại. Trẻ từ 6 tuần hoặc 2 tháng tuổi: 3 liều 0,5 ml cách nhau 1-2 tháng,
+    nhắc lần đầu lúc 6-12 tháng sau liều cuối. Người lớn chưa tiêm: 2 liều cách 1 tháng hoặc tốt nhất 2 tháng, nhắc
+    lần đầu 6-12 tháng sau liều cuối. Ở nước dùng vaccine uống OPV, có thể dùng IPV kết hợp hoặc tiếp theo OPV theo
+    khuyến cáo WHO và quốc gia.'
+  source_id: H05
+  source_file: leaflets/Imovax Polio.pdf
+  source_pages: theo mục tương ứng trong tờ HDSD 
+  source_year: HDSD bản Việt Nam
+- id: ipv-hdsd-002
+  vaccine_id: 4
+  topic: chong_chi_dinh_thai_ky
+  text: Chống chỉ định khi quá mẫn với thành phần vaccine hoặc với neomycin, streptomycin, polymyxin B. Hoãn tiêm
+    khi sốt hoặc bệnh cấp tính. Có thể chỉ định cho phụ nữ mang thai khi có nguy cơ nhiễm bệnh cao.
+  source_id: H05
+  source_file: leaflets/Imovax Polio.pdf
+  source_pages: theo mục tương ứng trong tờ HDSD 
+  source_year: HDSD bản Việt Nam
+- id: flu-hdsd-001
+  vaccine_id: 10
+  topic: chi_dinh_lieu
+  text: Influvac Tetra chỉ định cho người lớn và trẻ em trên 3 tuổi, liều 0,5 ml tiêm bắp hoặc tiêm sâu dưới da.
+    Trẻ dưới 9 tuổi chưa từng tiêm vaccine cúm mùa cần liều thứ hai sau 4 tuần.
+  source_id: H06
+  source_file: leaflets/Influvac Tetra.pdf
+  source_pages: theo mục tương ứng trong tờ HDSD 
+  source_year: HDSD bản Việt Nam
+  conflict_note: 'Bổ sung cho phần chưa đọc của bài WHO về cúm: trẻ dưới 9 tuổi lần đầu tiêm cần 2 liều.
+- id: flu-hdsd-002
+  vaccine_id: 10
+  topic: chong_chi_dinh
+  text: Chống chỉ định khi quá mẫn với hoạt chất, tá dược hoặc các thành phần có thể còn vết như trứng (ovalbumin,
+    protein gà), formaldehyde, cetyltrimethylammonium bromide, polysorbat 80 hoặc gentamicin. Hoãn tiêm khi có sốt
+    hoặc nhiễm trùng cấp. Có thể dùng trong thời kỳ cho con bú.
+  source_id: H06
+  source_file: leaflets/Influvac Tetra.pdf
+  source_pages: theo mục tương ứng trong tờ HDSD 
+  source_year: HDSD bản Việt Nam
+- id: pcv-hdsd-001
+  vaccine_id: 8
+  topic: chi_dinh_lieu
+  text: Prevenar 20 chỉ định phòng bệnh xâm lấn và viêm phổi do Streptococcus pneumoniae ở người từ 18 tuổi trở
+    lên. Tiêm 1 liều đơn 0,5 ml tiêm bắp, ưu tiên cơ delta. Nhu cầu tiêm nhắc chưa được thiết lập. An toàn và hiệu
+    quả ở người dưới 18 tuổi chưa được xác lập.
+  source_id: H08
+  source_file: leaflets/Prevenar 20.pdf
+  source_pages: theo mục tương ứng trong tờ HDSD 
+  source_year: HDSD bản Việt Nam
+- id: pcv-hdsd-002
+  vaccine_id: 8
+  topic: chong_chi_dinh_thai_ky
+  text: Chống chỉ định khi quá mẫn với hoạt chất, tá dược hoặc giải độc tố bạch hầu. Nên hoãn tiêm khi đang sốt
+    cao cấp tính. Chưa có dữ liệu về việc tiêm Prevenar 20 cho phụ nữ mang thai.
+  source_id: H08
+  source_file: leaflets/Prevenar 20.pdf
+  source_pages: theo mục tương ứng trong tờ HDSD 
+  source_year: HDSD bản Việt Nam
+- id: dtap-hdsd-001
+  vaccine_id: 3
+  topic: chi_dinh_lich
+  text: 'Tetraxim là vaccine phối hợp phòng bạch hầu, uốn ván, ho gà vô bào và bại liệt từ 2 tháng tuổi trở lên.
+    Lịch thường dùng: 3 mũi cơ bản từ 2 tháng, cách nhau 1-2 tháng, một liều nhắc khoảng 1 năm sau các liều cơ bản
+    (trong năm tuổi thứ hai) và một liều nhắc khác lúc 5-13 tuổi tùy khuyến cáo quốc gia. Tiêm bắp.'
+  source_id: H11
+  source_file: leaflets/Tetraxim.pdf
+  source_pages: theo mục tương ứng trong tờ HDSD 
+  source_year: HDSD bản Việt Nam
+- id: dtap-hdsd-002
+  vaccine_id: 3
+  topic: chong_chi_dinh
+  text: Không dùng khi dị ứng với thành phần vaccine hoặc chất còn tồn dư (glutaraldehyde, neomycin, streptomycin,
+    polymyxin B), hoặc với vaccine ho gà, hoặc từng có phản ứng dị ứng sau vaccine tương tự; khi bị bệnh não tiến
+    triển; khi từng bị bệnh não trong vòng 7 ngày sau liều vaccine ho gà. Phải hoãn tiêm khi sốt hoặc bệnh cấp tính.
+  source_id: H11
+  source_file: leaflets/Tetraxim.pdf
+  source_pages: theo mục tương ứng trong tờ HDSD 
+  source_year: HDSD bản Việt Nam
+- id: hpv-hdsd-001
+  vaccine_id: 11
+  topic: chi_dinh
+  text: Theo tờ HDSD Gardasil 9 bản Việt Nam, vaccine chỉ định cho bé gái, phụ nữ và bé trai, nam giới từ 9 đến
+    26 tuổi để phòng ung thư và các bệnh liên quan các type HPV có trong vaccine. An toàn và hiệu quả ở trẻ dưới
+    9 tuổi chưa được xác định.
+  source_id: H03
+  source_file: leaflets/GARDASIL9.pdf
+  source_pages: theo mục tương ứng trong tờ HDSD 
+  source_year: HDSD bản Việt Nam
+  conflict_note: Nhãn FDA (I05) chỉ định 9-45 tuổi, rộng hơn tờ HDSD Việt Nam (9-26 tuổi). Khi tư vấn người trên
+    26 tuổi phải nói rõ nằm ngoài phạm vi chỉ định của HDSD Việt Nam và cần bác sĩ quyết định.
+- id: hpv-hdsd-002
+  vaccine_id: 11
+  topic: lich_tiem
+  text: 'Người 9-14 tuổi ở lần tiêm đầu có thể dùng lịch 2 liều, liều hai tiêm giữa tháng thứ 5 và tháng thứ 13
+    sau liều đầu; nếu liều hai sớm hơn 5 tháng thì cần liều thứ ba. Cũng có thể dùng lịch 3 liều (0, 2, 6 tháng).
+    Người từ 15 tuổi trở lên dùng lịch 3 liều (0, 2, 6 tháng): liều hai ít nhất 1 tháng sau liều đầu, liều ba ít
+    nhất 3 tháng sau liều hai, cả ba liều trong vòng 1 năm.'
+  source_id: H03
+  source_file: leaflets/GARDASIL9.pdf
+  source_pages: theo mục tương ứng trong tờ HDSD 
+  source_year: HDSD bản Việt Nam
+- id: hpv-hdsd-003
+  vaccine_id: 11
+  topic: chong_chi_dinh_thai_ky
+  text: Chống chỉ định khi quá mẫn với hoạt chất hoặc tá dược, hoặc đã bị quá mẫn sau khi tiêm Gardasil 9 hoặc Gardasil
+    trước đây. Ngất có thể xảy ra sau hoặc thậm chí trước tiêm, nên theo dõi để tránh té ngã. Với phụ nữ mang thai,
+    dữ liệu trên hơn 1.000 ca không thấy dị dạng hay độc tính cho thai hoặc trẻ sơ sinh.
+  source_id: H03
+  source_file: leaflets/GARDASIL9.pdf
+  source_pages: theo mục tương ứng trong tờ HDSD 
+  source_year: HDSD bản Việt Nam

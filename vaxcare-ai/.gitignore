@@ -29,3 +29,10 @@ data/*
 
 # OS
 .DS_Store
+
+# Raw documents 
+knowledge/raw/**/*.pdf
+knowledge/raw/**/*.PDF
+knowledge/raw/leaflets/
+knowledge/raw/who/
+knowledge/raw/byt/

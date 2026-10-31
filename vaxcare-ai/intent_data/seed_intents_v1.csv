@@ -1,0 +1,121 @@
+id,text,intent,vaccine_ids,notes,split
+1,Trẻ sơ sinh tiêm những mũi vaccine nào?,lich_tiem,1;2,TCMR sơ sinh,train
+2,Bé 2 tháng tuổi cần tiêm những gì theo lịch TCMR?,lich_tiem,2;3;4;5,Lịch 2 tháng,train
+3,Lịch tiêm viêm não Nhật Bản cho trẻ như thế nào?,lich_tiem,9,JE 3 mũi,train
+4,Khi nào tiêm mũi sởi đầu tiên cho bé?,lich_tiem,6,Sởi 9 tháng,train
+5,Trẻ 18 tháng tiêm nhắc những mũi nào?,lich_tiem,3;6,Nhắc 18 tháng,train
+6,Phụ nữ mang thai tiêm uốn ván theo lịch ra sao?,lich_tiem,3,Uốn ván thai phụ,train
+7,Khoảng cách giữa 2 mũi Prevenar là bao lâu?,lich_tiem,8,PCV khoảng cách,train
+8,Trẻ bị trễ lịch tiêm thì tiêm bù như thế nào?,lich_tiem,,Tiêm bù,train
+9,Lịch tiêm HPV cho trẻ 9-14 tuổi?,lich_tiem,11,HPV 2 mũi,train
+10,Bé 4 tháng tiêm những vaccine gì?,lich_tiem,2;3;4;5,Lịch 4 tháng,train
+11,Khi nào tiêm BCG cho trẻ sơ sinh?,lich_tiem,1,BCG trong 1 tháng,train
+12,Lịch tiêm cúm hàng năm cho người lớn?,lich_tiem,10,Cúm hàng năm,train
+13,Trẻ 9 tháng tiêm sởi và những mũi khác không?,lich_tiem,6,Sởi + IPV,train
+14,Mũi viêm gan B sơ sinh tiêm trong bao lâu sau sinh?,lich_tiem,2,HepB 24h,train
+15,Lịch tiêm đầy đủ 5 trong 1 cho trẻ dưới 1 tuổi?,lich_tiem,3;4;5,Pentavalent,train
+16,Người lớn chưa tiêm thủy đậu thì lịch tiêm thế nào?,lich_tiem,7,Varicella 2 mũi,train
+17,Khoảng cách tối thiểu giữa mũi DTP và mũi nhắc?,lich_tiem,3,DTP interval,train
+18,Trẻ 12 tháng tiêm những vaccine nào?,lich_tiem,6;7;9,12 tháng,train
+19,Lịch tiêm zona cho người trên 50 tuổi?,lich_tiem,13,Shingrix,train
+20,Bé sinh non tiêm BCG và viêm gan B khi nào?,lich_tiem,1;2,Sinh non,train
+21,Ai nên tiêm vaccine HPV?,chi_dinh,11,Đối tượng HPV,train
+22,Vaccine phế cầu chỉ định cho những ai?,chi_dinh,8,PCV chỉ định,train
+23,Trẻ em có cần tiêm cúm không?,chi_dinh,10,Cúm trẻ em,train
+24,Ai được khuyến cáo tiêm Shingrix?,chi_dinh,13,Zona >50 tuổi,train
+25,Vaccine viêm não Nhật Bản dành cho đối tượng nào?,chi_dinh,9,JE đối tượng,train
+26,Người lớn chưa từng tiêm thủy đậu có nên tiêm không?,chi_dinh,7,Varicella NL,train
+27,Trẻ suy dinh dưỡng có tiêm được vaccine không?,chi_dinh,,Chỉ định chung,train
+28,Ai thuộc nhóm nguy cơ cao cần tiêm cúm?,chi_dinh,10,Nhóm nguy cơ,train
+29,Vaccine COVID-19 hiện khuyến cáo cho ai?,chi_dinh,12,COVID,train
+30,Phụ nữ mang thai có được tiêm vaccine cúm không?,chi_dinh,10,Cúm thai kỳ,train
+31,Trẻ bao nhiêu tháng thì bắt đầu tiêm 5 trong 1?,chi_dinh,3,Tuổi bắt đầu,train
+32,Người bị bệnh mạn tính có nên tiêm phế cầu không?,chi_dinh,8,Bệnh mạn tính,train
+33,Đối tượng nào bắt buộc tiêm theo chương trình TCMR?,chi_dinh,,TCMR bắt buộc,train
+34,Trẻ đi học mẫu giáo cần tiêm những vaccine nào?,chi_dinh,6;7;8,Trước nhập học,train
+35,Ai nên tiêm nhắc uốn ván định kỳ?,chi_dinh,3,Nhắc uốn ván,train
+36,Vaccine Gardasil 9 dành cho nam giới không?,chi_dinh,11,HPV nam,train
+37,Trẻ sinh mổ có tiêm vaccine sơ sinh bình thường không?,chi_dinh,1;2,Sinh mổ,train
+38,Người lớn tuổi có nên tiêm viêm gan B không?,chi_dinh,2,HepB NL,train
+39,Chỉ định tiêm BCG cho trẻ trên 1 tuổi?,chi_dinh,1,BCG trẻ lớn,train
+40,Ai không thuộc đối tượng tiêm vaccine dịch vụ?,chi_dinh,,Phân biệt TCMR/dịch vụ,train
+41,Bé đang sốt 38.5 độ có tiêm được không?,chong_chi_dinh,,Sốt tạm hoãn,train
+42,Trẻ bị dị ứng trứng có tiêm được MMR không?,chong_chi_dinh,6,Dị ứng,train
+43,Phụ nữ đang mang thai có tiêm được vaccine sống giảm độc lực không?,chong_chi_dinh,6;7,Thai kỳ sống,train
+44,Trẻ đang dùng thuốc ức chế miễn dịch có tiêm được không?,chong_chi_dinh,,Suy giảm miễn dịch,train
+45,Sau khi tiêm vaccine bị phản vệ thì lần sau xử lý thế nào?,chong_chi_dinh,,Tiền sử phản vệ,train
+46,Trẻ bị viêm đường hô hấp cấp có tiêm được không?,chong_chi_dinh,,Bệnh cấp tính,train
+47,Chống chỉ định của vaccine Varivax là gì?,chong_chi_dinh,7,Varivax C/I,train
+48,Trẻ sinh non dưới 34 tuần có tiêm BCG ngay không?,chong_chi_dinh,1,Sinh non BCG,train
+49,Người nhiễm HIV có tiêm được vaccine sống không?,chong_chi_dinh,,HIV,train
+50,Bé đang tiêu chảy cấp có tạm hoãn tiêm không?,chong_chi_dinh,,Tiêu chảy,train
+51,Chống chỉ định tuyệt đối khi tiêm vaccine là gì?,chong_chi_dinh,,C/I tuyệt đối,train
+52,Trẻ có tiền sử co giật có tiêm DTP được không?,chong_chi_dinh,3,Co giật,train
+53,Sau truyền máu bao lâu mới được tiêm vaccine sống?,chong_chi_dinh,,Truyền máu,train
+54,Phụ nữ cho con bú có tiêm được vaccine không?,chong_chi_dinh,,Cho bú,train
+55,Trẻ bị suy giảm miễn dịch bẩm sinh tiêm vaccine thế nào?,chong_chi_dinh,,PID,train
+56,Khi nào cần chuyển trẻ đến bệnh viện để khám sàng lọc trước tiêm?,chong_chi_dinh,,Chuyển viện,train
+57,Bé bị viêm da mủ có tiêm được không?,chong_chi_dinh,,Nhiễm trùng da,train
+58,Chống chỉ định của vaccine BCG?,chong_chi_dinh,1,BCG C/I,train
+59,Người đang hóa trị có tiêm được vaccine không?,chong_chi_dinh,,Hóa trị,train
+60,Trẻ vừa tiêm vaccine sống bao lâu mới tiêm được vaccine sống khác?,chong_chi_dinh,6;7,Khoảng cách sống,train
+61,Vaccine Prevenar 20 tiêm bao nhiêu ml mỗi mũi?,lieu_cach,8,Liều PCV,train
+62,Tiêm BCG tiêm đường nào và vị trí nào?,lieu_cach,1,Đường tiêm BCG,train
+63,Gardasil 9 tiêm mấy liều và mỗi liều bao nhiêu?,lieu_cach,11,Liều HPV,train
+64,Varivax tiêm dưới da hay tiêm bắp?,lieu_cach,7,Đường tiêm Varivax,train
+65,Liều tiêm vaccine viêm gan B cho trẻ sơ sinh là bao nhiêu?,lieu_cach,2,Liều HepB,train
+66,Shingrix pha như thế nào và tiêm ra sao?,lieu_cach,13,Pha chế Shingrix,train
+67,Tetraxim tiêm đường nào?,lieu_cach,3,Đường Tetraxim,train
+68,Imojev liều lượng cho trẻ em là bao nhiêu?,lieu_cach,9,Liều JE,train
+69,Vaccine cúm Influvac tiêm mấy ml?,lieu_cach,10,Liều cúm,train
+70,MMR tiêm dưới da ở vị trí nào?,lieu_cach,6,Vị trí MMR,train
+71,Số liều cơ bản của vaccine phế cầu cho trẻ dưới 1 tuổi?,lieu_cach,8,Số liều PCV,train
+72,Adacel tiêm bao nhiêu ml?,lieu_cach,3,Liều Adacel,train
+73,Imovax Polio tiêm đường nào?,lieu_cach,4,Đường IPV,train
+74,Liều nhắc lại của vaccine uốn ván cho người lớn?,lieu_cach,3,Liều nhắc,train
+75,Vaccine sống đông khô cần pha với dung môi gì?,lieu_cach,,Pha chế chung,train
+76,Vị trí tiêm tốt nhất cho trẻ dưới 1 tuổi?,lieu_cach,,Vị trí trẻ nhỏ,train
+77,Prevenar 20 có tiêm cùng lúc với vaccine khác được không?,lieu_cach,8,Đồng thời,train
+78,Liều lượng vaccine zona Shingrix mỗi mũi?,lieu_cach,13,Liều Shingrix,train
+79,BCG tiêm bao nhiêu ml cho trẻ sơ sinh?,lieu_cach,1,Liều BCG,train
+80,Cách bảo quản vaccine sau khi pha?,lieu_cach,,Bảo quản sau pha,train
+81,Sau tiêm vaccine sởi trẻ có thể bị sốt không?,tac_dung_phu,6,Sốt sau sởi,train
+82,Phản ứng thường gặp sau tiêm BCG là gì?,tac_dung_phu,1,Phản ứng BCG,train
+83,Tiêm HPV có bị đau hoặc sưng tại chỗ không?,tac_dung_phu,11,Phản ứng tại chỗ,train
+84,Sau tiêm DTP trẻ quấy khóc nhiều có sao không?,tac_dung_phu,3,Quấy khóc,train
+85,Tác dụng phụ nghiêm trọng của vaccine cần theo dõi?,tac_dung_phu,,Phản ứng nặng,train
+86,Tiêm thủy đậu có thể bị nổi ban không?,tac_dung_phu,7,Ban sau Varivax,train
+87,Sau tiêm phế cầu trẻ có thể sốt bao lâu?,tac_dung_phu,8,Sốt PCV,train
+88,Phản ứng sau tiêm cúm thường gặp là gì?,tac_dung_phu,10,Phản ứng cúm,train
+89,Tiêm vaccine xong bị sưng đỏ vùng tiêm xử lý thế nào?,tac_dung_phu,,Xử trí tại chỗ,train
+90,Khi nào cần đưa trẻ đến viện sau tiêm chủng?,tac_dung_phu,,Dấu hiệu nguy hiểm,train
+91,Vaccine sống có gây bệnh không?,tac_dung_phu,,An toàn vaccine sống,train
+92,Sau tiêm MMR có thể bị sưng hạch không?,tac_dung_phu,6,Sưng hạch,train
+93,Phản ứng phản vệ sau tiêm xử trí ban đầu ra sao?,tac_dung_phu,,Phản vệ,train
+94,Tiêm Shingrix có gây mệt mỏi không?,tac_dung_phu,13,Mệt mỏi,train
+95,Trẻ tiêm xong bị nôn có sao không?,tac_dung_phu,,Nôn,train
+96,Tác dụng phụ của vaccine viêm não Nhật Bản?,tac_dung_phu,9,AE JE,train
+97,Sau tiêm bao lâu thì theo dõi tại điểm tiêm?,tac_dung_phu,,Theo dõi 30 phút,train
+98,Vaccine có gây tự kỷ không?,tac_dung_phu,,Tin đồn,train
+99,Tiêm nhiều mũi cùng lúc có tăng nguy cơ phản ứng không?,tac_dung_phu,,Đồng thời,train
+100,Sau tiêm uốn ván bị đau cánh tay bao lâu thì hết?,tac_dung_phu,3,Đau tại chỗ,train
+101,Những vaccine nào thuộc chương trình tiêm chủng mở rộng?,thong_tin_chung,,TCMR danh mục,train
+102,Sự khác nhau giữa vaccine TCMR và vaccine dịch vụ?,thong_tin_chung,,TCMR vs dịch vụ,train
+103,Vaccine nào là vaccine sống giảm độc lực?,thong_tin_chung,1;6;7;9,Vaccine sống,train
+104,Có thể tiêm nhiều vaccine cùng một lúc không?,thong_tin_chung,,Đồng thời,train
+105,Vaccine bảo quản ở nhiệt độ bao nhiêu?,thong_tin_chung,,Chuỗi lạnh,train
+106,Thông tư 10/2024 quy định những gì về tiêm chủng?,thong_tin_chung,,TT 10/2024,train
+107,Vaccine phế cầu Prevenar 20 phòng được những type nào?,thong_tin_chung,8,Type PCV,train
+108,Gardasil 9 phòng được những type HPV nào?,thong_tin_chung,11,Type HPV,train
+109,Tại sao cần tiêm vaccine viêm gan B ngay sau sinh?,thong_tin_chung,2,Lý do HepB sơ sinh,train
+110,Vaccine zona khác gì với vaccine thủy đậu?,thong_tin_chung,7;13,So sánh,train
+111,Trẻ đã tiêm đủ lịch TCMR còn cần tiêm thêm gì không?,thong_tin_chung,,Vaccine bổ sung,train
+112,Nguồn thông tin chính thống về lịch tiêm ở Việt Nam là gì?,thong_tin_chung,,Nguồn uy tín,train
+113,Vaccine COVID-19 hiện còn được khuyến cáo không?,thong_tin_chung,12,COVID hiện tại,train
+114,Làm sao biết trẻ đã tiêm đủ mũi hay chưa?,thong_tin_chung,,Sổ tiêm chủng,train
+115,Vaccine nhập khẩu và vaccine trong nước khác nhau chỗ nào?,thong_tin_chung,,Nguồn gốc,train
+116,Có được tiêm vaccine khi đang dùng kháng sinh không?,thong_tin_chung,,Kháng sinh,train
+117,Chương trình tiêm chủng mở rộng miễn phí những vaccine nào?,thong_tin_chung,,Miễn phí,train
+118,Tại sao phải khám sàng lọc trước khi tiêm?,thong_tin_chung,,Sàng lọc,train
+119,Vaccine nào cần tiêm nhắc lại định kỳ ở người lớn?,thong_tin_chung,3;10,Nhắc người lớn,train
+120,Thông tin trên tờ hướng dẫn sử dụng vaccine có giá trị như thế nào?,thong_tin_chung,,Giá trị HDSD,train

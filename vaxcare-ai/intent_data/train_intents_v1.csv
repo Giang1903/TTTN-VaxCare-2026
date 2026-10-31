@@ -1,0 +1,361 @@
+id,text,intent,vaccine_ids,notes,split
+1,Trẻ sơ sinh tiêm những mũi vaccine nào?,lich_tiem,1;2,TCMR sơ sinh,train
+2,Bé 2 tháng tuổi cần tiêm những gì theo lịch TCMR?,lich_tiem,2;3;4;5,Lịch 2 tháng,train
+3,Lịch tiêm viêm não Nhật Bản cho trẻ như thế nào?,lich_tiem,9,JE 3 mũi,train
+4,Khi nào tiêm mũi sởi đầu tiên cho bé?,lich_tiem,6,Sởi 9 tháng,train
+5,Trẻ 18 tháng tiêm nhắc những mũi nào?,lich_tiem,3;6,Nhắc 18 tháng,train
+6,Phụ nữ mang thai tiêm uốn ván theo lịch ra sao?,lich_tiem,3,Uốn ván thai phụ,train
+7,Khoảng cách giữa 2 mũi Prevenar là bao lâu?,lich_tiem,8,PCV khoảng cách,train
+8,Trẻ bị trễ lịch tiêm thì tiêm bù như thế nào?,lich_tiem,,Tiêm bù,train
+9,Lịch tiêm HPV cho trẻ 9-14 tuổi?,lich_tiem,11,HPV 2 mũi,train
+10,Bé 4 tháng tiêm những vaccine gì?,lich_tiem,2;3;4;5,Lịch 4 tháng,train
+11,Khi nào tiêm BCG cho trẻ sơ sinh?,lich_tiem,1,BCG trong 1 tháng,train
+12,Lịch tiêm cúm hàng năm cho người lớn?,lich_tiem,10,Cúm hàng năm,train
+13,Trẻ 9 tháng tiêm sởi và những mũi khác không?,lich_tiem,6,Sởi + IPV,train
+14,Mũi viêm gan B sơ sinh tiêm trong bao lâu sau sinh?,lich_tiem,2,HepB 24h,train
+15,Lịch tiêm đầy đủ 5 trong 1 cho trẻ dưới 1 tuổi?,lich_tiem,3;4;5,Pentavalent,train
+16,Người lớn chưa tiêm thủy đậu thì lịch tiêm thế nào?,lich_tiem,7,Varicella 2 mũi,train
+17,Khoảng cách tối thiểu giữa mũi DTP và mũi nhắc?,lich_tiem,3,DTP interval,train
+18,Trẻ 12 tháng tiêm những vaccine nào?,lich_tiem,6;7;9,12 tháng,train
+19,Lịch tiêm zona cho người trên 50 tuổi?,lich_tiem,13,Shingrix,train
+20,Bé sinh non tiêm BCG và viêm gan B khi nào?,lich_tiem,1;2,Sinh non,train
+21,Ai nên tiêm vaccine HPV?,chi_dinh,11,Đối tượng HPV,train
+22,Vaccine phế cầu chỉ định cho những ai?,chi_dinh,8,PCV chỉ định,train
+23,Trẻ em có cần tiêm cúm không?,chi_dinh,10,Cúm trẻ em,train
+24,Ai được khuyến cáo tiêm Shingrix?,chi_dinh,13,Zona >50 tuổi,train
+25,Vaccine viêm não Nhật Bản dành cho đối tượng nào?,chi_dinh,9,JE đối tượng,train
+26,Người lớn chưa từng tiêm thủy đậu có nên tiêm không?,chi_dinh,7,Varicella NL,train
+27,Trẻ suy dinh dưỡng có tiêm được vaccine không?,chi_dinh,,Chỉ định chung,train
+28,Ai thuộc nhóm nguy cơ cao cần tiêm cúm?,chi_dinh,10,Nhóm nguy cơ,train
+29,Vaccine COVID-19 hiện khuyến cáo cho ai?,chi_dinh,12,COVID,train
+30,Phụ nữ mang thai có được tiêm vaccine cúm không?,chi_dinh,10,Cúm thai kỳ,train
+31,Trẻ bao nhiêu tháng thì bắt đầu tiêm 5 trong 1?,chi_dinh,3,Tuổi bắt đầu,train
+32,Người bị bệnh mạn tính có nên tiêm phế cầu không?,chi_dinh,8,Bệnh mạn tính,train
+33,Đối tượng nào bắt buộc tiêm theo chương trình TCMR?,chi_dinh,,TCMR bắt buộc,train
+34,Trẻ đi học mẫu giáo cần tiêm những vaccine nào?,chi_dinh,6;7;8,Trước nhập học,train
+35,Ai nên tiêm nhắc uốn ván định kỳ?,chi_dinh,3,Nhắc uốn ván,train
+36,Vaccine Gardasil 9 dành cho nam giới không?,chi_dinh,11,HPV nam,train
+37,Trẻ sinh mổ có tiêm vaccine sơ sinh bình thường không?,chi_dinh,1;2,Sinh mổ,train
+38,Người lớn tuổi có nên tiêm viêm gan B không?,chi_dinh,2,HepB NL,train
+39,Chỉ định tiêm BCG cho trẻ trên 1 tuổi?,chi_dinh,1,BCG trẻ lớn,train
+40,Ai không thuộc đối tượng tiêm vaccine dịch vụ?,chi_dinh,,Phân biệt TCMR/dịch vụ,train
+41,Bé đang sốt 38.5 độ có tiêm được không?,chong_chi_dinh,,Sốt tạm hoãn,train
+42,Trẻ bị dị ứng trứng có tiêm được MMR không?,chong_chi_dinh,6,Dị ứng,train
+43,Phụ nữ đang mang thai có tiêm được vaccine sống giảm độc lực không?,chong_chi_dinh,6;7,Thai kỳ sống,train
+44,Trẻ đang dùng thuốc ức chế miễn dịch có tiêm được không?,chong_chi_dinh,,Suy giảm miễn dịch,train
+45,Sau khi tiêm vaccine bị phản vệ thì lần sau xử lý thế nào?,chong_chi_dinh,,Tiền sử phản vệ,train
+46,Trẻ bị viêm đường hô hấp cấp có tiêm được không?,chong_chi_dinh,,Bệnh cấp tính,train
+47,Chống chỉ định của vaccine Varivax là gì?,chong_chi_dinh,7,Varivax C/I,train
+48,Trẻ sinh non dưới 34 tuần có tiêm BCG ngay không?,chong_chi_dinh,1,Sinh non BCG,train
+49,Người nhiễm HIV có tiêm được vaccine sống không?,chong_chi_dinh,,HIV,train
+50,Bé đang tiêu chảy cấp có tạm hoãn tiêm không?,chong_chi_dinh,,Tiêu chảy,train
+51,Chống chỉ định tuyệt đối khi tiêm vaccine là gì?,chong_chi_dinh,,C/I tuyệt đối,train
+52,Trẻ có tiền sử co giật có tiêm DTP được không?,chong_chi_dinh,3,Co giật,train
+53,Sau truyền máu bao lâu mới được tiêm vaccine sống?,chong_chi_dinh,,Truyền máu,train
+54,Phụ nữ cho con bú có tiêm được vaccine không?,chong_chi_dinh,,Cho bú,train
+55,Trẻ bị suy giảm miễn dịch bẩm sinh tiêm vaccine thế nào?,chong_chi_dinh,,PID,train
+56,Khi nào cần chuyển trẻ đến bệnh viện để khám sàng lọc trước tiêm?,chong_chi_dinh,,Chuyển viện,train
+57,Bé bị viêm da mủ có tiêm được không?,chong_chi_dinh,,Nhiễm trùng da,train
+58,Chống chỉ định của vaccine BCG?,chong_chi_dinh,1,BCG C/I,train
+59,Người đang hóa trị có tiêm được vaccine không?,chong_chi_dinh,,Hóa trị,train
+60,Trẻ vừa tiêm vaccine sống bao lâu mới tiêm được vaccine sống khác?,chong_chi_dinh,6;7,Khoảng cách sống,train
+61,Vaccine Prevenar 20 tiêm bao nhiêu ml mỗi mũi?,lieu_cach,8,Liều PCV,train
+62,Tiêm BCG tiêm đường nào và vị trí nào?,lieu_cach,1,Đường tiêm BCG,train
+63,Gardasil 9 tiêm mấy liều và mỗi liều bao nhiêu?,lieu_cach,11,Liều HPV,train
+64,Varivax tiêm dưới da hay tiêm bắp?,lieu_cach,7,Đường tiêm Varivax,train
+65,Liều tiêm vaccine viêm gan B cho trẻ sơ sinh là bao nhiêu?,lieu_cach,2,Liều HepB,train
+66,Shingrix pha như thế nào và tiêm ra sao?,lieu_cach,13,Pha chế Shingrix,train
+67,Tetraxim tiêm đường nào?,lieu_cach,3,Đường Tetraxim,train
+68,Imojev liều lượng cho trẻ em là bao nhiêu?,lieu_cach,9,Liều JE,train
+69,Vaccine cúm Influvac tiêm mấy ml?,lieu_cach,10,Liều cúm,train
+70,MMR tiêm dưới da ở vị trí nào?,lieu_cach,6,Vị trí MMR,train
+71,Số liều cơ bản của vaccine phế cầu cho trẻ dưới 1 tuổi?,lieu_cach,8,Số liều PCV,train
+72,Adacel tiêm bao nhiêu ml?,lieu_cach,3,Liều Adacel,train
+73,Imovax Polio tiêm đường nào?,lieu_cach,4,Đường IPV,train
+74,Liều nhắc lại của vaccine uốn ván cho người lớn?,lieu_cach,3,Liều nhắc,train
+75,Vaccine sống đông khô cần pha với dung môi gì?,lieu_cach,,Pha chế chung,train
+76,Vị trí tiêm tốt nhất cho trẻ dưới 1 tuổi?,lieu_cach,,Vị trí trẻ nhỏ,train
+77,Prevenar 20 có tiêm cùng lúc với vaccine khác được không?,lieu_cach,8,Đồng thời,train
+78,Liều lượng vaccine zona Shingrix mỗi mũi?,lieu_cach,13,Liều Shingrix,train
+79,BCG tiêm bao nhiêu ml cho trẻ sơ sinh?,lieu_cach,1,Liều BCG,train
+80,Cách bảo quản vaccine sau khi pha?,lieu_cach,,Bảo quản sau pha,train
+81,Sau tiêm vaccine sởi trẻ có thể bị sốt không?,tac_dung_phu,6,Sốt sau sởi,train
+82,Phản ứng thường gặp sau tiêm BCG là gì?,tac_dung_phu,1,Phản ứng BCG,train
+83,Tiêm HPV có bị đau hoặc sưng tại chỗ không?,tac_dung_phu,11,Phản ứng tại chỗ,train
+84,Sau tiêm DTP trẻ quấy khóc nhiều có sao không?,tac_dung_phu,3,Quấy khóc,train
+85,Tác dụng phụ nghiêm trọng của vaccine cần theo dõi?,tac_dung_phu,,Phản ứng nặng,train
+86,Tiêm thủy đậu có thể bị nổi ban không?,tac_dung_phu,7,Ban sau Varivax,train
+87,Sau tiêm phế cầu trẻ có thể sốt bao lâu?,tac_dung_phu,8,Sốt PCV,train
+88,Phản ứng sau tiêm cúm thường gặp là gì?,tac_dung_phu,10,Phản ứng cúm,train
+89,Tiêm vaccine xong bị sưng đỏ vùng tiêm xử lý thế nào?,tac_dung_phu,,Xử trí tại chỗ,train
+90,Khi nào cần đưa trẻ đến viện sau tiêm chủng?,tac_dung_phu,,Dấu hiệu nguy hiểm,train
+91,Vaccine sống có gây bệnh không?,tac_dung_phu,,An toàn vaccine sống,train
+92,Sau tiêm MMR có thể bị sưng hạch không?,tac_dung_phu,6,Sưng hạch,train
+93,Phản ứng phản vệ sau tiêm xử trí ban đầu ra sao?,tac_dung_phu,,Phản vệ,train
+94,Tiêm Shingrix có gây mệt mỏi không?,tac_dung_phu,13,Mệt mỏi,train
+95,Trẻ tiêm xong bị nôn có sao không?,tac_dung_phu,,Nôn,train
+96,Tác dụng phụ của vaccine viêm não Nhật Bản?,tac_dung_phu,9,AE JE,train
+97,Sau tiêm bao lâu thì theo dõi tại điểm tiêm?,tac_dung_phu,,Theo dõi 30 phút,train
+98,Vaccine có gây tự kỷ không?,tac_dung_phu,,Tin đồn,train
+99,Tiêm nhiều mũi cùng lúc có tăng nguy cơ phản ứng không?,tac_dung_phu,,Đồng thời,train
+100,Sau tiêm uốn ván bị đau cánh tay bao lâu thì hết?,tac_dung_phu,3,Đau tại chỗ,train
+101,Những vaccine nào thuộc chương trình tiêm chủng mở rộng?,thong_tin_chung,,TCMR danh mục,train
+102,Sự khác nhau giữa vaccine TCMR và vaccine dịch vụ?,thong_tin_chung,,TCMR vs dịch vụ,train
+103,Vaccine nào là vaccine sống giảm độc lực?,thong_tin_chung,1;6;7;9,Vaccine sống,train
+104,Có thể tiêm nhiều vaccine cùng một lúc không?,thong_tin_chung,,Đồng thời,train
+105,Vaccine bảo quản ở nhiệt độ bao nhiêu?,thong_tin_chung,,Chuỗi lạnh,train
+106,Thông tư 10/2024 quy định những gì về tiêm chủng?,thong_tin_chung,,TT 10/2024,train
+107,Vaccine phế cầu Prevenar 20 phòng được những type nào?,thong_tin_chung,8,Type PCV,train
+108,Gardasil 9 phòng được những type HPV nào?,thong_tin_chung,11,Type HPV,train
+109,Tại sao cần tiêm vaccine viêm gan B ngay sau sinh?,thong_tin_chung,2,Lý do HepB sơ sinh,train
+110,Vaccine zona khác gì với vaccine thủy đậu?,thong_tin_chung,7;13,So sánh,train
+111,Trẻ đã tiêm đủ lịch TCMR còn cần tiêm thêm gì không?,thong_tin_chung,,Vaccine bổ sung,train
+112,Nguồn thông tin chính thống về lịch tiêm ở Việt Nam là gì?,thong_tin_chung,,Nguồn uy tín,train
+113,Vaccine COVID-19 hiện còn được khuyến cáo không?,thong_tin_chung,12,COVID hiện tại,train
+114,Làm sao biết trẻ đã tiêm đủ mũi hay chưa?,thong_tin_chung,,Sổ tiêm chủng,train
+115,Vaccine nhập khẩu và vaccine trong nước khác nhau chỗ nào?,thong_tin_chung,,Nguồn gốc,train
+116,Có được tiêm vaccine khi đang dùng kháng sinh không?,thong_tin_chung,,Kháng sinh,train
+117,Chương trình tiêm chủng mở rộng miễn phí những vaccine nào?,thong_tin_chung,,Miễn phí,train
+118,Tại sao phải khám sàng lọc trước khi tiêm?,thong_tin_chung,,Sàng lọc,train
+119,Vaccine nào cần tiêm nhắc lại định kỳ ở người lớn?,thong_tin_chung,3;10,Nhắc người lớn,train
+120,Thông tin trên tờ hướng dẫn sử dụng vaccine có giá trị như thế nào?,thong_tin_chung,,Giá trị HDSD,train
+121,Trẻ sơ sinh tiêm HPV có đúng lịch không?,lich_tiem,11,augmented,train
+122,Khi nào tiêm mũi IPV đầu tiên?,lich_tiem,4,augmented,train
+123,Lịch tiêm HPV cho người lớn như thế nào?,lich_tiem,11,augmented,train
+124,Khoảng cách giữa các mũi BCG là bao lâu?,lich_tiem,1,augmented,train
+125,Lịch TCMR có bao gồm JE không?,lich_tiem,9,augmented,train
+126,12 tháng tiêm những vaccine nào cùng lúc với Imovax Polio?,lich_tiem,4,augmented,train
+127,sơ sinh cần tiêm Influvac mấy mũi?,lich_tiem,10,augmented,train
+128,Trẻ 4 tuổi tiêm COVID-19 có đúng lịch không?,lich_tiem,12,augmented,train
+129,Khi nào tiêm mũi DTP đầu tiên?,lich_tiem,3,augmented,train
+130,Lịch tiêm bù HepB cho trẻ bị trễ?,lich_tiem,2,augmented,train
+131,1 tháng tiêm những vaccine nào cùng lúc với sởi quai bị rubella?,lich_tiem,6,augmented,train
+132,Khi nào tiêm mũi viêm não Nhật Bản đầu tiên?,lich_tiem,9,augmented,train
+133,Sau mũi Imojev bao lâu thì tiêm mũi tiếp theo?,lich_tiem,9,augmented,train
+134,Khoảng cách giữa các mũi bại liệt là bao lâu?,lich_tiem,4,augmented,train
+135,Khoảng cách giữa các mũi Shingrix là bao lâu?,lich_tiem,13,augmented,train
+136,18 tháng tiêm những vaccine nào cùng lúc với HepB?,lich_tiem,2,augmented,train
+137,Lịch tiêm bù Gardasil 9 cho trẻ bị trễ?,lich_tiem,11,augmented,train
+138,Khi nào tiêm mũi MMR đầu tiên?,lich_tiem,6,augmented,train
+139,Lịch TCMR có bao gồm cúm mùa không?,lich_tiem,10,augmented,train
+140,6 tháng tiêm những vaccine nào cùng lúc với COVID?,lich_tiem,12,augmented,train
+141,Lịch tiêm bù Varivax cho trẻ bị trễ?,lich_tiem,7,augmented,train
+142,Lịch tiêm zona cho 12 tháng như thế nào?,lich_tiem,13,augmented,train
+143,Trẻ 9-14 tuổi tiêm Shingrix có đúng lịch không?,lich_tiem,13,augmented,train
+144,Khoảng cách giữa các mũi viêm gan B là bao lâu?,lich_tiem,2,augmented,train
+145,9-14 tuổi tiêm những vaccine nào cùng lúc với ung thư cổ tử cung?,lich_tiem,11,augmented,train
+146,Khoảng cách giữa các mũi 5 trong 1 là bao lâu?,lich_tiem,3,augmented,train
+147,Sau mũi coronavirus bao lâu thì tiêm mũi tiếp theo?,lich_tiem,12,augmented,train
+148,Lịch tiêm bù varicella cho trẻ bị trễ?,lich_tiem,7,augmented,train
+149,Khi nào tiêm mũi IPV đầu tiên?,lich_tiem,4,augmented,dev
+150,3 tháng cần tiêm zona mấy mũi?,lich_tiem,13,augmented,dev
+151,Sau mũi Gardasil bao lâu thì tiêm mũi tiếp theo?,lich_tiem,11,augmented,dev
+152,Sau mũi HepB bao lâu thì tiêm mũi tiếp theo?,lich_tiem,2,augmented,dev
+153,Khi nào tiêm mũi Prevenar 20 đầu tiên?,lich_tiem,8,augmented,dev
+154,Khi nào tiêm mũi Gardasil 9 đầu tiên?,lich_tiem,11,augmented,dev
+155,6 tháng tiêm những vaccine nào cùng lúc với viêm màng não mủ?,lich_tiem,5,augmented,test
+156,Lịch TCMR có bao gồm vaccine lao không?,lich_tiem,1,augmented,test
+157,Trẻ 3 tháng tiêm zona có đúng lịch không?,lich_tiem,13,augmented,test
+158,Lịch tiêm bù Gardasil cho trẻ bị trễ?,lich_tiem,11,augmented,test
+159,Sau mũi zona bao lâu thì tiêm mũi tiếp theo?,lich_tiem,13,augmented,test
+160,Khi nào tiêm mũi M-M-R II đầu tiên?,lich_tiem,6,augmented,test
+161,Ai nên tiêm vaccine sởi quai bị rubella?,chi_dinh,6,augmented,train
+162,Ai thuộc nhóm ưu tiên tiêm bại liệt?,chi_dinh,4,augmented,train
+163,Đối tượng khuyến cáo tiêm viêm gan B là ai?,chi_dinh,2,augmented,train
+164,Trẻ 6 tháng có cần tiêm ung thư cổ tử cung không?,chi_dinh,11,augmented,train
+165,Vaccine JE dành cho những ai?,chi_dinh,9,augmented,train
+166,Trẻ 9 tháng có cần tiêm JE không?,chi_dinh,9,augmented,train
+167,Ai thuộc nhóm ưu tiên tiêm varicella?,chi_dinh,7,augmented,train
+168,Vaccine Imojev dành cho những ai?,chi_dinh,9,augmented,train
+169,Ai nên tiêm vaccine bại liệt?,chi_dinh,4,augmented,train
+170,Nam giới có tiêm cúm mùa được không?,chi_dinh,10,augmented,train
+171,Ai nên tiêm vaccine bại liệt?,chi_dinh,4,augmented,train
+172,Người bị bệnh mạn tính có nên tiêm bại liệt?,chi_dinh,4,augmented,train
+173,Trẻ 12 tháng có cần tiêm viêm gan B không?,chi_dinh,2,augmented,train
+174,ung thư cổ tử cung có bắt buộc theo TCMR không?,chi_dinh,11,augmented,train
+175,Vaccine uốn ván dành cho những ai?,chi_dinh,3,augmented,train
+176,Vaccine Shingrix dành cho những ai?,chi_dinh,13,augmented,train
+177,Người bị bệnh mạn tính có nên tiêm viêm gan B?,chi_dinh,2,augmented,train
+178,Ai nên tiêm vaccine Varivax?,chi_dinh,7,augmented,train
+179,Chỉ định của HPV theo WHO là gì?,chi_dinh,11,augmented,train
+180,Vaccine COVID-19 dành cho những ai?,chi_dinh,12,augmented,train
+181,Đối tượng khuyến cáo tiêm IPV là ai?,chi_dinh,4,augmented,train
+182,Ai thuộc nhóm ưu tiên tiêm thủy đậu?,chi_dinh,7,augmented,train
+183,bại liệt có bắt buộc theo TCMR không?,chi_dinh,4,augmented,train
+184,sơ sinh có chỉ định tiêm viêm gan B không?,chi_dinh,2,augmented,train
+185,Chỉ định của zona theo WHO là gì?,chi_dinh,13,augmented,train
+186,Chỉ định của PCV theo WHO là gì?,chi_dinh,8,augmented,train
+187,Ai nên tiêm vaccine BCG?,chi_dinh,1,augmented,train
+188,Trẻ trên 50 tuổi có cần tiêm Varivax không?,chi_dinh,7,augmented,train
+189,Đối tượng khuyến cáo tiêm varicella là ai?,chi_dinh,7,augmented,dev
+190,Ai nên tiêm vaccine polio?,chi_dinh,4,augmented,dev
+191,Người bị bệnh mạn tính có nên tiêm cúm mùa?,chi_dinh,10,augmented,dev
+192,BCG có bắt buộc theo TCMR không?,chi_dinh,1,augmented,dev
+193,viêm não Nhật Bản có bắt buộc theo TCMR không?,chi_dinh,9,augmented,dev
+194,Nam giới có tiêm viêm gan B được không?,chi_dinh,2,augmented,dev
+195,Chỉ định của viêm gan B theo WHO là gì?,chi_dinh,2,augmented,test
+196,Nam giới có tiêm viêm gan B được không?,chi_dinh,2,augmented,test
+197,Chỉ định của cúm theo WHO là gì?,chi_dinh,10,augmented,test
+198,Vaccine Gardasil 9 dành cho những ai?,chi_dinh,11,augmented,test
+199,Trẻ 12 tháng có cần tiêm Gardasil 9 không?,chi_dinh,11,augmented,test
+200,Ai thuộc nhóm ưu tiên tiêm thủy đậu?,chi_dinh,7,augmented,test
+201,Trẻ đang ốm có tiêm sởi được không?,chong_chi_dinh,6,augmented,train
+202,Bé đang sốt có tiêm cúm mùa được không?,chong_chi_dinh,10,augmented,train
+203,Phụ nữ mang thai tiêm viêm não Nhật Bản được không?,chong_chi_dinh,9,augmented,train
+204,Trẻ suy giảm miễn dịch tiêm sởi thế nào?,chong_chi_dinh,6,augmented,train
+205,Chống chỉ định tương đối của Hib?,chong_chi_dinh,5,augmented,train
+206,Chống chỉ định tương đối của COVID-19?,chong_chi_dinh,12,augmented,train
+207,Khi nào tạm hoãn tiêm Hib?,chong_chi_dinh,5,augmented,train
+208,Khi nào tạm hoãn tiêm viêm gan B?,chong_chi_dinh,2,augmented,train
+209,Trẻ dị ứng có tiêm Hib không?,chong_chi_dinh,5,augmented,train
+210,Khi nào tạm hoãn tiêm Gardasil 9?,chong_chi_dinh,11,augmented,train
+211,Khi nào tạm hoãn tiêm BCG?,chong_chi_dinh,1,augmented,train
+212,Phụ nữ mang thai tiêm BCG được không?,chong_chi_dinh,1,augmented,train
+213,Trẻ đang ốm có tiêm Gardasil 9 được không?,chong_chi_dinh,11,augmented,train
+214,Chống chỉ định tương đối của JE?,chong_chi_dinh,9,augmented,train
+215,Phụ nữ mang thai tiêm BCG được không?,chong_chi_dinh,1,augmented,train
+216,Sau truyền máu bao lâu mới tiêm viêm não Nhật Bản?,chong_chi_dinh,9,augmented,train
+217,Phụ nữ mang thai tiêm viêm não Nhật Bản được không?,chong_chi_dinh,9,augmented,train
+218,Chống chỉ định của vaccine lao là gì?,chong_chi_dinh,1,augmented,train
+219,Bé đang sốt có tiêm MMR được không?,chong_chi_dinh,6,augmented,train
+220,Trẻ dị ứng có tiêm M-M-R II không?,chong_chi_dinh,6,augmented,train
+221,Chống chỉ định của vaccine DTP là gì?,chong_chi_dinh,3,augmented,train
+222,Tiền sử phản vệ với uốn ván thì sao?,chong_chi_dinh,3,augmented,train
+223,Khi nào tạm hoãn tiêm herpes zoster?,chong_chi_dinh,13,augmented,train
+224,Tiền sử phản vệ với uốn ván thì sao?,chong_chi_dinh,3,augmented,train
+225,Trẻ dị ứng có tiêm lao không?,chong_chi_dinh,1,augmented,train
+226,Trẻ dị ứng có tiêm Prevenar 20 không?,chong_chi_dinh,8,augmented,train
+227,Tiền sử phản vệ với bại liệt thì sao?,chong_chi_dinh,4,augmented,train
+228,Khi nào tạm hoãn tiêm sởi quai bị rubella?,chong_chi_dinh,6,augmented,train
+229,Chống chỉ định của vaccine M-M-R II là gì?,chong_chi_dinh,6,augmented,dev
+230,Sau truyền máu bao lâu mới tiêm HepB?,chong_chi_dinh,2,augmented,dev
+231,Sau truyền máu bao lâu mới tiêm Hib?,chong_chi_dinh,5,augmented,dev
+232,Tiền sử phản vệ với Varivax thì sao?,chong_chi_dinh,7,augmented,dev
+233,Tiền sử phản vệ với cúm mùa thì sao?,chong_chi_dinh,10,augmented,dev
+234,Chống chỉ định của vaccine cúm là gì?,chong_chi_dinh,10,augmented,dev
+235,Chống chỉ định tương đối của COVID-19?,chong_chi_dinh,12,augmented,test
+236,Trẻ suy giảm miễn dịch tiêm herpes zoster thế nào?,chong_chi_dinh,13,augmented,test
+237,Sau truyền máu bao lâu mới tiêm thủy đậu?,chong_chi_dinh,7,augmented,test
+238,Chống chỉ định tương đối của sởi?,chong_chi_dinh,6,augmented,test
+239,Tiền sử phản vệ với viêm màng não mủ thì sao?,chong_chi_dinh,5,augmented,test
+240,Trẻ dị ứng có tiêm COVID-19 không?,chong_chi_dinh,12,augmented,test
+241,Vị trí tiêm varicella ở đâu?,lieu_cach,7,augmented,train
+242,cúm mùa tiêm bắp hay dưới da?,lieu_cach,10,augmented,train
+243,Cách pha vaccine viêm não Nhật Bản?,lieu_cach,9,augmented,train
+244,Liều nhắc Imovax Polio là bao nhiêu?,lieu_cach,4,augmented,train
+245,Có tiêm PCV cùng vaccine khác được không?,lieu_cach,8,augmented,train
+246,Cách pha vaccine Prevenar?,lieu_cach,8,augmented,train
+247,JE tiêm đường nào?,lieu_cach,9,augmented,train
+248,Liều lượng zona cho 2 tuổi?,lieu_cach,13,augmented,train
+249,Vaccine zona tiêm bao nhiêu ml?,lieu_cach,13,augmented,train
+250,Cách bảo quản BCG sau khi mở?,lieu_cach,1,augmented,train
+251,zona tiêm bắp hay dưới da?,lieu_cach,13,augmented,train
+252,Liều nhắc Gardasil là bao nhiêu?,lieu_cach,11,augmented,train
+253,Vaccine thủy đậu tiêm bao nhiêu ml?,lieu_cach,7,augmented,train
+254,Liều lượng zona cho người lớn?,lieu_cach,13,augmented,train
+255,Vaccine uốn ván tiêm bao nhiêu ml?,lieu_cach,3,augmented,train
+256,Liều nhắc viêm não Nhật Bản là bao nhiêu?,lieu_cach,9,augmented,train
+257,Liều nhắc Tetraxim là bao nhiêu?,lieu_cach,3,augmented,train
+258,Có tiêm cúm mùa cùng vaccine khác được không?,lieu_cach,10,augmented,train
+259,Liều nhắc Prevenar là bao nhiêu?,lieu_cach,8,augmented,train
+260,Có tiêm Hib cùng vaccine khác được không?,lieu_cach,5,augmented,train
+261,Liều nhắc Prevenar là bao nhiêu?,lieu_cach,8,augmented,train
+262,Liều lượng viêm gan B cho 2 tuổi?,lieu_cach,2,augmented,train
+263,Có tiêm viêm màng não mủ cùng vaccine khác được không?,lieu_cach,5,augmented,train
+264,Liều lượng viêm gan B cho 4 tháng?,lieu_cach,2,augmented,train
+265,Liều lượng varicella cho 4 tháng?,lieu_cach,7,augmented,train
+266,Số liều cơ bản của HepB?,lieu_cach,2,augmented,train
+267,Vaccine Imojev tiêm bao nhiêu ml?,lieu_cach,9,augmented,train
+268,Cách bảo quản Imovax Polio sau khi mở?,lieu_cach,4,augmented,train
+269,Liều nhắc COVID là bao nhiêu?,lieu_cach,12,augmented,dev
+270,lao tiêm bắp hay dưới da?,lieu_cach,1,augmented,dev
+271,Liều nhắc varicella là bao nhiêu?,lieu_cach,7,augmented,dev
+272,Liều nhắc polio là bao nhiêu?,lieu_cach,4,augmented,dev
+273,lao tiêm bắp hay dưới da?,lieu_cach,1,augmented,dev
+274,Vị trí tiêm COVID ở đâu?,lieu_cach,12,augmented,dev
+275,cúm mùa tiêm bắp hay dưới da?,lieu_cach,10,augmented,test
+276,cúm mùa tiêm đường nào?,lieu_cach,10,augmented,test
+277,Liều nhắc ung thư cổ tử cung là bao nhiêu?,lieu_cach,11,augmented,test
+278,bạch hầu ho gà uốn ván tiêm bắp hay dưới da?,lieu_cach,3,augmented,test
+279,Số liều cơ bản của MMR?,lieu_cach,6,augmented,test
+280,M-M-R II tiêm bắp hay dưới da?,lieu_cach,6,augmented,test
+281,Sau tiêm Hib có bị sốt không?,tac_dung_phu,5,augmented,train
+282,Sau tiêm coronavirus trẻ quấy khóc có bình thường không?,tac_dung_phu,12,augmented,train
+283,Sau tiêm bại liệt có bị sốt không?,tac_dung_phu,4,augmented,train
+284,Theo dõi bao lâu sau tiêm IPV?,tac_dung_phu,4,augmented,train
+285,Vaccine DTP có gây dị ứng không?,tac_dung_phu,3,augmented,train
+286,Vaccine HPV có gây dị ứng không?,tac_dung_phu,11,augmented,train
+287,Tác dụng phụ của vaccine COVID-19?,tac_dung_phu,12,augmented,train
+288,Tác dụng phụ của vaccine cúm mùa?,tac_dung_phu,10,augmented,train
+289,Dấu hiệu nguy hiểm sau tiêm Hib?,tac_dung_phu,5,augmented,train
+290,Phản ứng tại chỗ của cúm mùa kéo dài bao lâu?,tac_dung_phu,10,augmented,train
+291,Theo dõi bao lâu sau tiêm COVID?,tac_dung_phu,12,augmented,train
+292,Phản ứng thường gặp của coronavirus?,tac_dung_phu,12,augmented,train
+293,Theo dõi bao lâu sau tiêm COVID-19?,tac_dung_phu,12,augmented,train
+294,Xử trí khi bị phản ứng sau tiêm zona?,tac_dung_phu,13,augmented,train
+295,Phản ứng thường gặp của varicella?,tac_dung_phu,7,augmented,train
+296,Sau tiêm JE có bị sốt không?,tac_dung_phu,9,augmented,train
+297,Phản ứng tại chỗ của Varivax kéo dài bao lâu?,tac_dung_phu,7,augmented,train
+298,Phản ứng tại chỗ của M-M-R II kéo dài bao lâu?,tac_dung_phu,6,augmented,train
+299,Theo dõi bao lâu sau tiêm uốn ván?,tac_dung_phu,3,augmented,train
+300,Vaccine herpes zoster có gây dị ứng không?,tac_dung_phu,13,augmented,train
+301,Sau tiêm varicella trẻ quấy khóc có bình thường không?,tac_dung_phu,7,augmented,train
+302,Vaccine bại liệt có gây dị ứng không?,tac_dung_phu,4,augmented,train
+303,Sau tiêm Imovax Polio trẻ quấy khóc có bình thường không?,tac_dung_phu,4,augmented,train
+304,Tác dụng phụ của vaccine lao?,tac_dung_phu,1,augmented,train
+305,Dấu hiệu nguy hiểm sau tiêm Prevenar?,tac_dung_phu,8,augmented,train
+306,Xử trí khi bị phản ứng sau tiêm sởi quai bị rubella?,tac_dung_phu,6,augmented,train
+307,Phản ứng thường gặp của vaccine lao?,tac_dung_phu,1,augmented,train
+308,Xử trí khi bị phản ứng sau tiêm Imovax Polio?,tac_dung_phu,4,augmented,train
+309,Vaccine zona có gây dị ứng không?,tac_dung_phu,13,augmented,dev
+310,Dấu hiệu nguy hiểm sau tiêm phế cầu?,tac_dung_phu,8,augmented,dev
+311,Dấu hiệu nguy hiểm sau tiêm Imovax Polio?,tac_dung_phu,4,augmented,dev
+312,Xử trí khi bị phản ứng sau tiêm Gardasil 9?,tac_dung_phu,11,augmented,dev
+313,Xử trí khi bị phản ứng sau tiêm Imojev?,tac_dung_phu,9,augmented,dev
+314,Dấu hiệu nguy hiểm sau tiêm sởi quai bị rubella?,tac_dung_phu,6,augmented,dev
+315,Phản ứng thường gặp của viêm màng não mủ?,tac_dung_phu,5,augmented,test
+316,Phản ứng thường gặp của COVID?,tac_dung_phu,12,augmented,test
+317,Tiêm coronavirus xong bị sưng đỏ thì sao?,tac_dung_phu,12,augmented,test
+318,Theo dõi bao lâu sau tiêm Imovax Polio?,tac_dung_phu,4,augmented,test
+319,Phản ứng thường gặp của herpes zoster?,tac_dung_phu,13,augmented,test
+320,Sau tiêm polio trẻ quấy khóc có bình thường không?,tac_dung_phu,4,augmented,test
+321,So sánh 5 trong 1 với các vaccine tương tự?,thong_tin_chung,3,augmented,train
+322,Vaccine 5 trong 1 thuộc TCMR hay dịch vụ?,thong_tin_chung,3,augmented,train
+323,Vaccine Imojev có miễn phí không?,thong_tin_chung,9,augmented,train
+324,Vaccine viêm gan B có miễn phí không?,thong_tin_chung,2,augmented,train
+325,Thông tin chung về vaccine PCV?,thong_tin_chung,8,augmented,train
+326,lao là vaccine sống hay bất hoạt?,thong_tin_chung,1,augmented,train
+327,HepB là vaccine sống hay bất hoạt?,thong_tin_chung,2,augmented,train
+328,Thông tin chung về vaccine cúm mùa?,thong_tin_chung,10,augmented,train
+329,Adacel là vaccine sống hay bất hoạt?,thong_tin_chung,3,augmented,train
+330,Tờ hướng dẫn sử dụng bại liệt nói gì?,thong_tin_chung,4,augmented,train
+331,So sánh cúm mùa với các vaccine tương tự?,thong_tin_chung,10,augmented,train
+332,Vaccine Varivax phòng bệnh gì?,thong_tin_chung,7,augmented,train
+333,Tờ hướng dẫn sử dụng Influvac nói gì?,thong_tin_chung,10,augmented,train
+334,Tại sao cần tiêm cúm?,thong_tin_chung,10,augmented,train
+335,Gardasil là vaccine sống hay bất hoạt?,thong_tin_chung,11,augmented,train
+336,So sánh DTP với các vaccine tương tự?,thong_tin_chung,3,augmented,train
+337,Hiệu quả bảo vệ của viêm gan B?,thong_tin_chung,2,augmented,train
+338,Vaccine PCV thuộc TCMR hay dịch vụ?,thong_tin_chung,8,augmented,train
+339,Vaccine polio có miễn phí không?,thong_tin_chung,4,augmented,train
+340,Vaccine viêm gan B phòng bệnh gì?,thong_tin_chung,2,augmented,train
+341,Hiệu quả bảo vệ của herpes zoster?,thong_tin_chung,13,augmented,train
+342,Thông tin chung về vaccine viêm gan B?,thong_tin_chung,2,augmented,train
+343,Vaccine Hib thuộc TCMR hay dịch vụ?,thong_tin_chung,5,augmented,train
+344,Vaccine 5 trong 1 có miễn phí không?,thong_tin_chung,3,augmented,train
+345,Hiệu quả bảo vệ của HepB?,thong_tin_chung,2,augmented,train
+346,viêm màng não mủ là vaccine sống hay bất hoạt?,thong_tin_chung,5,augmented,train
+347,Nguồn gốc vaccine cúm?,thong_tin_chung,10,augmented,train
+348,Influvac là vaccine sống hay bất hoạt?,thong_tin_chung,10,augmented,train
+349,Tờ hướng dẫn sử dụng bại liệt nói gì?,thong_tin_chung,4,augmented,dev
+350,So sánh BCG với các vaccine tương tự?,thong_tin_chung,1,augmented,dev
+351,Thông tin chung về vaccine ung thư cổ tử cung?,thong_tin_chung,11,augmented,dev
+352,Influvac là vaccine sống hay bất hoạt?,thong_tin_chung,10,augmented,dev
+353,Nguồn gốc vaccine Prevenar 20?,thong_tin_chung,8,augmented,dev
+354,Nguồn gốc vaccine sởi?,thong_tin_chung,6,augmented,dev
+355,Vaccine varicella phòng bệnh gì?,thong_tin_chung,7,augmented,test
+356,Vaccine ung thư cổ tử cung có miễn phí không?,thong_tin_chung,11,augmented,test
+357,Nguồn gốc vaccine HepB?,thong_tin_chung,2,augmented,test
+358,So sánh HepB với các vaccine tương tự?,thong_tin_chung,2,augmented,test
+359,Tại sao cần tiêm PCV?,thong_tin_chung,8,augmented,test
+360,Vaccine Imojev có miễn phí không?,thong_tin_chung,9,augmented,test

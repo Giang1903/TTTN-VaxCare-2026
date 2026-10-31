@@ -1,0 +1,176 @@
+qid,question,intent,chunk_id,is_relevant,notes
+1,Chỉ định của vaccine này là gì?,chi_dinh,var-hdsd-001,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+2,Liều lượng tiêm như thế nào?,lieu_cach,var-hdsd-002,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+3,Những trường hợp chống chỉ định tiêm chủng ở trẻ?,chi_dinh,var-hdsd-003,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+4,Phụ nữ mang thai có tiêm được không?,thong_tin_chung,var-hdsd-004,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+5,Thông tin về chi_dinh_lieu theo nguồn chính thức?,lieu_cach,bcg-hdsd-001,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+6,Những trường hợp chống chỉ định tiêm chủng ở trẻ?,chi_dinh,bcg-hdsd-002,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+7,Phụ nữ mang thai có tiêm được không?,thong_tin_chung,bcg-hdsd-003,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+8,Thông tin về chi_dinh_lich theo nguồn chính thức?,lich_tiem,mmr-hdsd-001,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+9,Những trường hợp chống chỉ định tiêm chủng ở trẻ?,chi_dinh,mmr-hdsd-002,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+10,Thông tin về chi_dinh_lich theo nguồn chính thức?,lich_tiem,zos-hdsd-001,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+11,Thông tin về chi_dinh_lieu theo nguồn chính thức?,lieu_cach,tdap-hdsd-001,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+12,Thông tin về chong_chi_dinh_thai_ky theo nguồn chính thức?,chi_dinh,tdap-hdsd-002,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+13,Thông tin về chi_dinh_lieu theo nguồn chính thức?,lieu_cach,je-hdsd-001,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+14,Những trường hợp chống chỉ định tiêm chủng ở trẻ?,chi_dinh,je-hdsd-002,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+15,Thông tin về chi_dinh_lich theo nguồn chính thức?,lich_tiem,ipv-hdsd-001,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+16,Thông tin về chong_chi_dinh_thai_ky theo nguồn chính thức?,chi_dinh,ipv-hdsd-002,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+17,Thông tin về chi_dinh_lieu theo nguồn chính thức?,lieu_cach,flu-hdsd-001,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+18,Những trường hợp chống chỉ định tiêm chủng ở trẻ?,chi_dinh,flu-hdsd-002,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+19,Thông tin về chi_dinh_lieu theo nguồn chính thức?,lieu_cach,pcv-hdsd-001,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+20,Thông tin về chong_chi_dinh_thai_ky theo nguồn chính thức?,chi_dinh,pcv-hdsd-002,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+21,Thông tin về chi_dinh_lich theo nguồn chính thức?,lich_tiem,dtap-hdsd-001,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+22,Những trường hợp chống chỉ định tiêm chủng ở trẻ?,chi_dinh,dtap-hdsd-002,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+23,Chỉ định của vaccine này là gì?,chi_dinh,hpv-hdsd-001,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+24,Thông tin về lich_tiem theo nguồn chính thức?,lich_tiem,hpv-hdsd-002,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+25,Thông tin về chong_chi_dinh_thai_ky theo nguồn chính thức?,chi_dinh,hpv-hdsd-003,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+26,Thông tư 10/2024 quy định phạm vi vaccine bắt buộc như thế nào?,thong_tin_chung,tcmr-001,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml
+27,Trẻ sơ sinh tiêm những mũi nào theo TCMR?,lich_tiem,tcmr-002,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml
+28,Lịch tiêm lúc trẻ 2 tháng tuổi?,lich_tiem,tcmr-003,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml
+29,Thông tin về lich_5_9_thang theo nguồn chính thức?,lich_tiem,tcmr-004,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml
+30,Thông tin về lich_12_thang_vnnb theo nguồn chính thức?,lich_tiem,tcmr-005,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml
+31,Thông tin về lich_18_thang theo nguồn chính thức?,lich_tiem,tcmr-006,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml
+32,Thông tin về lich_7_tuoi theo nguồn chính thức?,lich_tiem,tcmr-007,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml
+33,Thông tin về thai_phu_uon_van theo nguồn chính thức?,thong_tin_chung,tcmr-008,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml
+34,Thông tin về tiem_bu_chien_dich theo nguồn chính thức?,thong_tin_chung,tcmr-009,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml
+35,Thông tin về vung_co_dich theo nguồn chính thức?,thong_tin_chung,tcmr-010,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml
+36,Thông tin về pham_vi_muc_dich theo nguồn chính thức?,thong_tin_chung,scr-001,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml
+37,Những trường hợp chống chỉ định tiêm chủng ở trẻ?,chi_dinh,scr-002,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml
+38,Thông tin về tam_hoan_co_so_ngoai_benh_vien theo nguồn chính thức?,chong_chi_dinh,scr-003,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml
+39,Thông tin về chuyen_benh_vien theo nguồn chính thức?,thong_tin_chung,scr-004,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml
+40,Thông tin về benh_nhe_van_tiem theo nguồn chính thức?,thong_tin_chung,scr-005,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml
+41,Thông tin về tre_duoi_1_thang theo nguồn chính thức?,thong_tin_chung,scr-006,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml
+42,Thông tin về tre_phoi_nhiem_hiv theo nguồn chính thức?,thong_tin_chung,scr-007,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml
+43,Thông tin về suy_giam_mien_dich_bam_sinh theo nguồn chính thức?,thong_tin_chung,scr-008,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml
+44,Đối tượng nào nên tiêm vaccine này?,thong_tin_chung,hepb-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+45,Thông tin về lieu_so_sinh theo nguồn chính thức?,lieu_cach,hepb-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+46,Thông tin về lich_tiem theo nguồn chính thức?,lich_tiem,hepb-who-003,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+47,Thông tin về tre_lon_nguoi_lon theo nguồn chính thức?,thong_tin_chung,hepb-who-004,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+48,Thông tin về nhom_nguy_co theo nguồn chính thức?,thong_tin_chung,hepb-who-005,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+49,Thông tin về lich_co_ban theo nguồn chính thức?,lich_tiem,dip-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+50,Thông tin về lieu_nhac theo nguồn chính thức?,lieu_cach,dip-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+51,Thông tin về lich_6_lieu theo nguồn chính thức?,lich_tiem,tet-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+52,Phụ nữ mang thai có tiêm được không?,thong_tin_chung,tet-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+53,Thông tin về lich_co_ban theo nguồn chính thức?,lich_tiem,per-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+54,Thông tin về chon_vaccine theo nguồn chính thức?,thong_tin_chung,per-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+55,Thông tin về lich_chung theo nguồn chính thức?,lich_tiem,pol-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+56,Thông tin về lich_ipv theo nguồn chính thức?,lich_tiem,pol-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+57,Thông tin về khuyen_cao theo nguồn chính thức?,thong_tin_chung,hib-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+58,Thông tin về khoang_cach_va_tre_muon theo nguồn chính thức?,thong_tin_chung,hib-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+59,Thông tin về khuyen_cao theo nguồn chính thức?,thong_tin_chung,mea-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+60,Thông tin về thoi_diem theo nguồn chính thức?,thong_tin_chung,mea-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+61,Thông tin về khuyen_cao theo nguồn chính thức?,thong_tin_chung,mum-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+62,Liều lượng tiêm như thế nào?,lieu_cach,mum-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+63,Thông tin về khuyen_cao theo nguồn chính thức?,thong_tin_chung,rub-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+64,Thông tin về khuyen_cao_va_lich theo nguồn chính thức?,lich_tiem,var-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+65,Thông tin về sau_phoi_nhiem_va_phoi_hop theo nguồn chính thức?,thong_tin_chung,var-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+66,Những trường hợp chống chỉ định tiêm chủng ở trẻ?,chi_dinh,var-who-003,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+67,Thông tin về lich_tre_em theo nguồn chính thức?,lich_tiem,pcv-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+68,Thông tin về tiem_bu_va_doi_san_pham theo nguồn chính thức?,thong_tin_chung,pcv-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+69,Thông tin về chien_luoc theo nguồn chính thức?,thong_tin_chung,je-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+70,Thông tin về lieu_theo_loai theo nguồn chính thức?,lieu_cach,je-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+71,Đối tượng nào nên tiêm vaccine này?,thong_tin_chung,flu-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+72,Thông tin về nguoi_lon_tuoi_thai_ky theo nguồn chính thức?,thong_tin_chung,flu-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+73,Thông tin về khuyen_cao_chung theo nguồn chính thức?,thong_tin_chung,cov-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+74,Thông tin về nhom_uu_tien theo nguồn chính thức?,thong_tin_chung,cov-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+75,Đối tượng nào nên tiêm vaccine này?,thong_tin_chung,zos-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+76,Thông tin về lieu_va_phoi_hop theo nguồn chính thức?,lieu_cach,zos-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+77,Thông tin về nhom_dac_biet theo nguồn chính thức?,thong_tin_chung,zos-who-003,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+78,Thông tin về khuyen_cao theo nguồn chính thức?,thong_tin_chung,bcg-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+79,Thông tin về chien_luoc_chon_loc theo nguồn chính thức?,thong_tin_chung,bcg-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+80,Nội dung liên quan chi_dinh_lich trong đoạn ipv-hdsd-001?,thong_tin_chung,ipv-hdsd-001,1,augmented relevant
+81,Nội dung liên quan thai_ky trong đoạn var-hdsd-004?,thong_tin_chung,var-hdsd-004,1,augmented relevant
+82,Nội dung liên quan pham_vi_muc_dich trong đoạn scr-001?,thong_tin_chung,scr-001,1,augmented relevant
+83,Nội dung liên quan lich_7_tuoi trong đoạn tcmr-007?,thong_tin_chung,tcmr-007,1,augmented relevant
+84,Nội dung liên quan lich_5_9_thang trong đoạn tcmr-004?,thong_tin_chung,tcmr-004,1,augmented relevant
+85,Nội dung liên quan chong_chi_dinh trong đoạn flu-hdsd-002?,thong_tin_chung,flu-hdsd-002,1,augmented relevant
+86,Nội dung liên quan chong_chi_dinh trong đoạn je-hdsd-002?,thong_tin_chung,je-hdsd-002,1,augmented relevant
+87,Nội dung liên quan lieu_theo_loai trong đoạn je-who-002?,thong_tin_chung,je-who-002,1,augmented relevant
+88,Nội dung liên quan chong_chi_dinh_thai_ky trong đoạn tdap-hdsd-002?,thong_tin_chung,tdap-hdsd-002,1,augmented relevant
+89,Nội dung liên quan lieu_va_phoi_hop trong đoạn zos-who-002?,thong_tin_chung,zos-who-002,1,augmented relevant
+90,Nội dung liên quan lich_chung trong đoạn pol-who-001?,thong_tin_chung,pol-who-001,1,augmented relevant
+91,Nội dung liên quan chi_dinh_lieu trong đoạn bcg-hdsd-001?,thong_tin_chung,bcg-hdsd-001,1,augmented relevant
+92,Nội dung liên quan thai_ky trong đoạn var-hdsd-004?,thong_tin_chung,var-hdsd-004,1,augmented relevant
+93,Nội dung liên quan chong_chi_dinh_thai_ky trong đoạn tdap-hdsd-002?,thong_tin_chung,tdap-hdsd-002,1,augmented relevant
+94,Nội dung liên quan lich_2_thang trong đoạn tcmr-003?,thong_tin_chung,tcmr-003,1,augmented relevant
+95,Nội dung liên quan lich_12_thang_vnnb trong đoạn tcmr-005?,thong_tin_chung,tcmr-005,1,augmented relevant
+96,Nội dung liên quan sau_phoi_nhiem_va_phoi_hop trong đoạn var-who-002?,thong_tin_chung,var-who-002,1,augmented relevant
+97,Nội dung liên quan khuyen_cao trong đoạn bcg-who-001?,thong_tin_chung,bcg-who-001,1,augmented relevant
+98,Nội dung liên quan thai_ky trong đoạn var-hdsd-004?,thong_tin_chung,var-hdsd-004,1,augmented relevant
+99,Nội dung liên quan nguoi_lon_tuoi_thai_ky trong đoạn flu-who-002?,thong_tin_chung,flu-who-002,1,augmented relevant
+100,Nội dung liên quan pham_vi trong đoạn tcmr-001?,thong_tin_chung,tcmr-001,1,augmented relevant
+101,Nội dung liên quan lieu_theo_loai trong đoạn je-who-002?,thong_tin_chung,je-who-002,1,augmented relevant
+102,Nội dung liên quan chon_vaccine trong đoạn per-who-002?,thong_tin_chung,per-who-002,1,augmented relevant
+103,Nội dung liên quan lich_5_9_thang trong đoạn tcmr-004?,thong_tin_chung,tcmr-004,1,augmented relevant
+104,Nội dung liên quan khoang_cach_va_tre_muon trong đoạn hib-who-002?,thong_tin_chung,hib-who-002,1,augmented relevant
+105,Nội dung liên quan lieu_va_phoi_hop trong đoạn zos-who-002?,thong_tin_chung,zos-who-002,1,augmented relevant
+106,Nội dung liên quan pham_vi_muc_dich trong đoạn scr-001?,thong_tin_chung,scr-001,1,augmented relevant
+107,Nội dung liên quan chi_dinh trong đoạn var-hdsd-001?,thong_tin_chung,var-hdsd-001,1,augmented relevant
+108,Nội dung liên quan chi_dinh_lich trong đoạn dtap-hdsd-001?,thong_tin_chung,dtap-hdsd-001,1,augmented relevant
+109,Nội dung liên quan lich_chung trong đoạn pol-who-001?,thong_tin_chung,pol-who-001,1,augmented relevant
+110,Nội dung liên quan doi_tuong trong đoạn hepb-who-001?,thong_tin_chung,hepb-who-001,1,augmented relevant
+111,Nội dung liên quan pham_vi_muc_dich trong đoạn scr-001?,thong_tin_chung,scr-001,1,augmented relevant
+112,Nội dung liên quan chong_chi_dinh_thai_ky trong đoạn pcv-hdsd-002?,thong_tin_chung,pcv-hdsd-002,1,augmented relevant
+113,Nội dung liên quan lich_2_thang trong đoạn tcmr-003?,thong_tin_chung,tcmr-003,1,augmented relevant
+114,Nội dung liên quan doi_tuong trong đoạn hepb-who-001?,thong_tin_chung,hepb-who-001,1,augmented relevant
+115,Nội dung liên quan chong_chi_dinh trong đoạn je-hdsd-002?,thong_tin_chung,je-hdsd-002,1,augmented relevant
+116,Nội dung liên quan chong_chi_dinh_thai_ky trong đoạn tdap-hdsd-002?,thong_tin_chung,tdap-hdsd-002,1,augmented relevant
+117,Nội dung liên quan lich_co_ban trong đoạn dip-who-001?,thong_tin_chung,dip-who-001,1,augmented relevant
+118,Nội dung liên quan chi_dinh_lieu trong đoạn je-hdsd-001?,thong_tin_chung,je-hdsd-001,1,augmented relevant
+119,Nội dung liên quan lich_tiem trong đoạn hepb-who-003?,thong_tin_chung,hepb-who-003,1,augmented relevant
+120,Nội dung liên quan lieu_so_sinh trong đoạn hepb-who-002?,thong_tin_chung,hepb-who-002,1,augmented relevant
+121,Nội dung liên quan khuyen_cao trong đoạn bcg-who-001?,thong_tin_chung,bcg-who-001,1,augmented relevant
+122,Nội dung liên quan tiem_bu_chien_dich trong đoạn tcmr-009?,thong_tin_chung,tcmr-009,1,augmented relevant
+123,Nội dung liên quan chong_chi_dinh trong đoạn bcg-hdsd-002?,thong_tin_chung,bcg-hdsd-002,1,augmented relevant
+124,Nội dung liên quan khuyen_cao trong đoạn mea-who-001?,thong_tin_chung,mea-who-001,1,augmented relevant
+125,Nội dung liên quan chien_luoc trong đoạn je-who-001?,thong_tin_chung,je-who-001,1,augmented relevant
+126,Nội dung liên quan chong_chi_dinh_thai_ky trong đoạn ipv-hdsd-002?,thong_tin_chung,ipv-hdsd-002,1,augmented relevant
+127,Nội dung liên quan lich_co_ban trong đoạn dip-who-001?,thong_tin_chung,dip-who-001,1,augmented relevant
+128,Nội dung liên quan chi_dinh_lieu trong đoạn tdap-hdsd-001?,thong_tin_chung,tdap-hdsd-001,1,augmented relevant
+129,Nội dung liên quan doi_tuong trong đoạn flu-who-001?,thong_tin_chung,flu-who-001,1,augmented relevant
+130,Nội dung liên quan tam_hoan_co_so_ngoai_benh_vien trong đoạn scr-003?,thong_tin_chung,scr-003,1,augmented relevant
+131,Nội dung liên quan tre_lon_nguoi_lon trong đoạn hepb-who-004?,thong_tin_chung,hepb-who-004,1,augmented relevant
+132,Nội dung liên quan nhom_uu_tien trong đoạn cov-who-002?,thong_tin_chung,cov-who-002,1,augmented relevant
+133,Nội dung liên quan chong_chi_dinh_thai_ky trong đoạn hpv-hdsd-003?,thong_tin_chung,hpv-hdsd-003,1,augmented relevant
+134,Nội dung liên quan chong_chi_dinh trong đoạn mmr-hdsd-002?,thong_tin_chung,mmr-hdsd-002,1,augmented relevant
+135,Nội dung liên quan chong_chi_dinh trong đoạn bcg-hdsd-002?,thong_tin_chung,bcg-hdsd-002,1,augmented relevant
+136,Nội dung liên quan lich_12_thang_vnnb trong đoạn tcmr-005?,thong_tin_chung,tcmr-005,1,augmented relevant
+137,Nội dung liên quan tam_hoan_co_so_ngoai_benh_vien trong đoạn scr-003?,thong_tin_chung,scr-003,1,augmented relevant
+138,Nội dung liên quan chi_dinh_lieu trong đoạn tdap-hdsd-001?,thong_tin_chung,tdap-hdsd-001,1,augmented relevant
+139,Nội dung liên quan lich_12_thang_vnnb trong đoạn tcmr-005?,thong_tin_chung,tcmr-005,1,augmented relevant
+140,Nội dung liên quan chi_dinh_lieu trong đoạn je-hdsd-001?,thong_tin_chung,je-hdsd-001,1,augmented relevant
+141,Nội dung liên quan lich_co_ban trong đoạn dip-who-001?,thong_tin_chung,dip-who-001,1,augmented relevant
+142,Nội dung liên quan pham_vi_muc_dich trong đoạn scr-001?,thong_tin_chung,scr-001,1,augmented relevant
+143,Nội dung liên quan khuyen_cao trong đoạn mea-who-001?,thong_tin_chung,mea-who-001,1,augmented relevant
+144,Nội dung liên quan tre_lon_nguoi_lon trong đoạn hepb-who-004?,thong_tin_chung,hepb-who-004,1,augmented relevant
+145,Nội dung liên quan chi_dinh_lich trong đoạn dtap-hdsd-001?,thong_tin_chung,dtap-hdsd-001,1,augmented relevant
+146,Nội dung liên quan nhom_nguy_co trong đoạn hepb-who-005?,thong_tin_chung,hepb-who-005,1,augmented relevant
+147,Nội dung liên quan lich_tiem trong đoạn hepb-who-003?,thong_tin_chung,hepb-who-003,1,augmented relevant
+148,Nội dung liên quan lich_so_sinh trong đoạn tcmr-002?,thong_tin_chung,tcmr-002,1,augmented relevant
+149,Nội dung liên quan vung_co_dich trong đoạn tcmr-010?,thong_tin_chung,tcmr-010,1,augmented relevant
+150,Nội dung liên quan chi_dinh_lich trong đoạn zos-hdsd-001?,thong_tin_chung,zos-hdsd-001,1,augmented relevant
+151,Giá vaccine Gardasil 9 hiện nay bao nhiêu tiền?,out_of_scope,,0,no-answer / out-of-scope
+152,Trung tâm tiêm chủng nào gần quận 1 nhất?,out_of_scope,,0,no-answer / out-of-scope
+153,Tôi muốn đặt lịch tiêm lúc 8 giờ sáng mai được không?,out_of_scope,,0,no-answer / out-of-scope
+154,Bảo hiểm y tế chi trả bao nhiêu phần trăm vaccine dịch vụ?,out_of_scope,,0,no-answer / out-of-scope
+155,Công ty sản xuất Prevenar 20 ở nước nào?,out_of_scope,,0,no-answer / out-of-scope
+156,Làm sao để xin giấy chứng nhận đã tiêm chủng?,out_of_scope,,0,no-answer / out-of-scope
+157,Vaccine có bán lẻ ở nhà thuốc không?,out_of_scope,,0,no-answer / out-of-scope
+158,Tôi bị đau đầu sau khi xem ti vi có liên quan vaccine không?,out_of_scope,,0,no-answer / out-of-scope
+159,Thời tiết hôm nay có ảnh hưởng đến tiêm chủng không?,out_of_scope,,0,no-answer / out-of-scope
+160,"Con tôi thích ăn kẹo, có ảnh hưởng gì đến vaccine không?",out_of_scope,,0,no-answer / out-of-scope
+161,Vaccine có làm tăng chiều cao không?,out_of_scope,,0,no-answer / out-of-scope
+162,Tôi có thể tiêm vaccine cho thú cưng ở đây không?,out_of_scope,,0,no-answer / out-of-scope
+163,Lịch sử phát minh vaccine đầu tiên trên thế giới?,out_of_scope,,0,no-answer / out-of-scope
+164,So sánh giá xe máy và giá một mũi vaccine?,out_of_scope,,0,no-answer / out-of-scope
+165,Cách đăng ký tài khoản trên app VaxCare?,out_of_scope,,0,no-answer / out-of-scope
+166,Màu sắc của lọ vaccine BCG là gì?,out_of_scope,,0,no-answer / out-of-scope
+167,Tôi muốn biết điểm đánh giá Google của cơ sở tiêm?,out_of_scope,,0,no-answer / out-of-scope
+168,Vaccine có giúp giảm cân không?,out_of_scope,,0,no-answer / out-of-scope
+169,Có được uống rượu sau khi tiêm vaccine 1 tuần không? (ngoài khuyến cáo),out_of_scope,,0,no-answer / out-of-scope
+170,Làm thế nào để trở thành nhân viên tiêm chủng?,out_of_scope,,0,no-answer / out-of-scope
+171,Vaccine nào đẹp nhất về bao bì?,out_of_scope,,0,no-answer / out-of-scope
+172,Tôi có thể quay video quá trình tiêm và đăng TikTok không?,out_of_scope,,0,no-answer / out-of-scope
+173,Có ship vaccine tận nhà không?,out_of_scope,,0,no-answer / out-of-scope
+174,Điểm khác biệt giữa vaccine và thuốc kháng sinh?,out_of_scope,,0,no-answer / out-of-scope
+175,"Tôi muốn hỏi về bệnh tiểu đường type 2, không liên quan tiêm chủng.",out_of_scope,,0,no-answer / out-of-scope

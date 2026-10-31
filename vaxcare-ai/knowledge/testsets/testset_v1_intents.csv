@@ -1,0 +1,121 @@
+id,text,intent,vaccine_ids,notes,split
+T001,Bé nhà mình mới sinh 3 ngày rồi, bao giờ tiêm lao và viêm gan B?,lich_tiem,1;2,Viết tay - sơ sinh,test
+T002,Con gái 2 tháng tuổi sắp tới lịch, cần tiêm những mũi nào ạ?,lich_tiem,2;3;4;5,Viết tay,test
+T003,Lịch tiêm viêm não Nhật Bản 3 mũi cách nhau bao lâu?,lich_tiem,9,Viết tay,test
+T004,Trẻ 18 tháng nhắc lại những vaccine gì?,lich_tiem,3;6,Viết tay,test
+T005,Em đang mang thai tuần 20, lịch tiêm uốn ván như thế nào?,lich_tiem,3,Viết tay - thai phụ,test
+T006,Con bị trễ mũi 5 trong 1 1 tháng, giờ tiêm bù ra sao?,lich_tiem,3,Viết tay - tiêm bù,test
+T007,Khi nào thì tiêm mũi sởi đầu tiên cho bé?,lich_tiem,6,Viết tay,test
+T008,Lịch HPV cho bé gái 11 tuổi là mấy mũi?,lich_tiem,11,Viết tay,test
+T009,Người lớn 55 tuổi tiêm zona lịch thế nào?,lich_tiem,13,Viết tay,test
+T010,Khoảng cách tối thiểu giữa 2 mũi Prevenar?,lich_tiem,8,Viết tay,test
+T011,Bé 4 tháng tiêm những gì?,lich_tiem,2;3;4;5,Viết tay,test
+T012,Mũi IPV theo TCMR tiêm lúc mấy tháng?,lich_tiem,4,Viết tay,test
+T013,Trẻ 9 tháng ngoài sởi còn tiêm gì nữa không?,lich_tiem,4;6,Viết tay,test
+T014,Lịch tiêm đầy đủ cho trẻ dưới 1 tuổi gồm những mũi nào?,lich_tiem,,Viết tay - tổng hợp,test
+T015,Sau mũi JE thứ 2 bao lâu thì tiêm mũi 3?,lich_tiem,9,Viết tay,test
+T016,Bé sinh non 32 tuần, khi nào được tiêm BCG?,lich_tiem,1,Viết tay - sinh non,test
+T017,Người lớn chưa tiêm thủy đậu bao giờ thì tiêm mấy mũi?,lich_tiem,7,Viết tay,test
+T018,Lịch tiêm cúm cho bà bầu?,lich_tiem,10,Viết tay,test
+T019,Trẻ 7 tuổi nhắc bạch hầu uốn ván lúc nào?,lich_tiem,3,Viết tay,test
+T020,Khoảng cách giữa mũi HPV thứ 1 và 2 ở trẻ 12 tuổi?,lich_tiem,11,Viết tay,test
+T021,Những ai nên tiêm vaccine HPV?,chi_dinh,11,Viết tay,test
+T022,Trẻ có cần tiêm phế cầu không hay chỉ người già?,chi_dinh,8,Viết tay,test
+T023,Ai được khuyến cáo tiêm Shingrix?,chi_dinh,13,Viết tay,test
+T024,Vaccine viêm não Nhật Bản chỉ định cho trẻ từ mấy tuổi?,chi_dinh,9,Viết tay,test
+T025,Người lớn chưa từng bị thủy đậu có nên tiêm không?,chi_dinh,7,Viết tay,test
+T026,Trẻ suy dinh dưỡng nặng có tiêm vaccine bình thường không?,chi_dinh,,Viết tay,test
+T027,Nhóm đối tượng nào cần tiêm cúm hàng năm?,chi_dinh,10,Viết tay,test
+T028,Nam giới có tiêm Gardasil được không?,chi_dinh,11,Viết tay,test
+T029,Trẻ đi nhà trẻ cần tiêm những vaccine bắt buộc nào?,chi_dinh,,Viết tay,test
+T030,Ai thuộc diện tiêm vaccine theo chương trình TCMR?,chi_dinh,,Viết tay,test
+T031,Người bệnh phổi mạn tính có nên tiêm phế cầu?,chi_dinh,8,Viết tay,test
+T032,Chỉ định tiêm BCG cho trẻ trên 1 tuổi chưa có sẹo?,chi_dinh,1,Viết tay,test
+T033,Phụ nữ mang thai có được tiêm cúm không?,chi_dinh,10,Viết tay,test
+T034,Đối tượng tiêm vaccine COVID hiện nay?,chi_dinh,12,Viết tay,test
+T035,Trẻ 6 tháng đã tiêm đủ mũi cơ bản chưa?,chi_dinh,,Viết tay,test
+T036,Ai nên tiêm nhắc uốn ván 10 năm một lần?,chi_dinh,3,Viết tay,test
+T037,Vaccine 5 trong 1 dành cho trẻ từ tháng thứ mấy?,chi_dinh,3,Viết tay,test
+T038,Người lớn tuổi có chỉ định tiêm viêm gan B không?,chi_dinh,2,Viết tay,test
+T039,Trẻ sinh mổ có tiêm sơ sinh như trẻ sinh thường không?,chi_dinh,1;2,Viết tay,test
+T040,Những vaccine nào khuyến cáo cho người trên 50 tuổi?,chi_dinh,10;13,Viết tay,test
+T041,Bé đang sốt 38.7 có tiêm được mũi 5 trong 1 không?,chong_chi_dinh,3,Viết tay - sốt,test
+T042,Con bị dị ứng hải sản có tiêm MMR được không?,chong_chi_dinh,6,Viết tay,test
+T043,Em đang mang thai tháng thứ 3, tiêm được vaccine sống không?,chong_chi_dinh,6;7,Viết tay,test
+T044,Trẻ đang uống thuốc corticoid liều cao có tiêm được không?,chong_chi_dinh,,Viết tay,test
+T045,Lần trước tiêm bị sốc phản vệ thì lần này sao?,chong_chi_dinh,,Viết tay,test
+T046,Bé đang sổ mũi ho nhẹ có cần hoãn tiêm không?,chong_chi_dinh,,Viết tay - bệnh nhẹ,test
+T047,Chống chỉ định của Varivax gồm những gì?,chong_chi_dinh,7,Viết tay,test
+T048,Trẻ sinh non 33 tuần tiêm BCG ngay được không?,chong_chi_dinh,1,Viết tay,test
+T049,Bé nhiễm HIV chưa có triệu chứng tiêm vaccine sống được không?,chong_chi_dinh,,Viết tay,test
+T050,Đang tiêu chảy cấp có tiêm oral vaccine không?,chong_chi_dinh,,Viết tay,test
+T051,Khi nào thì chống chỉ định tuyệt đối tiêm chủng?,chong_chi_dinh,,Viết tay,test
+T052,Trẻ có tiền sử co giật không sốt tiêm DTP được không?,chong_chi_dinh,3,Viết tay,test
+T053,Sau truyền immunoglobulin bao lâu mới tiêm MMR?,chong_chi_dinh,6,Viết tay,test
+T054,Đang cho con bú tiêm được vaccine nào?,chong_chi_dinh,,Viết tay,test
+T055,Trẻ nghi ngờ suy giảm miễn dịch bẩm sinh tiêm thế nào?,chong_chi_dinh,,Viết tay,test
+T056,Những trường hợp nào phải chuyển lên bệnh viện khám sàng lọc?,chong_chi_dinh,,Viết tay,test
+T057,Bé bị chàm da cấp tính có tiêm được không?,chong_chi_dinh,,Viết tay,test
+T058,Chống chỉ định BCG là gì?,chong_chi_dinh,1,Viết tay,test
+T059,Người đang hóa trị ung thư tiêm vaccine được không?,chong_chi_dinh,,Viết tay,test
+T060,Hai vaccine sống tiêm cách nhau tối thiểu bao lâu?,chong_chi_dinh,6;7,Viết tay,test
+T061,Prevenar 20 mỗi mũi tiêm bao nhiêu ml?,lieu_cach,8,Viết tay,test
+T062,BCG tiêm trong da ở vị trí nào?,lieu_cach,1,Viết tay,test
+T063,Gardasil 9 tiêm mấy liều và thể tích mỗi liều?,lieu_cach,11,Viết tay,test
+T064,Varivax tiêm dưới da đúng không?,lieu_cach,7,Viết tay,test
+T065,Liều viêm gan B sơ sinh là 0.5 ml hay bao nhiêu?,lieu_cach,2,Viết tay,test
+T066,Shingrix phải pha như thế nào trước khi tiêm?,lieu_cach,13,Viết tay,test
+T067,Tetraxim tiêm bắp ở đâu cho trẻ 2 tháng?,lieu_cach,3,Viết tay,test
+T068,Imojev liều cho trẻ em là bao nhiêu?,lieu_cach,9,Viết tay,test
+T069,Influvac Tetra tiêm bao nhiêu ml?,lieu_cach,10,Viết tay,test
+T070,MMR tiêm dưới da vùng nào?,lieu_cach,6,Viết tay,test
+T071,Số mũi Prevenar cơ bản cho trẻ dưới 1 tuổi?,lieu_cach,8,Viết tay,test
+T072,Adacel tiêm bao nhiêu ml mỗi lần?,lieu_cach,3,Viết tay,test
+T073,Imovax Polio tiêm đường tiêm nào?,lieu_cach,4,Viết tay,test
+T074,Liều nhắc uốn ván người lớn là bao nhiêu?,lieu_cach,3,Viết tay,test
+T075,Vaccine đông khô pha xong dùng trong bao lâu?,lieu_cach,,Viết tay,test
+T076,Trẻ dưới 12 tháng tiêm bắp ưu tiên vị trí nào?,lieu_cach,,Viết tay,test
+T077,Có tiêm Prevenar cùng lúc với 5 trong 1 được không?,lieu_cach,8;3,Viết tay,test
+T078,Shingrix mỗi liều bao nhiêu ml?,lieu_cach,13,Viết tay,test
+T079,BCG sơ sinh tiêm 0.05 ml hay 0.1 ml?,lieu_cach,1,Viết tay,test
+T080,Sau khi pha vaccine sống bảo quản ở nhiệt độ nào?,lieu_cach,,Viết tay,test
+T081,Sau tiêm sởi bé có hay bị sốt không và sốt mấy ngày?,tac_dung_phu,6,Viết tay,test
+T082,Tiêm BCG xong chỗ tiêm sẽ như thế nào là bình thường?,tac_dung_phu,1,Viết tay,test
+T083,Tiêm HPV bị đau và sưng tại chỗ có sao không?,tac_dung_phu,11,Viết tay,test
+T084,Sau mũi 5 trong 1 bé khóc nhiều quá có bình thường?,tac_dung_phu,3,Viết tay,test
+T085,Những phản ứng nặng sau tiêm cần đưa đi cấp cứu ngay?,tac_dung_phu,,Viết tay,test
+T086,Tiêm thủy đậu xong có thể nổi ban giống thủy đậu không?,tac_dung_phu,7,Viết tay,test
+T087,Sau tiêm phế cầu sốt bao lâu thì hết?,tac_dung_phu,8,Viết tay,test
+T088,Phản ứng thường gặp sau tiêm cúm?,tac_dung_phu,10,Viết tay,test
+T089,Chỗ tiêm sưng đỏ xử lý tại nhà thế nào?,tac_dung_phu,,Viết tay,test
+T090,Dấu hiệu nào sau tiêm cần đưa trẻ đến viện ngay?,tac_dung_phu,,Viết tay,test
+T091,Vaccine sống giảm độc lực có làm trẻ bị bệnh thật không?,tac_dung_phu,,Viết tay,test
+T092,Sau MMR có bị sưng hạch không?,tac_dung_phu,6,Viết tay,test
+T093,Xử trí ban đầu khi nghi phản vệ sau tiêm?,tac_dung_phu,,Viết tay,test
+T094,Tiêm Shingrix có mệt và đau cơ không?,tac_dung_phu,13,Viết tay,test
+T095,Bé tiêm xong bị nôn 1-2 lần có sao không?,tac_dung_phu,,Viết tay,test
+T096,Tác dụng phụ của Imojev thường gặp?,tac_dung_phu,9,Viết tay,test
+T097,Sau tiêm phải ở lại điểm tiêm bao lâu?,tac_dung_phu,,Viết tay,test
+T098,Vaccine có gây tự kỷ như một số tin đồn không?,tac_dung_phu,,Viết tay - tin đồn,test
+T099,Tiêm nhiều mũi một lúc có tăng phản ứng phụ không?,tac_dung_phu,,Viết tay,test
+T100,Sau tiêm uốn ván đau cánh tay bao lâu thì khỏi?,tac_dung_phu,3,Viết tay,test
+T101,Danh mục vaccine thuộc chương trình TCMR gồm những bệnh nào?,thong_tin_chung,,Viết tay,test
+T102,Vaccine TCMR và vaccine dịch vụ khác nhau chỗ nào?,thong_tin_chung,,Viết tay,test
+T103,Những vaccine nào là vaccine sống giảm độc lực?,thong_tin_chung,1;6;7;9,Viết tay,test
+T104,Có được tiêm nhiều loại vaccine trong cùng một buổi không?,thong_tin_chung,,Viết tay,test
+T105,Vaccine phải bảo quản ở nhiệt độ bao nhiêu độ?,thong_tin_chung,,Viết tay,test
+T106,Thông tư 10/2024 của Bộ Y tế quy định gì?,thong_tin_chung,,Viết tay,test
+T107,Prevenar 20 phòng được bao nhiêu type phế cầu?,thong_tin_chung,8,Viết tay,test
+T108,Gardasil 9 phòng được những type HPV nào?,thong_tin_chung,11,Viết tay,test
+T109,Tại sao phải tiêm viêm gan B trong 24 giờ đầu sau sinh?,thong_tin_chung,2,Viết tay,test
+T110,Vaccine zona và vaccine thủy đậu khác nhau thế nào?,thong_tin_chung,7;13,Viết tay,test
+T111,Trẻ tiêm đủ TCMR rồi còn cần tiêm thêm vaccine nào nữa không?,thong_tin_chung,,Viết tay,test
+T112,Nguồn nào là chính thống để tra lịch tiêm ở Việt Nam?,thong_tin_chung,,Viết tay,test
+T113,Hiện nay còn khuyến cáo tiêm COVID thường xuyên không?,thong_tin_chung,12,Viết tay,test
+T114,Làm sao để biết con đã tiêm đủ mũi hay còn thiếu?,thong_tin_chung,,Viết tay,test
+T115,Vaccine sản xuất trong nước và nhập khẩu khác nhau gì?,thong_tin_chung,,Viết tay,test
+T116,Đang uống kháng sinh có tiêm vaccine được không?,thong_tin_chung,,Viết tay,test
+T117,Những vaccine nào trong TCMR được miễn phí?,thong_tin_chung,,Viết tay,test
+T118,Tại sao trước khi tiêm phải khám sàng lọc?,thong_tin_chung,,Viết tay,test
+T119,Người lớn cần tiêm nhắc những vaccine nào định kỳ?,thong_tin_chung,3;10,Viết tay,test
+T120,Tờ hướng dẫn sử dụng vaccine có giá trị pháp lý thế nào?,thong_tin_chung,,Viết tay,test
