@@ -36,3 +36,9 @@ knowledge/raw/**/*.PDF
 knowledge/raw/leaflets/
 knowledge/raw/who/
 knowledge/raw/byt/
+
+# Eval reports 
+eval/reports/
+
+# Knowledge: index 
+knowledge/index/

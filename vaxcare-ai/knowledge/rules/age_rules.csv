@@ -1,0 +1,29 @@
+rule_id,age_group,age_from_months,age_to_months,vaccine_id,vaccine_short,dose_number,interval_days_min,source_doc,note
+1,Sơ sinh,0,1,1,BCG,1,0,tt10-2024,Tiêm trong da càng sớm càng tốt sau sinh
+2,Sơ sinh,0,1,2,Viêm gan B,1,0,tt10-2024,Liều sơ sinh trong 24h nếu được
+3,2 tháng,2,3,2,Viêm gan B,2,30,tt10-2024,Mũi 2 viêm gan B
+4,2 tháng,2,3,3,DTaP,1,0,tt10-2024,Mũi cơ bản DTaP
+5,2 tháng,2,3,4,IPV,1,0,tt10-2024,Mũi cơ bản IPV
+6,2 tháng,2,3,5,Hib,1,0,tt10-2024,Mũi cơ bản Hib
+7,3-4 tháng,3,5,3,DTaP,2,60,tt10-2024,Mũi 2 DTaP
+8,3-4 tháng,3,5,4,IPV,2,60,tt10-2024,Mũi 2 IPV
+9,3-4 tháng,3,5,5,Hib,2,60,tt10-2024,Mũi 2 Hib
+10,4 tháng,4,6,2,Viêm gan B,3,150,tt10-2024,Hoàn thành 3 liều viêm gan B
+11,9-12 tháng,9,15,6,MMR,1,0,tt10-2024 / CDC,Mũi 1 MMR
+12,12 tháng,12,24,7,Thủy đậu,1,0,CDC / HDSD,Mũi 1 thủy đậu
+13,12-15 tháng,12,18,9,Viêm não Nhật Bản,1,0,tt10-2024,Mũi cơ bản
+14,15-18 tháng,15,24,6,MMR,2,28,tt10-2024,Mũi 2 MMR (cách tối thiểu 28 ngày)
+15,15-18 tháng,15,24,7,Thủy đậu,2,28,CDC,Mũi 2 thủy đậu
+16,18-24 tháng,18,36,9,Viêm não Nhật Bản,2,28,tt10-2024,Mũi 2
+17,18-24 tháng,18,36,9,Viêm não Nhật Bản,3,365,tt10-2024,Mũi nhắc / hoàn thiện
+18,Người lớn 9-14 tuổi,108,168,11,HPV,1,0,HDSD / CDC,Phác đồ 2 liều
+19,Người lớn 9-14 tuổi,108,168,11,HPV,2,180,HDSD / CDC,Hoàn thành 2 liều
+20,Người lớn ≥15 tuổi,180,999,11,HPV,1,0,HDSD,Phác đồ 3 liều
+21,Người lớn ≥15 tuổi,180,999,11,HPV,2,60,HDSD,Mũi 2
+22,Người lớn ≥15 tuổi,180,999,11,HPV,3,120,HDSD,Hoàn thành 3 liều
+23,Người lớn ≥50 tuổi,600,999,13,Zona,1,0,HDSD Shingrix,Mũi 1 từ 50 tuổi
+24,Người lớn ≥50 tuổi,600,999,13,Zona,2,60,HDSD Shingrix,Mũi 2 cách 2–6 tháng
+25,Hàng năm ≥6 tháng,6,999,10,Cúm,1,365,CDC / BYT,1 liều mỗi mùa cúm
+26,Người lớn / cập nhật,216,999,3,Tdap,1,3650,CDC,Nhắc bạch hầu – uốn ván mỗi 10 năm (ước lượng)
+27,Người lớn,0,999,12,COVID-19,1,0,BYT hiện hành,Theo lịch khuyến cáo hiện hành
+28,Người lớn,0,999,12,COVID-19,2,180,BYT hiện hành,Mũi tiếp theo / cập nhật
