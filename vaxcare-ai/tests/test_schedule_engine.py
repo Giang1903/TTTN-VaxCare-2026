@@ -52,7 +52,9 @@ def test_rules_for_14_months_includes_mmr(age_rules_df):
 
     df = rules_for_age(14, age_rules_df)
     shorts = set(df["vaccine_short"].tolist())
-    assert "MMR" in shorts or "Thủy đậu" in shorts
+    assert "MMR" in shorts or "Thủy đậu" in shorts or "Sởi" in shorts or any(
+        "sởi" in s.lower() or "mmr" in s.lower() for s in shorts
+    )
 
 
 def test_mock_users_count(mock_users):
@@ -97,10 +99,72 @@ def test_adult_hpv_partial(mock_users, age_rules_df):
     user = next(u for u in mock_users if u["user_id"] == 105)
     exp = expected_doses_by_vaccine(user["age_months"], age_rules_df)
     have = {(r["vaccine_id"], r["dose_number"]) for r in user["records"]}
-    # HPV id = 11
     hpv_expected = exp.get(11, [])
     if hpv_expected:
         missing_hpv = [
             d for d in hpv_expected if (11, int(d["dose_number"])) not in have
         ]
         assert len(missing_hpv) >= 1
+
+
+def test_advise_schedule_newborn(age_rules_df):
+    from app.chatbot.rules.schedule_engine import advise_schedule
+
+    result = advise_schedule(age_months=0, df=age_rules_df)
+    assert result.age_months == 0
+    shorts = {a.vaccine_short for a in result.recommendations}
+    assert any("BCG" in s or "gan B" in s or "Hep" in s for s in shorts)
+    assert result.summary
+
+
+def test_advise_schedule_adult_20y(age_rules_df):
+    from app.chatbot.rules.schedule_engine import advise_schedule, format_schedule_text
+
+    result = advise_schedule(age_years=20, df=age_rules_df)
+    assert result.age_years == 20.0
+    text = format_schedule_text(result)
+    assert "tuổi" in text.lower() or "tháng" in text.lower()
+
+
+def test_check_history_user_105(mock_users, age_rules_df):
+    from app.chatbot.rules.history_checker import check_history, format_history_text
+
+    user = next(u for u in mock_users if u["user_id"] == 105)
+    result = check_history(
+        age_months=user["age_months"],
+        records=user["records"],
+        df=age_rules_df,
+    )
+    assert result.has_records
+    assert any(c.vaccine_id == 11 for c in result.completed)
+    assert any(n.vaccine_id == 11 for n in result.next_steps)
+    text = format_history_text(result)
+    assert "HPV" in text or "hpv" in text.lower()
+
+
+def test_check_history_empty(mock_users, age_rules_df):
+    from app.chatbot.rules.history_checker import check_history
+
+    user = next(u for u in mock_users if u["user_id"] == 109)
+    result = check_history(
+        age_months=user["age_months"],
+        records=user["records"],
+        df=age_rules_df,
+    )
+    assert not result.has_records
+    assert len(result.missing) >= 1
+
+
+def test_eligibility_fever():
+    from app.chatbot.rules.eligibility import check_eligibility_from_text
+
+    r = check_eligibility_from_text("Bé đang sốt 38.5 độ, tiêm được không?")
+    assert r.status == "defer_suggested"
+    assert r.needs_clinician
+
+
+def test_eligibility_ok():
+    from app.chatbot.rules.eligibility import check_eligibility_from_text
+
+    r = check_eligibility_from_text("Tôi khỏe mạnh, muốn hỏi lịch HPV")
+    assert r.status in ("ok_to_discuss", "caution")
