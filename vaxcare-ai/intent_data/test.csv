@@ -1,77 +1,136 @@
-﻿text,label
+text,label
 Thanks,chitchat
-Tôi quên đã tiêm bao nhiêu mũi COVID-19,history_lookup
-Ai nên tiêm HPV?,faq_vaccine
-Chào buổi sáng,chitchat
-Tôi bị đau ngực khó thở phải làm sao?,out_of_scope
-Tôi có nên uống kháng sinh không?,out_of_scope
-Tìm vaccine Phế cầu trên hệ thống,vaxcare_lookup
-Khi nào nên tiêm Thủy đậu?,schedule_advice
-"Tôi 5 tuổi đã tiêm MMR mũi 1, tiếp theo?",schedule_advice
-Vaccine IPV phòng bệnh gì?,faq_vaccine
-Cơ sở nào tiêm Hib ở quận 1?,vaxcare_lookup
-Tìm cơ sở tiêm Cúm gần đây,vaxcare_lookup
-Khoảng cách giữa các mũi BCG?,faq_vaccine
-Vaccine Viêm gan B phòng bệnh gì?,faq_vaccine
-Lịch tiêm COVID-19 theo tuổi,schedule_advice
-Vaccine DTaP/Tdap phòng bệnh gì?,faq_vaccine
-Hib tiêm mấy mũi?,faq_vaccine
-Ai nên tiêm Cúm?,faq_vaccine
-Tôi quên đã tiêm bao nhiêu mũi Zona / Shingrix,history_lookup
-Phế cầu tiêm mấy mũi?,faq_vaccine
-Vaccine phòng Bệnh do phế cầu tên gì?,faq_vaccine
-Kiểm tra xem tôi đã đủ mũi Viêm gan B chưa,history_lookup
-Kiểm tra xem tôi đã đủ mũi Thủy đậu chưa,history_lookup
-Ai nên tiêm Viêm gan B?,faq_vaccine
-Đặt lịch tiêm Phế cầu,vaxcare_lookup
-"Tôi 40 tuổi đã tiêm DTaP/Tdap mũi 1, tiếp theo?",schedule_advice
-Tác dụng không mong muốn của Hib?,faq_vaccine
-Có chống chỉ định gì khi tiêm HPV?,faq_vaccine
-Danh sách cơ sở tiêm chủng,vaxcare_lookup
-Kể chuyện cười đi,out_of_scope
-Dẫn tôi đến trang đặt lịch,vaxcare_lookup
-Trẻ sơ sinh nên tiêm những gì?,schedule_advice
-Mở trang chi tiết vaccine Phế cầu,vaxcare_lookup
-HPV khác gì so với các vaccine khác phòng Ung thư cổ tử cung?,faq_vaccine
-Tìm vaccine Cúm trên hệ thống,vaxcare_lookup
-Ai nên tiêm Viêm não Nhật Bản?,faq_vaccine
-Tôi quên đã tiêm bao nhiêu mũi IPV,history_lookup
-Tác dụng không mong muốn của Phế cầu?,faq_vaccine
-Lịch tiêm Zona / Shingrix theo tuổi,schedule_advice
-Bạn khỏe không?,chitchat
-Tác dụng không mong muốn của MMR?,faq_vaccine
-Lịch sử tiêm chủng trong tài khoản,history_lookup
-Lưu ý sau khi tiêm Thủy đậu?,faq_vaccine
-Giá vaccine BCG khoảng bao nhiêu?,vaxcare_lookup
-Viêm gan B dùng để làm gì?,faq_vaccine
-"Tôi đã tiêm mũi 1 rồi, tiếp theo cần làm gì?",history_lookup
-Vaccine BCG còn hàng không?,vaxcare_lookup
-Khi nào nên tiêm BCG?,schedule_advice
-Tôi muốn mua vaccine về tự tiêm,out_of_scope
-Giá vaccine Viêm gan B khoảng bao nhiêu?,vaxcare_lookup
-Đối tượng sử dụng vaccine Zona / Shingrix?,faq_vaccine
-Lưu ý sau khi tiêm Hib?,faq_vaccine
-Kiểm tra xem tôi đã đủ mũi BCG chưa,history_lookup
-Khoảng cách giữa các mũi Cúm?,faq_vaccine
-"Tôi 50 tuổi đã tiêm Phế cầu mũi 1, tiếp theo?",schedule_advice
-Phế cầu khác gì so với các vaccine khác phòng Bệnh do phế cầu?,faq_vaccine
-Giá cổ phiếu công ty vaccine,out_of_scope
-Đặt lịch tiêm COVID-19,vaxcare_lookup
-Khi nào nên tiêm DTaP/Tdap?,schedule_advice
-Vaccine phòng Bệnh bại liệt tên gì?,faq_vaccine
-Ai nên tiêm Thủy đậu?,faq_vaccine
+Tôi tiêm trễ mũi cúm thì trong hồ sơ ghi sao,history_lookup
+Cúm tiêm mấy mũi?,faq_vaccine
+JE tiêm đường nào?,faq_vaccine
+Giải thích dữ liệu tiêm đã ghi nhận,history_lookup
+Trẻ 50 tháng tiêm những mũi nào theo TCMR?,schedule_advice
+Cơ sở nào tiêm Zona / Shingrix ở quận 1?,vaxcare_lookup
+Mở trang chi tiết vaccine BCG,vaxcare_lookup
+Dấu hiệu nguy hiểm sau tiêm Hib?,faq_vaccine
+Bé đang sốt có tiêm cúm mùa được không?,faq_vaccine
+Chống chỉ định tương đối của Hib?,faq_vaccine
+Phế cầu dùng để làm gì?,faq_vaccine
+"Tôi 24 tuổi, nên kiểm tra những vaccine nào?",schedule_advice
+Phác đồ tiêm MMR như thế nào?,faq_vaccine
+HPV có an toàn không?,faq_vaccine
+Ai nên tiêm nhắc uốn ván định kỳ?,faq_vaccine
+Lộ trình tiêm chủng cho người 4 tuổi,schedule_advice
+Adacel tiêm bao nhiêu ml?,faq_vaccine
+Uống thuốc gì để hết sốt sau tiêm?,out_of_scope
+Có chống chỉ định gì khi tiêm BCG?,faq_vaccine
+Vaccine COVID-19 dành cho những ai?,faq_vaccine
+Sau tiêm vaccine sởi trẻ có thể bị sốt không?,faq_vaccine
+Tôi tiêm trễ mũi DTaP/Tdap thì sao?,history_lookup
+Xem lịch sử tiêm của tôi,history_lookup
+Đặt lịch tiêm IPV,vaxcare_lookup
+Giá vaccine DTaP/Tdap khoảng bao nhiêu?,vaxcare_lookup
+Phản ứng tại chỗ của M-M-R II kéo dài bao lâu?,faq_vaccine
+"Tôi tiêm Phế cầu mũi 1 ngày 20/08/2025, khi nào mũi 2?",history_lookup
+Lưu ý sau khi tiêm COVID-19?,faq_vaccine
+Bao nhiêu tuổi thì tiêm MMR?,schedule_advice
+9-14 tuổi tiêm những vaccine nào cùng lúc với ung thư cổ tử cung?,schedule_advice
 Có phòng khám nào tiêm Cúm không?,vaxcare_lookup
-Lịch tiêm Phế cầu theo tuổi,schedule_advice
-Mở trang chi tiết vaccine DTaP/Tdap,vaxcare_lookup
+Được rồi thank you,chitchat
+Có chống chỉ định gì khi tiêm COVID-19?,faq_vaccine
+Viêm não Nhật Bản khác gì so với các vaccine khác phòng Viêm não Nhật Bản?,faq_vaccine
+Trẻ 9 tháng tiêm sởi và những mũi khác không?,schedule_advice
+Khoảng cách giữa các mũi Viêm gan B?,faq_vaccine
+Cúm khác gì so với các vaccine khác phòng Cúm mùa?,faq_vaccine
+Vaccine phòng Bạch hầu tên gì?,faq_vaccine
+Ai nên tiêm Viêm não Nhật Bản?,faq_vaccine
+Bạn khỏe không?,chitchat
+Vaccine Zona / Shingrix phòng bệnh gì?,faq_vaccine
+Liều tiêm vaccine viêm gan B cho trẻ sơ sinh là bao nhiêu?,faq_vaccine
+Phản ứng thường gặp sau tiêm BCG là gì?,faq_vaccine
+Người trên 50 tuổi nên tiêm vaccine nào?,schedule_advice
+"Tôi đã tiêm mũi 1 rồi, tiếp theo cần làm gì?",history_lookup
+Trẻ 12 tháng tiêm những vaccine nào?,schedule_advice
+Trẻ 18 tháng nhắc những mũi nào,schedule_advice
+Có chống chỉ định gì khi tiêm Viêm não Nhật Bản?,faq_vaccine
+Lịch tiêm Zona / Shingrix theo tuổi,schedule_advice
+Tôi quên đã tiêm bao nhiêu mũi MMR,history_lookup
+Hi VaxCare,chitchat
+"Tôi 18 tuổi đã tiêm Viêm gan B mũi 1, tiếp theo?",schedule_advice
+Bé sinh non tiêm BCG và viêm gan B khi nào?,schedule_advice
+Hib khác gì so với các vaccine khác phòng Các bệnh xâm lấn do Hib?,faq_vaccine
+Chống chỉ định tuyệt đối khi tiêm vaccine là gì?,faq_vaccine
+Tôi tiêm trễ mũi Zona / Shingrix thì sao?,history_lookup
+Đăng ký tiêm ở quận 1,vaxcare_lookup
+IPV có an toàn không?,faq_vaccine
+Vaccine Shingrix dành cho những ai?,faq_vaccine
+Đặt lịch tiêm Zona / Shingrix,vaxcare_lookup
+Vaccine Thủy đậu phòng bệnh gì?,faq_vaccine
+Tiêm BCG tiêm đường nào và vị trí nào?,faq_vaccine
+Chống chỉ định của vaccine Varivax là gì?,faq_vaccine
+Có chống chỉ định gì khi tiêm MMR?,faq_vaccine
+Khi nào nên tiêm Zona / Shingrix?,schedule_advice
+Có phòng khám nào tiêm MMR không?,vaxcare_lookup
+Công dụng của vắc xin HPV là gì?,faq_vaccine
+Chương trình tiêm chủng mở rộng miễn phí những vaccine nào?,faq_vaccine
+"Tôi 36 tuổi đã tiêm Viêm gan B mũi 1, tiếp theo?",schedule_advice
+Khi nào nên tiêm IPV?,schedule_advice
+Vaccine viêm não Nhật Bản dành cho đối tượng nào?,faq_vaccine
+Sau khi tiêm vaccine bị phản vệ thì lần sau xử lý thế nào?,faq_vaccine
+Tác dụng phụ của vaccine COVID-19?,faq_vaccine
+Adacel là vaccine sống hay bất hoạt?,faq_vaccine
+Có phòng khám nào tiêm Zona / Shingrix không?,vaxcare_lookup
+Thông tin cần biết trước khi tiêm DTaP/Tdap,faq_vaccine
+Khi nào tiêm mũi Prevenar 20 đầu tiên?,schedule_advice
+Tôi quên đã tiêm bao nhiêu mũi Viêm gan B,history_lookup
+Tôi tiêm trễ mũi MMR thì sao?,history_lookup
+Triệu chứng này có phải covid không?,out_of_scope
+Trẻ đi học mẫu giáo cần tiêm những vaccine nào?,faq_vaccine
+Vaccine Imojev tiêm bao nhiêu ml?,faq_vaccine
+Khi nào nên tiêm COVID-19?,schedule_advice
+Dấu hiệu nguy hiểm sau tiêm sởi quai bị rubella?,faq_vaccine
 "Tôi tiêm Viêm não Nhật Bản mũi 1 ngày 20/08/2025, khi nào mũi 2?",history_lookup
-HPV tiêm mấy mũi?,faq_vaccine
+Dấu hiệu nguy hiểm sau tiêm Prevenar?,faq_vaccine
+Công dụng của vắc xin BCG là gì?,faq_vaccine
+Hôm nay thời tiết thế nào?,out_of_scope
+sơ sinh có chỉ định tiêm viêm gan B không?,faq_vaccine
+Có phòng khám nào tiêm Phế cầu không?,vaxcare_lookup
+Lịch tiêm bù Gardasil cho trẻ bị trễ?,schedule_advice
+HPV dùng để làm gì?,faq_vaccine
+Lộ trình HPV cho bé 12 tuổi,schedule_advice
+Khi nào cần chuyển trẻ đến bệnh viện để khám sàng lọc trước tiêm?,faq_vaccine
+Vaccine nào đang có lịch trống,vaxcare_lookup
+Lịch tiêm HPV cho người lớn như thế nào?,schedule_advice
+DTaP/Tdap khác gì so với các vaccine khác phòng Bạch hầu?,faq_vaccine
+"Tôi 25 tuổi đã tiêm Viêm não Nhật Bản mũi 1, tiếp theo?",schedule_advice
+Thông tin trên tờ hướng dẫn sử dụng vaccine có giá trị như thế nào?,faq_vaccine
+Hib có an toàn không?,faq_vaccine
+Sau tiêm uốn ván bị đau cánh tay bao lâu thì hết?,faq_vaccine
+Tác dụng không mong muốn của Hib?,faq_vaccine
+Mở trang chi tiết vaccine Viêm gan B,vaxcare_lookup
+Chỉ định tiêm BCG cho trẻ trên 1 tuổi?,faq_vaccine
+Phác đồ tiêm Phế cầu như thế nào?,faq_vaccine
+Tìm cơ sở tiêm gần đây,vaxcare_lookup
+Vaccine Cúm phòng bệnh gì?,faq_vaccine
+Mở trang chi tiết vaccine COVID-19,vaxcare_lookup
+Thông tin chung về vaccine cúm mùa?,faq_vaccine
+Tôi tiêm trễ mũi COVID-19 thì sao?,history_lookup
+Ai nên tiêm IPV?,faq_vaccine
+Sau tiêm Hib có bị sốt không?,faq_vaccine
+Cho chó tiêm vaccine ở đây được không,out_of_scope
+Hướng dẫn đặt lịch tiêm,vaxcare_lookup
+MMR dùng để làm gì?,faq_vaccine
+Phác đồ tiêm Hib như thế nào?,faq_vaccine
+"Tôi 18 tuổi đã tiêm Thủy đậu mũi 1, tiếp theo?",schedule_advice
+Tìm cơ sở tiêm HPV gần đây,vaxcare_lookup
+Tiền sử phản vệ với bại liệt thì sao?,faq_vaccine
+Trẻ trên 50 tuổi có cần tiêm Varivax không?,faq_vaccine
+Vaccine phòng Bệnh do phế cầu tên gì?,faq_vaccine
+Sau tiêm MMR có thể bị sưng hạch không?,faq_vaccine
 Được rồi,chitchat
-"Tôi 30 tuổi đã tiêm Hib mũi 1, tiếp theo?",schedule_advice
-Khoảng cách giữa các mũi Hib?,faq_vaccine
-Xin chào,chitchat
-Zona / Shingrix có an toàn không?,faq_vaccine
-Phế cầu có an toàn không?,faq_vaccine
-Mở trang chi tiết vaccine Viêm não Nhật Bản,vaxcare_lookup
-Đặt lịch tiêm Cúm,vaxcare_lookup
-Lưu ý sau khi tiêm Phế cầu?,faq_vaccine
-Bao nhiêu tuổi thì tiêm Phế cầu?,schedule_advice
+Trẻ sinh mổ có tiêm vaccine sơ sinh bình thường không?,faq_vaccine
+Phản ứng sau tiêm cúm thường gặp là gì?,faq_vaccine
+Shingrix pha như thế nào và tiêm ra sao?,faq_vaccine
+Đặt lịch tiêm Phế cầu,vaxcare_lookup
+Sơ sinh tiêm BCG và viêm gan B khi nào,schedule_advice
+Vaccine phòng Bệnh lao tên gì?,faq_vaccine
+Phụ nữ mang thai có được tiêm vaccine cúm không?,faq_vaccine
+Liều nhắc varicella là bao nhiêu?,faq_vaccine
+Mở trang chi tiết vaccine Cúm,vaxcare_lookup
+Khi nào tiêm mũi DTP đầu tiên?,schedule_advice
+Khi nào tạm hoãn tiêm BCG?,faq_vaccine

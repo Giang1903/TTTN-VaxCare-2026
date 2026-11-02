@@ -1,0 +1,31 @@
+query_id,query,expected_intent,expected_topic,result_status,issue_type,relevant_chunk_ids_found,notes_fe
+Q01,Trẻ sơ sinh tiêm những mũi nào?,schedule_advice,lich_so_sinh,need_check,may_miss_chunk,,Ưu tiên chunk TCMR sơ sinh HepB+BCG
+Q02,Bé 2 tháng tiêm gì theo TCMR?,schedule_advice,lich_2_thang,need_check,may_miss_chunk,,Lịch 2 tháng DTP IPV Hib HepB
+Q03,Khi nào tiêm mũi sởi đầu tiên?,schedule_advice,lich_soi,need_check,chunk_quality,,9 tháng — tránh chunk preamble pháp lý
+Q04,Lịch viêm não Nhật Bản 3 mũi?,schedule_advice,lich_je,need_check,may_miss_chunk,,1t / +1-2 tuần / +1 năm
+Q05,Phụ nữ mang thai tiêm uốn ván thế nào?,schedule_advice,uon_van_thai,need_check,may_miss_chunk,,4 tình huống TT 10
+Q06,Chống chỉ định tiêm khi trẻ sốt?,faq_vaccine,sang_loc_sot,need_check,chunk_quality,,QĐ 1575: >38.5 tạm hoãn; sốt nhẹ không hoãn
+Q07,BCG tiêm đường nào liều bao nhiêu?,faq_vaccine,bcg_lieu,need_check,may_miss_chunk,,Trong da; sơ sinh thường 0.05ml
+Q08,Ai nên tiêm HPV?,faq_vaccine,hpv_doi_tuong,need_check,may_miss_chunk,,9-14 ưu tiên; nam nữ
+Q09,Varivax chống chỉ định?,faq_vaccine,varivax_ci,need_check,may_miss_chunk,,Gelatin neomycin suy giảm miễn dịch thai kỳ
+Q10,Sau tiêm sởi có sốt không?,faq_vaccine,ae_soi,need_check,may_miss_chunk,,Sốt nhẹ 5-12 ngày sau tiêm có thể gặp
+Q11,Prevenar 20 tiêm mấy ml?,faq_vaccine,pcv_lieu,need_check,may_miss_chunk,,Thường 0.5ml theo HDSD
+Q12,Vaccine nào thuộc TCMR?,faq_vaccine,tcmr_danhmuc,need_check,chunk_quality,,11 bệnh TT 10 — tránh chunk chỉ có tiêu đề QĐ
+Q13,Sinh non dưới 34 tuần tiêm BCG được không?,faq_vaccine,bcg_preterm,need_check,may_miss_chunk,,Tạm hoãn đến đủ 34 tuần
+Q14,Khoảng cách 2 mũi vaccine sống?,faq_vaccine,interval_live,need_check,may_miss_chunk,,Thường ≥28 ngày
+Q15,Shingrix cho ai?,faq_vaccine,zoster_chi_dinh,need_check,may_miss_chunk,,≥50 tuổi 2 mũi
+Q16,Lịch HPV trẻ 12 tuổi?,schedule_advice,hpv_2_lieu,need_check,may_miss_chunk,,2 mũi cách ≥6 tháng
+Q17,Trẻ 18 tháng nhắc gì?,schedule_advice,lich_18m,need_check,may_miss_chunk,,DTP nhắc + MMR2
+Q18,Đặt lịch tiêm HPV,vaxcare_lookup,booking,ok_no_rag,out_of_rag,,Không cần chunk knowledge
+Q19,Xem lịch sử tiêm của tôi,history_lookup,history,ok_no_rag,out_of_rag,,Không cần chunk
+Q20,Xin chào,chitchat,chitchat,ok_no_rag,out_of_rag,,
+Q21,Tôi đau ngực khó thở,out_of_scope,emergency,ok_no_rag,out_of_rag,,Refusal
+Q22,Tại sao tiêm viêm gan B trong 24h?,faq_vaccine,hepb_24h,need_check,may_miss_chunk,,Phòng lây mẹ-con
+Q23,Bệnh nhẹ sổ mũi có hoãn tiêm không?,faq_vaccine,benh_nhe,need_check,may_miss_chunk,,Không hoãn theo QĐ 1575
+Q24,Theo dõi sau tiêm bao lâu tại điểm tiêm?,faq_vaccine,theo_doi_30p,need_check,may_miss_chunk,,≥30 phút
+Q25,Gardasil 9 phòng type HPV nào?,faq_vaccine,hpv_types,need_check,may_miss_chunk,,9 type: 6 11 16 18 31 33 45 52 58
+Q26,Lịch cúm thai phụ?,schedule_advice,flu_pregnant,need_check,may_miss_chunk,,Mọi quý thai kỳ
+Q27,MMR tiêm dưới da đúng không?,faq_vaccine,mmr_duong_tiem,need_check,may_miss_chunk,,Dưới da
+Q28,Tiêm bù khi trễ lịch?,schedule_advice,tiem_bu,need_check,may_miss_chunk,,Bù sớm không nhất thiết làm lại từ đầu
+Q29,Vaccine sống gồm những loại nào?,faq_vaccine,live_list,need_check,may_miss_chunk,,BCG MMR Varivax JE sống…
+Q30,Conflict số liều thủy đậu VN vs WHO?,faq_vaccine,varivax_conflict,need_check,may_miss_chunk,,HDSD VN 1 liều <13t; WHO 2 liều — nêu rõ nguồn

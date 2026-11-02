@@ -1,0 +1,26 @@
+id,category,keyword_vi,keyword_variants,severity,action,notes
+1,cap_cuu,cấp cứu,"cap cuu,cấpcứu,emergency",block_refuse,refuse_emergency,Ưu tiên từ chối + hướng dẫn đến CSV
+2,cap_cuu,gọi cấp cứu,"goi cap cuu,115,cấp cứu 115",block_refuse,refuse_emergency,
+3,trieu_chung_nang,khó thở,"kho tho,ngạt thở,nghẹt thở,thở không được",block_refuse,refuse_emergency,
+4,trieu_chung_nang,đau ngực,"dau nguc,tức ngực,đau thắt ngực",block_refuse,refuse_emergency,
+5,trieu_chung_nang,co giật,"co giat,giật mình kéo dài,động kinh cơn",block_refuse,refuse_emergency,
+6,trieu_chung_nang,li bì,"li bi,hôn mê,không tỉnh,mất ý thức,bất tỉnh",block_refuse,refuse_emergency,
+7,trieu_chung_nang,sốc phản vệ,"soc phan ve,phản vệ,sốc dị ứng,toàn thân mẩn ngứa khó thở",block_refuse,refuse_emergency,Sau tiêm hoặc chung
+8,trieu_chung_nang,tím tái,"tim tai,môi tím,da tái",block_refuse,refuse_emergency,
+9,trieu_chung_nang,xuất huyết nhiều,"chảy máu không cầm,xuat huyet",block_refuse,refuse_emergency,
+10,trieu_chung_nang,sốt rất cao,"sốt 40,sốt cao liên tục,co giật do sốt",block_refuse,refuse_emergency,Kèm hướng dẫn đến CSV
+11,chan_doan,chẩn đoán,"chan doan,tôi bị bệnh gì,có phải sởi không",block_refuse,refuse_diagnosis,
+12,chan_doan,kết luận bệnh,"đoán bệnh,khám online cho tôi",block_refuse,refuse_diagnosis,
+13,ke_don,kê đơn,"ke don,uống thuốc gì,cho đơn thuốc",block_refuse,refuse_prescription,
+14,ke_don,kháng sinh,"uống kháng sinh,antibiotic nào",block_refuse,refuse_prescription,
+15,ke_don,liều thuốc điều trị,"mg một ngày,uống mấy viên",block_refuse,refuse_prescription,Trừ khi chỉ nói phản ứng sau tiêm nhẹ → vẫn không kê đơn
+16,ngoai_pham_vi,tiểu đường điều trị,"điều trị tiểu đường,insulin",block_refuse,refuse_oos,
+17,ngoai_pham_vi,ung thư điều trị,"hóa trị liều,phác đồ ung thư",block_refuse,refuse_oos,
+18,ngoai_pham_vi,tim mạch cấp,"nhồi máu,đột quỵ,stroke",block_refuse,refuse_emergency,
+19,ngoai_pham_vi,tự tử,"muốn chết,tự tử",block_refuse,refuse_crisis,Chỉ hướng dẫn tìm hỗ trợ chuyên môn / đường dây nóng — không tư vấn sâu
+20,sau_tiem_nang,khó thở sau tiêm,"sau tiêm khó thở,sau tiêm sưng mặt",block_refuse,refuse_emergency_post_vax,
+21,sau_tiem_nang,sưng phù toàn thân,"sưng môi,sưng họng sau tiêm",block_refuse,refuse_emergency_post_vax,
+22,sau_tiem_nang,phát ban toàn thân nhanh,"mề đay toàn thân sau tiêm",block_refuse,refuse_emergency_post_vax,
+23,an_toan,tự tiêm tại nhà,"tiêm ở nhà giúp tôi,tự tiêm",block_refuse,refuse_oos,Không hướng dẫn tự tiêm
+24,an_toan,pha vaccine sai,"pha với nước lọc,pha vaccine bằng",block_refuse,refuse_oos,Không hướng dẫn pha ngoài quy trình
+25,trieu_chung_nang,đau bụng dữ dội,"đau bụng dữ dội,óikỉa máu",block_refuse,refuse_emergency,

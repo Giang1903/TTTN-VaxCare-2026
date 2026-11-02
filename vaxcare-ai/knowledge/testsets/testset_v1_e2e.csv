@@ -1,71 +1,31 @@
-id,question,expected_intent,expected_chunk_ids,expected_answer_key_points,has_answer,notes
-E001,Trẻ vừa sinh xong bao lâu thì tiêm viêm gan B và BCG?,lich_tiem,tcmr-002,"Viêm gan B trong 24h; BCG trong vòng 1 tháng",1,E2E lịch sơ sinh
-E002,Bé 2 tháng tuổi sắp tới lịch tiêm, cần tiêm những mũi nào?,lich_tiem,tcmr-003,"Phối hợp có HepB, IPV/Hib tùy lịch TCMR",1,E2E lịch 2 tháng
-E003,Lịch tiêm 3 mũi viêm não Nhật Bản theo TCMR như thế nào?,lich_tiem,, "1 tuổi mũi 1; cách 1-2 tuần mũi 2; cách 1 năm mũi 3",1,E2E JE
-E004,Khi nào tiêm mũi sởi đầu tiên?,lich_tiem,,"Đủ 9 tháng tuổi",1,E2E sởi
-E005,Phụ nữ mang thai tiêm uốn ván theo mấy tình huống?,lich_tiem,,"4 tình huống theo TT 10/2024",1,E2E thai phụ
-E006,Bé sốt 38.5 độ C có tiêm được vaccine không?,chong_chi_dinh,,"Tạm hoãn khi sốt >38.5; sốt nhẹ không hoãn",1,E2E sàng lọc
-E007,Chống chỉ định của vaccine Varivax gồm những gì?,chong_chi_dinh,var-hdsd-003,"Dị ứng gelatin/neomycin; suy giảm miễn dịch; thai kỳ...",1,E2E C/I Varivax
-E008,Trẻ sinh non dưới 34 tuần tiêm BCG ngay được không?,chong_chi_dinh,,"Tạm hoãn BCG đến đủ 34 tuần",1,E2E sinh non
-E009,Ai nên tiêm vaccine HPV?,chi_dinh,,"Ưu tiên 9-14 tuổi; cả nam và nữ; phác đồ 2 hoặc 3 liều",1,E2E HPV chỉ định
-E010,WHO khuyến cáo tiêm viêm gan B sơ sinh ra sao?,chi_dinh,hepb-who-002,"Trong 24 giờ sau sinh cho mọi trẻ",1,E2E WHO HepB
-E011,Prevenar 20 tiêm bao nhiêu ml mỗi mũi?,lieu_cach,,"Theo HDSD (thường 0.5 ml)",1,E2E liều PCV
-E012,BCG tiêm đường nào và liều bao nhiêu cho sơ sinh?,lieu_cach,bcg-hdsd-001,"Tiêm trong da; 0.05 ml hoặc 0.1 ml tùy tuổi",1,E2E BCG liều
-E013,Varivax tiêm mấy mũi cho trẻ dưới 13 tuổi?,lieu_cach,var-hdsd-002,"HDSD VN: 1 liều; WHO: 2 liều → nêu rõ nguồn",1,E2E conflict
-E014,Sau tiêm sởi trẻ có thể bị sốt không?,tac_dung_phu,,"Có thể sốt nhẹ 5-12 ngày sau tiêm",1,E2E AE sởi
-E015,Phản ứng bình thường sau tiêm BCG là gì?,tac_dung_phu,,"Sẩn, loét nhỏ, để lại sẹo",1,E2E AE BCG
-E016,Khi nào cần đưa trẻ đến viện ngay sau tiêm?,tac_dung_phu,,"Khó thở, co giật, li bì, sốt cao kéo dài, phát ban toàn thân...",1,E2E nguy hiểm
-E017,Những vaccine nào thuộc chương trình TCMR?,thong_tin_chung,tcmr-001,"11 bệnh: HepB, lao, bạch hầu, ho gà, uốn ván, bại liệt, Hib, sởi, JE, rubella, rota",1,E2E danh mục
-E018,Vaccine TCMR và vaccine dịch vụ khác nhau chỗ nào?,thong_tin_chung,,"TCMR miễn phí, bắt buộc theo đối tượng; dịch vụ tự nguyện, trả phí",1,E2E phân biệt
-E019,Tại sao phải tiêm viêm gan B ngay sau sinh?,thong_tin_chung,hepb-who-002,"Phòng lây truyền mẹ-con hiệu quả nhất",1,E2E lý do
-E020,Có tiêm nhiều vaccine cùng một buổi được không?,thong_tin_chung,,"Được, nếu không có chống chỉ định và đúng khoảng cách vaccine sống",1,E2E đồng thời
-E021,Lịch tiêm HPV cho trẻ 11 tuổi?,lich_tiem,,"2 liều cách nhau 6-12 tháng",1,E2E HPV lịch
-E022,Người 55 tuổi tiêm zona mấy mũi?,lich_tiem,,"2 mũi Shingrix cách 2-6 tháng",1,E2E zona
-E023,Khoảng cách giữa 2 mũi vaccine sống tối thiểu?,chong_chi_dinh,,"Thường 28 ngày",1,E2E khoảng cách sống
-E024,Trẻ đang dùng corticoid liều cao có tiêm được vaccine sống không?,chong_chi_dinh,,"Thường chống chỉ định hoặc thận trọng",1,E2E corticoid
-E025,Liều lượng Gardasil 9 mỗi mũi?,lieu_cach,,"0.5 ml",1,E2E HPV liều
-E026,Sau tiêm DTP trẻ quấy khóc nhiều có sao không?,tac_dung_phu,,"Có thể gặp; theo dõi; nếu kéo dài hoặc kèm triệu chứng khác thì khám",1,E2E AE DTP
-E027,Nguồn chính thống tra lịch tiêm ở Việt Nam?,thong_tin_chung,,"Thông tư 10/2024/TT-BYT, sổ tiêm chủng, Cổng thông tin Bộ Y tế",1,E2E nguồn
-E028,Trẻ 18 tháng tiêm nhắc những gì?,lich_tiem,,"Nhắc DTP + MMR (sởi)",1,E2E 18 tháng
-E029,Chống chỉ định tuyệt đối khi tiêm chủng?,chong_chi_dinh,,"Phản vệ độ III trở lên với lần tiêm trước hoặc thành phần vaccine",1,E2E C/I tuyệt đối
-E030,Imojev liều cho trẻ?,lieu_cach,,"Theo HDSD (thường 0.5 ml)",1,E2E JE liều
-E031,Bé sổ mũi nhẹ có cần hoãn tiêm không?,chong_chi_dinh,,"Bệnh nhẹ không hoãn theo hướng dẫn sàng lọc",1,E2E bệnh nhẹ
-E032,Đối tượng tiêm Shingrix?,chi_dinh,,"Người ≥50 tuổi",1,E2E zona chỉ định
-E033,Vaccine nào là vaccine sống?,thong_tin_chung,,"BCG, MMR, Varivax, Imojev (JE sống),...",1,E2E sống/bất hoạt
-E034,Sau tiêm phải theo dõi tại điểm tiêm bao lâu?,tac_dung_phu,,"Ít nhất 30 phút",1,E2E theo dõi
-E035,Lịch IPV theo TCMR Việt Nam?,lich_tiem,,"Mũi 1 lúc 5 tháng, mũi 2 lúc 9 tháng",1,E2E IPV VN
-E036,Trẻ phơi nhiễm HIV tiêm vaccine thế nào?,chong_chi_dinh,,"Không triệu chứng: tiêm bình thường; có triệu chứng: hạn chế vaccine sống",1,E2E HIV
-E037,Gardasil 9 phòng được bao nhiêu type HPV?,thong_tin_chung,,"9 type (6,11,16,18,31,33,45,52,58)",1,E2E type HPV
-E038,Khoảng cách mũi JE thứ 1 và 2?,lich_tiem,,"1-2 tuần (tùy loại vaccine)",1,E2E JE interval
-E039,Phụ nữ cho con bú tiêm được vaccine không?,chong_chi_dinh,,"Hầu hết được; thận trọng với một số vaccine sống",1,E2E cho bú
-E040,Xử trí sưng đỏ tại chỗ tiêm?,tac_dung_phu,,"Chườm mát, không bôi thuốc lạ, theo dõi",1,E2E xử trí tại chỗ
-E041,Trẻ 12 tháng tiêm những vaccine nào?,lich_tiem,,"Có thể JE, thủy đậu, PCV (dịch vụ),...",1,E2E 12 tháng
-E042,Ai thuộc nhóm nguy cơ cần tiêm cúm?,chi_dinh,,"Thai phụ, người già, bệnh mạn tính, trẻ nhỏ...",1,E2E cúm nguy cơ
-E043,Liều BCG cho trẻ sơ sinh?,lieu_cach,bcg-hdsd-001,"0.05 ml hoặc theo HDSD",1,E2E BCG sơ sinh
-E044,Tin đồn vaccine gây tự kỷ có đúng không?,tac_dung_phu,,"Không có bằng chứng khoa học; đã được bác bỏ",1,E2E tin đồn
-E045,Thông tư 10/2024 có hiệu lực từ khi nào?,thong_tin_chung,tcmr-001,"01/8/2024, thay TT 38/2017",1,E2E hiệu lực
-E046,Trẻ 7 tuổi nhắc vaccine gì?,lich_tiem,,"Bạch hầu giảm liều + uốn ván",1,E2E 7 tuổi
-E047,Tạm hoãn tiêm khi nào ở cơ sở ngoài bệnh viện?,chong_chi_dinh,,"Suy chức năng cơ quan, bệnh cấp tính nặng, sốt cao...",1,E2E tạm hoãn
-E048,Shingrix pha như thế nào?,lieu_cach,,"Pha bột với dung môi đi kèm theo hướng dẫn",1,E2E pha Shingrix
-E049,Sau tiêm MMR có thể sưng hạch không?,tac_dung_phu,,"Có thể gặp, thường tự hết",1,E2E AE MMR
-E050,Tại sao cần khám sàng lọc trước tiêm?,thong_tin_chung,,"Phát hiện chống chỉ định / tạm hoãn, đảm bảo an toàn",1,E2E sàng lọc lý do
-E051,Lịch tiêm bù cho trẻ chưa đủ mũi?,lich_tiem,,"Tiêm bù càng sớm càng tốt, không cần tiêm lại từ đầu nếu đã có một số mũi",1,E2E tiêm bù
-E052,Nam giới có tiêm HPV được không?,chi_dinh,,"Được, khuyến cáo cả nam",1,E2E HPV nam
-E053,Vị trí tiêm tốt nhất cho trẻ dưới 1 tuổi?,lieu_cach,,"Mặt trước bên đùi (cơ vastus lateralis)",1,E2E vị trí
-E054,Phản ứng phản vệ xử trí ban đầu?,tac_dung_phu,,"Đặt nằm, gọi cấp cứu, tiêm adrenaline nếu có chỉ định",1,E2E phản vệ
-E055,Vaccine bảo quản ở nhiệt độ nào?,thong_tin_chung,,"Thường +2 đến +8°C (chuỗi lạnh)",1,E2E chuỗi lạnh
-E056,Trẻ đã tiêm đủ TCMR còn cần tiêm thêm gì?,thong_tin_chung,,"Có thể bổ sung PCV, thủy đậu, HPV, cúm, zona (khi đủ tuổi)...",1,E2E bổ sung
-E057,Conflict giữa HDSD Varivax và WHO về số liều?,thong_tin_chung,var-hdsd-002,"HDSD VN 1 liều <13 tuổi; WHO 2 liều → nêu rõ và để bác sĩ quyết định",1,E2E conflict handling
-E058,Bé 4 tháng tiêm những mũi nào?,lich_tiem,,"Tiếp nối lịch 2 tháng: mũi 2 của các vaccine phối hợp",1,E2E 4 tháng
-E059,Người đang hóa trị tiêm vaccine được không?,chong_chi_dinh,,"Hạn chế vaccine sống; vaccine bất hoạt cân nhắc theo bác sĩ",1,E2E hóa trị
-E060,Tờ HDSD có giá trị như thế nào khi tư vấn?,thong_tin_chung,,"Là nguồn tier C quan trọng về liều/C/I sản phẩm cụ thể; ưu tiên tier A khi conflict",1,E2E tier nguồn
-E061,Giá một mũi Gardasil 9 bao nhiêu?,out_of_scope,, "Không có trong knowledge → trả lời không có thông tin / hướng dẫn liên hệ cơ sở",0,No-answer giá
-E062,Trung tâm nào gần tôi nhất để tiêm?,out_of_scope,, "Ngoài phạm vi chatbot kiến thức",0,No-answer địa điểm
-E063,Tôi muốn đặt lịch tiêm 8h sáng mai,out_of_scope,, "Chức năng đặt lịch thuộc hệ thống khác",0,No-answer booking
-E064,Bảo hiểm chi trả vaccine dịch vụ thế nào?,out_of_scope,, "Không có trong KB hiện tại",0,No-answer BHYT
-E065,Vaccine có giúp trẻ cao hơn không?,out_of_scope,, "Không liên quan / không có bằng chứng",0,No-answer
-E066,Cho chó mèo tiêm vaccine ở trung tâm được không?,out_of_scope,, "Ngoài phạm vi",0,No-answer
-E067,Cách đăng ký tài khoản app VaxCare?,out_of_scope,, "Hướng dẫn kỹ thuật app",0,No-answer
-E068,Tôi bị đau đầu sau xem phim có liên quan vaccine tuần trước không?,out_of_scope,, "Không đủ căn cứ / ngoài KB",0,No-answer
-E069,Vaccine nào bao bì đẹp nhất?,out_of_scope,, "Không liên quan chuyên môn",0,No-answer
-E070,Có ship vaccine tận nhà không?,out_of_scope,, "Ngoài phạm vi",0,No-answer
+id,question,expected_intent,has_answer,expected_answer_key_points
+E001,Vaccine BCG phòng bệnh gì?,faq_vaccine,1,Phòng lao; nêu nguồn
+E002,Ai nên tiêm HPV?,faq_vaccine,1,9-14 tuổi ưu tiên; cả nam nữ
+E003,Có chống chỉ định gì khi tiêm Varivax?,faq_vaccine,1,"Dị ứng, suy giảm miễn dịch, thai kỳ..."
+E004,Lịch tiêm cho trẻ 2 tháng tuổi,schedule_advice,1,DTP/Hib/IPV/HepB theo TCMR
+E005,Bé 9 tháng tiêm những gì,schedule_advice,1,Sởi/MMR; IPV mũi 2
+E006,Người 55 tuổi tiêm zona mấy mũi,schedule_advice,1,Shingrix 2 mũi cách 2-6 tháng
+E007,Sơ sinh tiêm BCG và viêm gan B khi nào,schedule_advice,1,HepB 24h; BCG trong 1 tháng
+E008,Xem lịch sử tiêm của tôi,history_lookup,1,Cần đăng nhập / mở history
+E009,Tôi đã tiêm HPV mũi 1 chưa,history_lookup,1,Tra hồ sơ
+E010,Đặt lịch tiêm HPV,vaxcare_lookup,1,Action OPEN_BOOKING
+E011,Tìm cơ sở tiêm gần đây,vaxcare_lookup,1,Action OPEN_FACILITY/BOOKING
+E012,Xin chào,chitchat,1,Chào lại ngắn
+E013,Cảm ơn bạn,chitchat,1,Đáp lịch sự
+E014,Tôi bị đau ngực khó thở phải làm sao,out_of_scope,0,Refusal + hướng dẫn cấp cứu
+E015,Uống thuốc gì để hết sốt sau tiêm,out_of_scope,0,Refusal không kê đơn
+E016,Phác đồ tiêm HPV như thế nào?,faq_vaccine,1,2 hoặc 3 liều tùy tuổi
+E017,Lịch TCMR đầy đủ dưới 1 tuổi,schedule_advice,1,Liệt kê mốc 0-9 tháng
+E018,Mở trang chi tiết vaccine COVID-19,vaxcare_lookup,1,OPEN_VACCINE
+E019,Tạm biệt,chitchat,1,Chào tạm biệt
+E020,Cấp cứu con tôi co giật,out_of_scope,0,Refusal khẩn cấp
+E021,Khoảng cách 2 mũi Prevenar,schedule_advice,1,Theo lịch PCV
+E022,Tác dụng không mong muốn của BCG?,faq_vaccine,1,Sẩn loét sẹo bình thường
+E023,Tôi quên đã tiêm bao nhiêu mũi viêm gan B,history_lookup,1,History
+E024,Hướng dẫn đặt lịch tiêm,vaxcare_lookup,1,Booking
+E025,Trẻ 18 tháng nhắc những mũi nào,schedule_advice,1,DTP nhắc + MMR
+E026,Chống chỉ định tiêm khi sốt cao,faq_vaccine,1,Tạm hoãn >38.5
+E027,Hello VaxCare,chitchat,1,Chitchat
+E028,Kê đơn kháng sinh giúp tôi,out_of_scope,0,Refusal
+E029,Lịch Shingrix 2 mũi,schedule_advice,1,≥50 tuổi 2 mũi
+E030,Công dụng của vắc xin DTaP/Tdap là gì?,faq_vaccine,1,Bạch hầu ho gà uốn ván
