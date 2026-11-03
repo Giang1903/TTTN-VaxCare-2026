@@ -37,6 +37,6 @@ class Settings(BaseSettings):
     retrieval_top_k: int = 5
     retrieval_min_score: float = 0.35
     intent_min_confidence: float = 0.45
-
+    chat_timeout_sec: float = 30.0
 
 settings = Settings()

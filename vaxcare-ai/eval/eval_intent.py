@@ -1,9 +1,3 @@
-"""Đánh giá intent classifier: accuracy, F1, confusion matrix.
-
-Chạy (từ vaxcare-ai):
-  python -m eval.eval_intent
-"""
-
 from __future__ import annotations
 
 import json
@@ -27,13 +21,15 @@ from app.chatbot.intent.classifier import IntentClassifier
 from app.chatbot.intent.labels import INTENT_LABELS
 
 MODEL_PATH = ROOT / "models" / "intent_clf.joblib"
-TEST_PATH = ROOT / "intent_data" / "test.csv"
+_ALIGNED = ROOT / "knowledge" / "testsets" / "testset_v1_intents.csv"
+_LEGACY = ROOT / "intent_data" / "test.csv"
+TEST_PATH = _ALIGNED if _ALIGNED.exists() else _LEGACY
 REPORT_DIR = ROOT / "eval" / "reports"
 
 
 def main() -> None:
     if not MODEL_PATH.exists():
-        print("Chưa có model intent — hãy train (notebook train_intent) rồi chạy lại.")
+        print("Chưa có model intent — hãy train rồi chạy lại.")
         sys.exit(1)
     if not TEST_PATH.exists():
         print("Không thấy intent_data/test.csv")
@@ -41,10 +37,12 @@ def main() -> None:
 
     clf = IntentClassifier.load(MODEL_PATH)
     df = pd.read_csv(TEST_PATH)
-    y_true = df["label"].astype(str).tolist()
+    label_col = "intent" if "intent" in df.columns else "label"
+    text_col = "text" if "text" in df.columns else "question"
+    y_true = df[label_col].astype(str).tolist()
     y_pred = []
     confs = []
-    for t in df["text"].astype(str):
+    for t in df[text_col].astype(str):
         lab, conf = clf.predict(t)
         y_pred.append(lab)
         confs.append(conf)
