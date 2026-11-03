@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>ChatWidget Mock</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 480px; margin: 24px auto; }
+    #log { border: 1px solid #ddd; height: 320px; overflow: auto; padding: 8px; background: #fafafa; }
+    .u { color: #1565c0; } .b { color: #333; }
+    input { width: 70%; padding: 8px; } button { padding: 8px 12px; }
+    .meta { font-size: 12px; color: #666; }
+  </style>
+</head>
+<body>
+  <h1>ChatWidget Mock</h1>
+  <p class="meta"></p>
+  <div id="log"></div>
+  <p>
+    <input id="msg" placeholder="Nhập câu hỏi..." />
+    <button id="send">Gửi</button>
+  </p>
+  <script>
+    const API_BASE = "http://localhost:8000";
+    const API_KEY = ""; 
+    const log = document.getElementById("log");
+    function line(cls, text) {
+      const d = document.createElement("div");
+      d.className = cls;
+      d.textContent = text;
+      log.appendChild(d);
+      log.scrollTop = log.scrollHeight;
+    }
+    document.getElementById("send").onclick = async () => {
+      const message = document.getElementById("msg").value.trim();
+      if (!message) return;
+      line("u", "Bạn: " + message);
+      document.getElementById("msg").value = "";
+      try {
+        const headers = { "Content-Type": "application/json" };
+        if (API_KEY) headers["X-API-Key"] = API_KEY;
+        const res = await fetch(API_BASE + "/api/v1/chatbot/chat", {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ message }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          line("b", "Lỗi HTTP " + res.status + ": " + JSON.stringify(data));
+          return;
+        }
+        line("b", "Bot: " + (data.reply || ""));
+        line("meta", "intent=" + data.intent + " conf=" + data.intent_confidence + " safe=" + data.safe_mode);
+        if (data.actions && data.actions.length)
+          line("meta", "actions: " + data.actions.map(a => a.type + (a.path ? "@"+a.path : "")).join(", "));
+      } catch (e) {
+        line("b", "Network/mock error: " + e.message);
+      }
+    };
+  </script>
+</body>
+</html>

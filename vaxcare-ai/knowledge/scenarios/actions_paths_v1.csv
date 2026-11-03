@@ -1,0 +1,9 @@
+action_type,label_vi,path,vaccine_id,facility_id,when_to_use
+OPEN_VACCINE,Xem chi tiết vaccine,/vaccines/{vaccine_id},{id},,faq khi nêu 1 vaccine
+OPEN_VACCINE,Danh sách vaccine,/vaccines,,,vaxcare_lookup
+OPEN_FACILITY,Tìm cơ sở tiêm,/facilities,,,vaxcare_lookup khu vực
+OPEN_FACILITY,Chi tiết cơ sở,/facilities/{facility_id},,{id},đã chọn cơ sở
+OPEN_BOOKING,Đặt lịch tiêm,/booking,,,đặt lịch
+OPEN_BOOKING,Đặt lịch theo vaccine,/booking?vaccine_id={vaccine_id},{id},,có vaccine_id
+OPEN_HISTORY,Xem lịch sử tiêm,/history,,,history_lookup
+NONE,(ẩn nút),,,,chitchat/oos/thiếu căn cứ

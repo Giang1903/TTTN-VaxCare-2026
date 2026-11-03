@@ -1,0 +1,8 @@
+{
+  "profiles": [
+    {"profile_id": "P_empty_20y", "label": "20 tuổi hồ sơ trống", "age_years": 20, "age_months": 240, "history": []},
+    {"profile_id": "P_child_9m_partial", "label": "9 tháng thiếu sởi/IPV2", "age_years": 0, "age_months": 9, "history": [{"vaccine_id": 1, "dose": 1}, {"vaccine_id": 2, "dose": 1}, {"vaccine_id": 2, "dose": 2}, {"vaccine_id": 3, "dose": 1}, {"vaccine_id": 3, "dose": 2}, {"vaccine_id": 4, "dose": 1}]},
+    {"profile_id": "P_hpv_dose1", "label": "12 tuổi HPV mũi 1", "age_years": 12, "age_months": 144, "history": [{"vaccine_id": 11, "dose": 1, "date": "2026-05-01"}]},
+    {"profile_id": "P_adult_55_zoster", "label": "55 tuổi chưa zona", "age_years": 55, "age_months": 660, "history": [{"vaccine_id": 10, "dose": 1, "date": "2025-10-01"}]}
+  ]
+}
