@@ -1,9 +1,3 @@
-"""BGE-M3 embedder – mã hóa câu hỏi / chunk thành vector.
-
-Ưu tiên FlagEmbedding (BAAI/bge-m3). Fallback sentence-transformers.
-Nếu không cài được model nặng, dùng FakeEmbedder (TF-IDF) chỉ để dev offline.
-"""
-
 from __future__ import annotations
 
 import logging

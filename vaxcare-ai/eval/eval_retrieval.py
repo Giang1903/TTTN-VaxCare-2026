@@ -70,9 +70,9 @@ def main() -> None:
     except Exception as e:
         print(f"BM25 skip: {e}")
 
-    min_score = 0.15 if "tfidf" in getattr(embedder, "model_name", "") else 0.25
+    min_score = 0.15 if "tfidf" in getattr(embedder, "model_name", "") else 0.48
     retriever = Retriever(
-        embedder, store, bm25=bm25, top_k=5, min_score=min_score
+        embedder, store, bm25=bm25, top_k=5, min_score=min_score, score_margin=0.08
     )
 
     rows = load_testset(TESTSET)
@@ -106,7 +106,7 @@ def main() -> None:
 
     for q, entry in by_q.items():
         gold = entry["gold_chunks"]
-        result = retriever.retrieve(q, top_k=max(k_list), min_score=0.0)
+        result = retriever.retrieve(q, top_k=max(k_list))
         ranked_ids = [chunk_id_from_hit(h) for h in result.get("hits") or []]
         ranked_ids = [x for x in ranked_ids if x]
 

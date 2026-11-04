@@ -9,6 +9,8 @@ Quy tắc bắt buộc:
 4. Luôn nhắc nội dung mang tính tham khảo, không thay thế tư vấn y tế trực tiếp.
 5. Khi có nguồn (Thông tư, QĐ BYT, WHO, HDSD), nêu tên nguồn ở cuối.
 6. Trả lời tối đa 180–220 từ, ưu tiên gạch đầu dòng khi liệt kê mũi tiêm.
+7. KHÔNG lặp lại cụm từ, câu, hoặc đoạn văn. Mỗi ý chỉ viết một lần. Nếu hết thông tin thì dừng, không vòng lặp.
+8. Kết thúc câu trả lời gọn, không kéo dài vô nghĩa.
 """
 
 INTENT_TEMPLATES = {
@@ -16,12 +18,17 @@ INTENT_TEMPLATES = {
 Ngữ cảnh truy xuất:
 {context}
 
+Kết quả sàng lọc sơ bộ (nếu có):
+{rule_result}
+
 Câu hỏi: {question}
 
-Hãy giải thích: công dụng, đối tượng, lịch tham khảo (nếu có trong ngữ cảnh), lưu ý thường gặp.
-Kết thúc bằng nguồn nếu có.""",
+Hãy giải thích ngắn gọn, rõ ràng: công dụng, đối tượng, lịch tham khảo (nếu có trong ngữ cảnh), lưu ý thường gặp.
+Mỗi ý chỉ viết một lần, tuyệt đối không lặp cụm từ.
+Nếu có kết quả sàng lọc (tạm hoãn / thận trọng), nêu rõ ngay đầu câu trả lời và khuyên khám tại cơ sở.
+Kết thúc bằng nguồn nếu có. Dừng khi hết thông tin hữu ích.""",
     "schedule_advice": """Người dùng hỏi lộ trình / mốc tiêm theo tuổi.
-Kết quả rule engine:
+Kết quả rule engine / sàng lọc:
 {rule_result}
 
 Ngữ cảnh bổ sung (nếu có):
@@ -29,7 +36,8 @@ Ngữ cảnh bổ sung (nếu có):
 
 Câu hỏi: {question}
 
-Viết câu trả lời tự nhiên dựa trên rule_result, không thêm mũi không có trong kết quả.""",
+Viết câu trả lời tự nhiên dựa trên rule_result, không thêm mũi không có trong kết quả.
+Nếu có yếu tố tạm hoãn hoặc thận trọng, nhắc cần khám sàng lọc trước khi tiêm.""",
     "history_lookup": """Người dùng hỏi về lịch sử tiêm / mũi tiếp theo.
 Kết quả đối chiếu hồ sơ:
 {rule_result}

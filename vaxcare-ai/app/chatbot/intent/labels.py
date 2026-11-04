@@ -5,4 +5,5 @@ INTENT_LABELS = [
     "vaxcare_lookup",
     "chitchat",
     "out_of_scope",
+    "unknown",
 ]

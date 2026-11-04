@@ -63,8 +63,14 @@ def get_retriever() -> Any | None:
             bm25=bm25,
             top_k=settings.retrieval_top_k,
             min_score=settings.retrieval_min_score,
+            score_margin=getattr(settings, "retrieval_score_margin", 0.08),
         )
-        logger.info("Retriever ready (embedder=%s)", getattr(embedder, "model_name", "?"))
+        logger.info(
+            "Retriever ready (embedder=%s min_score=%s margin=%s)",
+            getattr(embedder, "model_name", "?"),
+            settings.retrieval_min_score,
+            getattr(settings, "retrieval_score_margin", 0.08),
+        )
     except Exception as e:
         logger.warning("Cannot init retriever: %s", e)
         _retriever = None
@@ -92,6 +98,18 @@ def load_all() -> dict[str, Any]:
     except Exception as e:
         logger.warning("Retriever load skipped: %s", e)
 
+    llm_ok = None
+    llm_detail = ""
+    try:
+        from app.chatbot.llm.client import get_llm_client
+
+        h = get_llm_client().health_check()
+        llm_ok = bool(h.get("ok"))
+        llm_detail = str(h.get("detail") or "")
+    except Exception as e:
+        llm_ok = False
+        llm_detail = str(e)
+
     _status = {
         "loaded": True,
         "intent_model": _intent_ready,
@@ -99,6 +117,9 @@ def load_all() -> dict[str, Any]:
         "faiss_index": settings.faiss_index_path.exists(),
         "retriever": retriever_ok,
         "llm_backend": settings.llm_backend,
+        "llm_ok": llm_ok,
+        "llm_detail": llm_detail,
+        "retrieval_min_score": settings.retrieval_min_score,
         "chatbot_enabled": settings.chatbot_enabled,
     }
     _loaded = True

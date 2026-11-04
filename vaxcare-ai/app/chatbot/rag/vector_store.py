@@ -1,5 +1,3 @@
-"""FAISS vector store: nạp index, tìm top-k, lọc theo vaccine_id."""
-
 from __future__ import annotations
 
 import json

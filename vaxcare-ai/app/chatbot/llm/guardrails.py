@@ -17,6 +17,47 @@ class GuardResult:
     warnings: list[str]
 
 
+def _collapse_repetition(text: str, max_consecutive: int = 3) -> tuple[str, bool]:
+    """
+    Phát hiện và cắt cụm từ lặp liên tiếp (n-gram 2–6 từ).
+    Trả về (text_đã_cắt, có_cắt_hay_không).
+    """
+    if not text or len(text) < 40:
+        return text, False
+
+    words = text.split()
+    if len(words) < 12:
+        return text, False
+
+    for n in range(2, 7):
+        i = 0
+        while i <= len(words) - n * max_consecutive:
+            phrase = words[i : i + n]
+            count = 1
+            j = i + n
+            while j + n <= len(words) and words[j : j + n] == phrase:
+                count += 1
+                j += n
+            if count >= max_consecutive:
+                # Giữ lại 1 lần xuất hiện + dấu "…"
+                kept = words[: i + n]
+                return " ".join(kept).rstrip(" ,.;") + "…", True
+            i += 1
+
+    # Fallback: lặp ký tự / cụm ngắn kiểu "da đầu và cổ, da đầu và cổ"
+    m = re.search(
+        r"(.{8,40}?)(?:\s*[,;]?\s*\1){3,}",
+        text,
+        flags=re.DOTALL,
+    )
+    if m:
+        start = m.start()
+        cleaned = text[: start + len(m.group(1))].rstrip(" ,.;") + "…"
+        return cleaned, True
+
+    return text, False
+
+
 def enforce_guardrails(
     text: str,
     require_source_hint: bool = False,
@@ -34,6 +75,11 @@ def enforce_guardrails(
             ),
             warnings=["empty_output"],
         )
+
+    # Chống vòng lặp generation (model nhỏ dễ bị)
+    out, was_collapsed = _collapse_repetition(out)
+    if was_collapsed:
+        warnings.append("collapsed_repetition")
 
     for p in SUSPICIOUS_NUMBER_PATTERNS:
         if re.search(p, out, re.I):

@@ -6,6 +6,10 @@ from app.chatbot.entities import EntityExtractor
 from app.chatbot.llm.client import get_llm_client
 from app.chatbot.llm.guardrails import enforce_guardrails
 from app.chatbot.llm.prompts import build_messages
+from app.chatbot.rules.eligibility import (
+    check_eligibility_from_text,
+    format_eligibility_text,
+)
 from app.chatbot.rules.schedule_engine import advise_schedule, format_schedule_text
 from app.schemas.chat import Action, ChatResponse, Source
 
@@ -26,12 +30,27 @@ def handle_schedule_advice(
     sources: list[Source] = []
     actions: list[Action] = []
 
+    eligibility = check_eligibility_from_text(message)
+    eligibility_block = ""
+    if eligibility.status in ("defer_suggested", "caution"):
+        eligibility_block = format_eligibility_text(eligibility)
+        sources.append(
+            Source(
+                doc_id="qd-1575-byt",
+                title="Quyết định 1575/QĐ-BYT – Hướng dẫn khám sàng lọc trước tiêm",
+                issuer="Bộ Y tế",
+                tier="A",
+            )
+        )
+
     if age_months is None and age_years is None:
         reply = (
             "Để gợi ý mốc tiêm, bạn cho mình biết độ tuổi (ví dụ «20 tuổi» hoặc «14 tháng») "
             "và nếu có, các mũi đã tiêm. "
             "Mình sẽ đối chiếu với lịch tham khảo (Thông tư 10/2024 và khuyến cáo liên quan)."
         )
+        if eligibility_block:
+            reply = eligibility_block + "\n\n" + reply
         sources.append(
             Source(
                 doc_id="tt10-2024",
@@ -46,7 +65,12 @@ def handle_schedule_advice(
             intent_confidence=conf,
             sources=sources,
             session_id=session_id,
-            meta={"handler": "schedule_advice", "need_age": True},
+            safe_mode=eligibility.needs_clinician,
+            meta={
+                "handler": "schedule_advice",
+                "need_age": True,
+                "eligibility": eligibility.to_dict(),
+            },
         )
 
     completed = set()
@@ -63,6 +87,13 @@ def handle_schedule_advice(
         completed=completed or None,
     )
     rule_text = format_schedule_text(result)
+    if eligibility_block:
+        rule_text = (
+            "Kết quả sàng lọc sơ bộ:\n"
+            + eligibility_block
+            + "\n\nKết quả rule engine:\n"
+            + rule_text
+        )
 
     messages = build_messages(
         "schedule_advice",
@@ -70,10 +101,13 @@ def handle_schedule_advice(
         rule_result=rule_text,
     )
     raw = get_llm_client().generate(messages)
+    known_sources = list(result.sources or [])
+    if eligibility_block:
+        known_sources.append("Quyết định 1575/QĐ-BYT")
     guarded = enforce_guardrails(
         raw if raw and len(raw) > 40 else rule_text,
         require_source_hint=True,
-        known_sources=result.sources,
+        known_sources=known_sources,
     )
     reply = guarded.text
 
@@ -98,10 +132,12 @@ def handle_schedule_advice(
         sources=sources,
         actions=actions,
         session_id=session_id,
+        safe_mode=eligibility.needs_clinician,
         meta={
             "handler": "schedule_advice",
             "age_months": result.age_months,
             "n_recommendations": len(result.recommendations),
             "guard_warnings": guarded.warnings,
+            "eligibility": eligibility.to_dict(),
         },
     )

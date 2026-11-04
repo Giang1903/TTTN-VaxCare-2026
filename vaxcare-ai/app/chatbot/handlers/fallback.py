@@ -4,15 +4,26 @@ from app.schemas.chat import Action, ChatResponse, Source
 
 
 def handle_chitchat(message: str, session_id: str, conf: float) -> ChatResponse:
-    reply = (
-        "Chào bạn! Mình là trợ lý thông tin tiêm chủng VaxCare. "
-        "Bạn có thể hỏi về:\n"
-        "• Thông tin vaccine / bệnh được phòng\n"
-        "• Lộ trình tiêm theo độ tuổi\n"
-        "• Đối chiếu lịch sử tiêm trong tài khoản\n"
-        "• Tìm vaccine, cơ sở và đặt lịch\n"
-        "Bạn muốn bắt đầu từ đâu?"
-    )
+    t = (message or "").strip().lower()
+    short_fillers = {
+        "ah", "uh", "uhm", "ừ", "ừm", "ờ", "ờm", "à", "á", "ơ", "hả",
+        "ha", "ok", "oke", "okay", "vâng", "vậy", "thế", "alo", "...", "?",
+    }
+    if t in short_fillers or len(t) <= 3:
+        reply = (
+            "Mình đang lắng nghe đây. Bạn muốn hỏi về vaccine, lịch tiêm theo tuổi, "
+            "hay tra cứu trên VaxCare?"
+        )
+    else:
+        reply = (
+            "Chào bạn! Mình là trợ lý thông tin tiêm chủng VaxCare. "
+            "Bạn có thể hỏi về:\n"
+            "• Thông tin vaccine / bệnh được phòng\n"
+            "• Lộ trình tiêm theo độ tuổi\n"
+            "• Đối chiếu lịch sử tiêm trong tài khoản\n"
+            "• Tìm vaccine, cơ sở và đặt lịch\n"
+            "Bạn muốn bắt đầu từ đâu?"
+        )
     return ChatResponse(
         reply=reply,
         intent="chitchat",
@@ -62,7 +73,7 @@ def handle_unknown(message: str, session_id: str, conf: float) -> ChatResponse:
     )
     return ChatResponse(
         reply=reply,
-        intent="faq_vaccine",
+        intent="unknown",
         intent_confidence=conf,
         session_id=session_id,
         meta={"handler": "fallback"},
