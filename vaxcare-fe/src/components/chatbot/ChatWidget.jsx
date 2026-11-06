@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import {
   QUICK_PROMPTS,
   getOrCreateSessionId,
@@ -52,6 +53,8 @@ const WELCOME = {
 
 export default function ChatWidget() {
   const navigate = useNavigate();
+  const { role } = useAuth();
+
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([WELCOME]);
@@ -61,6 +64,7 @@ export default function ChatWidget() {
   const listRef = useRef(null);
   const inputRef = useRef(null);
   const sessionIdRef = useRef(getOrCreateSessionId());
+  const hidden = role === "MEDICAL_STAFF" || role === "ADMIN";
 
   useEffect(() => {
     if (!open) return;
@@ -80,6 +84,12 @@ export default function ChatWidget() {
     const t = setTimeout(() => setShowTip(false), 8000);
     return () => clearTimeout(t);
   }, []);
+
+  // Đóng panel nếu role đổi sang staff/admin giữa phiên
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (hidden) setOpen(false);
+  }, [hidden]);
 
   const appendBot = useCallback((payload) => {
     setMessages((prev) => [
@@ -174,6 +184,8 @@ export default function ChatWidget() {
       handleSend();
     }
   };
+
+  if (hidden) return null;
 
   const onlyWelcome = messages.length === 1 && messages[0].id === "welcome";
 
