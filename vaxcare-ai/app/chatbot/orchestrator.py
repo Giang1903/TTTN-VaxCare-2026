@@ -56,35 +56,54 @@ def _guess_intent_regex(text: str) -> tuple[str, float]:
         return "out_of_scope", 0.9
 
     if re.search(
-        r"\b(chào|hello|hi|hey|xin chào|cảm ơn|thanks|thank you|"
-        r"tạm biệt|bye|goodbye|bạn khỏe không)\b",
+        r"^(chào|hello|hi|hey|xin chào|cảm ơn|thanks|thank you|"
+        r"tạm biệt|bye|goodbye|bạn khỏe không)[\s!.?]*$",
         t,
-    ) or t in {"ok", "oke", "được rồi", "thanks", "bye"}:
+    ) or t in {"ok", "oke", "được rồi", "thanks", "bye", "chào bạn"}:
         return "chitchat", 0.92
 
     if re.search(
+        r"((có|còn)\s*(vaccine|vaccin|vắc\s*xin|vắc-xin)|"
+        r"bên bạn có|bên mình có|cửa hàng có|đang có.*vaccine|"
+        r"vaccine.*không\s*\?|vaccin.*không)",
+        t,
+    ) or re.search(
         r"(đặt lịch|mở trang|chi tiết vaccine|tìm cơ sở|cơ sở tiêm|"
         r"phòng khám|đăng ký tiêm|tra cứu cơ sở|hướng dẫn đặt lịch|"
         r"gần đây|ở đâu tiêm)",
         t,
     ):
-        return "vaxcare_lookup", 0.88
+        return "vaxcare_lookup", 0.90
 
+    # Hồ sơ / lịch hẹn cá nhân trên hệ thống (ưu tiên cao, trước schedule_advice)
     if re.search(
-        r"(lịch sử tiêm|hồ sơ tiêm|đã tiêm.*mũi|tiêm mũi \d|"
-        r"quên đã tiêm|xem lịch sử|dữ liệu tiêm đã ghi)",
+        r"(lịch sử tiêm|hồ sơ tiêm|đã tiêm|tiêm những|tiêm gì rồi|tiêm mũi \d|"
+        r"quên đã tiêm|xem lịch sử|dữ liệu tiêm đã ghi|"
+        r"lịch tiêm của (tôi|mình|em|bé)|lịch hẹn của (tôi|mình)|"
+        r"hồ sơ của (tôi|mình)|đối chiếu hồ sơ|"
+        r"sắp tới|lịch hẹn|lịch tiêm sắp|mũi tiêm sắp|các mũi.*sắp|"
+        r"kiểm tra (lịch|các mũi|mũi tiêm)|có lịch tiêm (gì|không)|"
+        r"appointment)",
         t,
     ):
-        return "history_lookup", 0.85
+        return "history_lookup", 0.95
+
+    if re.search(
+        r"(nguyên\s*nhân|lý\s*do\s*(mắc|bệnh)|đường\s*lây|triệu\s*chứng|"
+        r"vì\s*sao\s*(mắc|bị|nhiễm))",
+        t,
+    ):
+        return "faq_vaccine", 0.88
 
     if re.search(
         r"(phòng bệnh gì|công dụng|tác dụng|chống chỉ định|chỉ định|"
         r"ai nên tiêm|đối tượng|liều lượng|tiêm đường nào|bao nhiêu ml|"
         r"tác dụng phụ|tác dụng không mong muốn|có an toàn|"
-        r"sống hay bất hoạt|type hpv|phòng type)",
+        r"sống hay bất hoạt|type hpv|phòng type|"
+        r"phác\s*đồ|bao nhiêu\s*mũi|mấy\s*mũi)",
         t,
     ):
-        return "faq_vaccine", 0.82
+        return "faq_vaccine", 0.85
 
     if re.search(
         r"(\d+\s*tuổi|\d+\s*tháng|sơ sinh|bao nhiêu tuổi|lộ trình|"
@@ -97,11 +116,12 @@ def _guess_intent_regex(text: str) -> tuple[str, float]:
         return "schedule_advice", 0.8
 
     if re.search(
-        r"(vaccine|vắc xin|vắc-xin|bcg|hpv|mmr|sởi|cúm|shingrix|zona|"
-        r"prevenar|varivax|viêm gan|uốn ván)",
+        r"(vaccine|vaccin|vắc xin|vắc-xin|bcg|bbg|hpv|mmr|sởi|cúm|"
+        r"shingrix|zona|prevenar|varivax|viêm gan|uốn ván|dại|rabies|"
+        r"covid|sars-cov|ncov)",
         t,
     ):
-        return "faq_vaccine", 0.65
+        return "faq_vaccine", 0.70
 
     return "faq_vaccine", 0.4
 
@@ -114,11 +134,13 @@ def _guess_intent(text: str) -> tuple[str, float]:
     clf = _get_classifier()
     if clf is not None:
         label, conf = clf.predict(text)
+        if label == "chitchat" and reg_label != "chitchat" and reg_conf >= 0.65:
+            return reg_label, max(reg_conf, 0.75)
         if not clf.is_confident(conf):
             if reg_conf >= conf:
                 return reg_label, reg_conf
             return label, conf
-        if reg_conf >= 0.8 and label != reg_label and conf < 0.7:
+        if reg_conf >= 0.8 and label != reg_label and conf < 0.75:
             return reg_label, reg_conf
         return label, conf
     return reg_label, reg_conf

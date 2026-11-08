@@ -1,15 +1,20 @@
 import { apiClient } from "./apiClient";
 
 const SESSION_KEY = "vx_chatbot_session_id";
+const SESSION_OWNER_KEY = "vx_chatbot_session_owner";
+const MESSAGES_PREFIX = "vx_chatbot_messages_";
 
-/** Lấy hoặc tạo session_id giữ ngữ cảnh trong phiên trình duyệt */
+function newSessionId() {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return `sess_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
 export function getOrCreateSessionId() {
   let id = localStorage.getItem(SESSION_KEY);
   if (!id) {
-    id =
-      typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `sess_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+    id = newSessionId();
     localStorage.setItem(SESSION_KEY, id);
   }
   return id;
@@ -19,9 +24,54 @@ export function clearChatSession() {
   localStorage.removeItem(SESSION_KEY);
 }
 
+export function getChatOwnerKey(user) {
+  if (!user) return "guest";
+  const id = user.accountId ?? user.userId ?? user.id ?? user.email;
+  return id != null ? `acc_${id}` : "guest";
+}
+
+export function ensureSessionOwner(ownerKey) {
+  const key = ownerKey || "guest";
+  const prev = localStorage.getItem(SESSION_OWNER_KEY);
+  if (prev === key && localStorage.getItem(SESSION_KEY)) {
+    return { reset: false, sessionId: getOrCreateSessionId(), ownerKey: key };
+  }
+  clearChatSession();
+  localStorage.setItem(SESSION_OWNER_KEY, key);
+  const sessionId = newSessionId();
+  localStorage.setItem(SESSION_KEY, sessionId);
+  return { reset: true, sessionId, ownerKey: key };
+}
+
+export function loadStoredMessages(ownerKey, welcome) {
+  try {
+    const raw = localStorage.getItem(MESSAGES_PREFIX + (ownerKey || "guest"));
+    if (!raw) return [welcome];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) return [welcome];
+    return parsed;
+  } catch {
+    return [welcome];
+  }
+}
+
+export function saveStoredMessages(ownerKey, messages) {
+  try {
+    localStorage.setItem(
+      MESSAGES_PREFIX + (ownerKey || "guest"),
+      JSON.stringify(messages.slice(-80)) // giới hạn 80 tin
+    );
+  } catch {
+    // quota / private mode
+  }
+}
+
+export function clearStoredMessages(ownerKey) {
+  localStorage.removeItem(MESSAGES_PREFIX + (ownerKey || "guest"));
+}
+
 export async function sendChatMessage(message, { sessionId } = {}) {
   const sid = sessionId || getOrCreateSessionId();
-  // Chỉ gửi Bearer khi đã có token — guest vẫn chat được nếu BE cho phép
   const hasToken = Boolean(apiClient.getAccessToken());
   const data = await apiClient.request("/chatbot/chat", {
     method: "POST",
@@ -32,10 +82,8 @@ export async function sendChatMessage(message, { sessionId } = {}) {
     auth: hasToken,
   });
 
-  // Đồng bộ session từ server nếu có
   if (data?.session_id || data?.sessionId) {
-    const serverSid = data.session_id || data.sessionId;
-    localStorage.setItem(SESSION_KEY, serverSid);
+    localStorage.setItem(SESSION_KEY, data.session_id || data.sessionId);
   }
 
   return normalizeChatResponse(data);
@@ -67,10 +115,9 @@ function normalizeChatResponse(data) {
   };
 }
 
-/** Gợi ý câu hỏi nhanh — giọng gần gũi, dễ bấm */
 export const QUICK_PROMPTS = [
-  "Tôi 20 tuổi nên tiêm gì?",
+  "Tôi đã tiêm những vaccine gì?",
+  "Lịch tiêm sắp tới của tôi?",
   "HPV phòng bệnh gì?",
-  "Lịch tiêm bé 12 tháng?",
-  "Tiêm HPV mũi 1 xong rồi sao?",
+  "Tôi 20 tuổi nên tiêm gì?",
 ];

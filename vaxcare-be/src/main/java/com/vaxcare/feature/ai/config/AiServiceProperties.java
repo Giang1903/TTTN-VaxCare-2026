@@ -13,7 +13,9 @@ public class AiServiceProperties {
     private String baseUrl = "http://localhost:8000";
     private int connectTimeoutMs = 3000;
     private int responseTimeoutMs = 5000;
+    private int chatbotResponseTimeoutMs = 45000;
     private int forecastHistoryDays = 180;
     private int forecastHorizonDays = 14;
     private String forecastCron = "0 0 1 * * *";
+    private String internalApiKey = "";
 }

@@ -4,8 +4,10 @@ import com.vaxcare.feature.ai.client.dto.DispatchRequestDto;
 import com.vaxcare.feature.ai.client.dto.DispatchResponseDto;
 import com.vaxcare.feature.ai.client.dto.ForecastRequestDto;
 import com.vaxcare.feature.ai.client.dto.ForecastResponseDto;
-import lombok.RequiredArgsConstructor;
+import com.vaxcare.feature.chatbot.dto.AiChatRequestDto;
+import com.vaxcare.feature.chatbot.dto.AiChatResponseDto;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -13,21 +15,29 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class AiServiceClient {
 
     private static final long CIRCUIT_COOLDOWN_MS = 20_000L;
+    private static final long CHAT_CIRCUIT_COOLDOWN_MS = 15_000L;
 
     private final WebClient aiServiceWebClient;
+    private final WebClient aiChatbotWebClient;
 
     private final AtomicLong dispatchCircuitOpenUntilEpochMs = new AtomicLong(0L);
     private final AtomicLong forecastCircuitOpenUntilEpochMs = new AtomicLong(0L);
+    private final AtomicLong chatCircuitOpenUntilEpochMs = new AtomicLong(0L);
+
+    public AiServiceClient(
+            @Qualifier("aiServiceWebClient") WebClient aiServiceWebClient,
+            @Qualifier("aiChatbotWebClient") WebClient aiChatbotWebClient) {
+        this.aiServiceWebClient = aiServiceWebClient;
+        this.aiChatbotWebClient = aiChatbotWebClient;
+    }
 
     public Optional<DispatchResponseDto> getDispatchPrediction(DispatchRequestDto request) {
         if (isCircuitOpen(dispatchCircuitOpenUntilEpochMs)) {
-            log.debug("[AI Service] Mạch AI 1 (/dispatch) đang mở (AI service gần đây đang lỗi/treo) "
-                    + "-> bỏ qua gọi AI, dùng slot gốc không có gợi ý ngay lập tức.");
+            log.debug("[AI Service] Mạch AI 1 (/dispatch) đang mở -> bỏ qua gọi AI.");
             return Optional.empty();
         }
         try {
@@ -40,18 +50,15 @@ public class AiServiceClient {
             dispatchCircuitOpenUntilEpochMs.set(0L);
             return Optional.ofNullable(response);
         } catch (Exception ex) {
-            log.warn("[AI Service] Gọi AI 1 (/dispatch) thất bại cho facility {} ngày {}: {}",
-                    request.getFacilityId(), request.getPredictionDate(), ex.getMessage());
-            openCircuit(dispatchCircuitOpenUntilEpochMs);
+            log.warn("[AI Service] Gọi AI 1 (/dispatch) thất bại: {}", ex.getMessage());
+            openCircuit(dispatchCircuitOpenUntilEpochMs, CIRCUIT_COOLDOWN_MS);
             return Optional.empty();
         }
     }
 
     public Optional<ForecastResponseDto> getForecast(ForecastRequestDto request) {
         if (isCircuitOpen(forecastCircuitOpenUntilEpochMs)) {
-            log.debug("[AI Service] Mạch AI 2 (/forecast) đang mở (AI service gần đây đang lỗi/treo) "
-                    + "-> bỏ qua gọi AI cho vaccine {} - facility {}.",
-                    request.getVaccineId(), request.getFacilityId());
+            log.debug("[AI Service] Mạch AI 2 (/forecast) đang mở -> bỏ qua gọi AI.");
             return Optional.empty();
         }
         try {
@@ -64,10 +71,35 @@ public class AiServiceClient {
             forecastCircuitOpenUntilEpochMs.set(0L);
             return Optional.ofNullable(response);
         } catch (Exception ex) {
-            log.warn("[AI Service] Gọi AI 2 (/forecast) thất bại cho vaccine {} - facility {}: {}",
-                    request.getVaccineId(), request.getFacilityId(), ex.getMessage());
-            openCircuit(forecastCircuitOpenUntilEpochMs);
+            log.warn("[AI Service] Gọi AI 2 (/forecast) thất bại: {}", ex.getMessage());
+            openCircuit(forecastCircuitOpenUntilEpochMs, CIRCUIT_COOLDOWN_MS);
             return Optional.empty();
+        }
+    }
+
+    public AiChatResponseDto chat(AiChatRequestDto request) {
+        if (isCircuitOpen(chatCircuitOpenUntilEpochMs)) {
+            throw new IllegalStateException("Chatbot AI circuit open — service temporarily unavailable");
+        }
+        try {
+            AiChatResponseDto response = aiChatbotWebClient.post()
+                    .uri("/api/v1/chatbot/chat")
+                    .bodyValue(request)
+                    .retrieve()
+                    .bodyToMono(AiChatResponseDto.class)
+                    .block();
+            chatCircuitOpenUntilEpochMs.set(0L);
+            if (response == null) {
+                throw new IllegalStateException("Empty response from AI chatbot");
+            }
+            return response;
+        } catch (IllegalStateException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            log.warn("[AI Service] Gọi chatbot thất bại session={}: {}",
+                    request.getSessionId(), ex.getMessage());
+            openCircuit(chatCircuitOpenUntilEpochMs, CHAT_CIRCUIT_COOLDOWN_MS);
+            throw new IllegalStateException("AI chatbot call failed: " + ex.getMessage(), ex);
         }
     }
 
@@ -75,7 +107,7 @@ public class AiServiceClient {
         return System.currentTimeMillis() < circuitOpenUntilEpochMs.get();
     }
 
-    private void openCircuit(AtomicLong circuitOpenUntilEpochMs) {
-        circuitOpenUntilEpochMs.set(System.currentTimeMillis() + CIRCUIT_COOLDOWN_MS);
+    private void openCircuit(AtomicLong circuitOpenUntilEpochMs, long cooldownMs) {
+        circuitOpenUntilEpochMs.set(System.currentTimeMillis() + cooldownMs);
     }
 }

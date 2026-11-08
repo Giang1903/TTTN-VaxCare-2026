@@ -4,6 +4,11 @@ import { useAuth } from "../../context/AuthContext";
 import {
   QUICK_PROMPTS,
   getOrCreateSessionId,
+  getChatOwnerKey,
+  ensureSessionOwner,
+  loadStoredMessages,
+  saveStoredMessages,
+  clearStoredMessages,
   sendChatMessage,
 } from "../../services/chatbotService";
 import "../../styles/chatbot.css";
@@ -53,7 +58,7 @@ const WELCOME = {
 
 export default function ChatWidget() {
   const navigate = useNavigate();
-  const { role } = useAuth();
+  const { role, user, isAuthenticated, loading: authLoading } = useAuth();
 
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -64,7 +69,38 @@ export default function ChatWidget() {
   const listRef = useRef(null);
   const inputRef = useRef(null);
   const sessionIdRef = useRef(getOrCreateSessionId());
+  const ownerKeyRef = useRef("guest");
   const hidden = role === "MEDICAL_STAFF" || role === "ADMIN";
+
+  // Gắn session + tin nhắn theo guest/account; F5 khôi phục; đổi account/logout → hội thoại mới
+  useEffect(() => {
+    if (authLoading) return;
+    const ownerKey = getChatOwnerKey(isAuthenticated ? user : null);
+    const { reset, sessionId } = ensureSessionOwner(ownerKey);
+    ownerKeyRef.current = ownerKey;
+    sessionIdRef.current = sessionId;
+    if (reset) {
+      // Đổi người dùng: xóa tin của owner mới (bắt đầu sạch) rồi hiện welcome
+      clearStoredMessages(ownerKey);
+      const welcome = { ...WELCOME, id: `welcome_${Date.now()}` };
+      setMessages([welcome]);
+      saveStoredMessages(ownerKey, [welcome]);
+      setError(null);
+      setInput("");
+      setLoading(false);
+    } else {
+      const stored = loadStoredMessages(ownerKey, { ...WELCOME, id: "welcome" });
+      setMessages(stored);
+    }
+  }, [authLoading, isAuthenticated, user]);
+
+  // Lưu tin nhắn mỗi khi đổi (cùng owner) — sống qua F5
+  useEffect(() => {
+    if (authLoading) return;
+    const ownerKey = ownerKeyRef.current;
+    if (!ownerKey) return;
+    saveStoredMessages(ownerKey, messages);
+  }, [messages, authLoading]);
 
   useEffect(() => {
     if (!open) return;

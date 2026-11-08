@@ -30,8 +30,9 @@ def get_retriever() -> Any | None:
             import json
 
             metas = json.loads(settings.chunks_meta_path.read_text(encoding="utf-8"))
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Cannot load chunks_meta: %s", e)
+
         texts = [m.get("text") or "" for m in metas] if metas else None
 
         embedder = load_embedder(
@@ -49,13 +50,15 @@ def get_retriever() -> Any | None:
             return None
 
         bm25 = None
+        bm25_ok = False
         try:
             from app.chatbot.rag.bm25 import BM25Store
 
             if texts:
                 bm25 = BM25Store(texts, metas=metas)
-        except Exception:
-            pass
+                bm25_ok = True
+        except Exception as e:
+            logger.warning("BM25 unavailable (hybrid off): %s", e)
 
         _retriever = Retriever(
             embedder=embedder,
@@ -63,13 +66,16 @@ def get_retriever() -> Any | None:
             bm25=bm25,
             top_k=settings.retrieval_top_k,
             min_score=settings.retrieval_min_score,
-            score_margin=getattr(settings, "retrieval_score_margin", 0.08),
+            score_margin=getattr(settings, "retrieval_score_margin", 0.10),
+            use_rrf=True,
         )
         logger.info(
-            "Retriever ready (embedder=%s min_score=%s margin=%s)",
+            "Retriever ready (embedder=%s bm25=%s min_score=%s margin=%s n_chunks=%s)",
             getattr(embedder, "model_name", "?"),
+            bm25_ok,
             settings.retrieval_min_score,
-            getattr(settings, "retrieval_score_margin", 0.08),
+            getattr(settings, "retrieval_score_margin", 0.10),
+            len(metas) if metas else 0,
         )
     except Exception as e:
         logger.warning("Cannot init retriever: %s", e)
@@ -120,6 +126,7 @@ def load_all() -> dict[str, Any]:
         "llm_ok": llm_ok,
         "llm_detail": llm_detail,
         "retrieval_min_score": settings.retrieval_min_score,
+        "retrieval_score_margin": getattr(settings, "retrieval_score_margin", 0.10),
         "chatbot_enabled": settings.chatbot_enabled,
     }
     _loaded = True

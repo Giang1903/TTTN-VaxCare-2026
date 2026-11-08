@@ -35,6 +35,8 @@ DEFAULT_ALIASES: dict[str, int] = {
     "covid": 12,
     "covid-19": 12,
     "covid19": 12,
+    "dại": 14,
+    "rabies": 14,
     "zona": 13,
     "shingrix": 13,
     "herpes zoster": 13,
@@ -75,7 +77,6 @@ class EntityExtractor:
             self.id_to_name[vid] = v.get("short_name") or v.get("vaccine_name")
             if short:
                 self.alias_to_id[short] = vid
-            # thêm token bệnh
             for part in re.split(r"[,/–-]", disease):
                 p = part.strip().lower()
                 if len(p) >= 3:

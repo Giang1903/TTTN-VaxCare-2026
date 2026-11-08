@@ -10,19 +10,12 @@ def handle_chitchat(message: str, session_id: str, conf: float) -> ChatResponse:
         "ha", "ok", "oke", "okay", "vâng", "vậy", "thế", "alo", "...", "?",
     }
     if t in short_fillers or len(t) <= 3:
-        reply = (
-            "Mình đang lắng nghe đây. Bạn muốn hỏi về vaccine, lịch tiêm theo tuổi, "
-            "hay tra cứu trên VaxCare?"
-        )
+        reply = "Mình đang nghe đây. Bạn muốn hỏi vaccine, lịch tiêm, hay đặt lịch?"
     else:
         reply = (
-            "Chào bạn! Mình là trợ lý thông tin tiêm chủng VaxCare. "
-            "Bạn có thể hỏi về:\n"
-            "• Thông tin vaccine / bệnh được phòng\n"
-            "• Lộ trình tiêm theo độ tuổi\n"
-            "• Đối chiếu lịch sử tiêm trong tài khoản\n"
-            "• Tìm vaccine, cơ sở và đặt lịch\n"
-            "Bạn muốn bắt đầu từ đâu?"
+            "Chào bạn, mình là trợ lý tiêm chủng VaxCare. "
+            "Bạn hỏi được về vaccine, lịch theo tuổi, lịch sử tiêm, "
+            "hoặc tìm cơ sở / đặt lịch — cứ nhắn tự nhiên nhé."
         )
     return ChatResponse(
         reply=reply,

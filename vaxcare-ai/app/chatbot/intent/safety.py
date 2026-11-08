@@ -23,6 +23,9 @@ EMERGENCY_PATTERNS = [
     r"cấp\s*cứu",
     r"tím tái",
     r"chảy máu không cầm",
+    r"ngất xỉu",
+    r"mạch nhanh.*sau tiêm",
+    r"dị ứng nặng",
 ]
 
 DIAGNOSIS_PATTERNS = [
@@ -33,14 +36,32 @@ DIAGNOSIS_PATTERNS = [
     r"uống thuốc gì",
     r"liều lượng.*mg",
     r"điều trị.*như thế nào",
+    r"bác sĩ kê",
+    r"cho tôi đơn thuốc",
 ]
 
 OUT_OF_SCOPE_PATTERNS = [
     r"giá cổ phiếu",
+    r"chứng khoán",
     r"bóng đá",
     r"thời tiết",
     r"nấu ăn",
+    r"công thức",
     r"học lập trình",
+    r"python code",
+    r"bitcoin",
+    r"crypto",
+    r"giá vàng",
+    r"ca sĩ",
+    r"bài hát",
+    r"phim chiếu",
+    r"vé máy bay",
+    r"khách sạn",
+    r"cho chó",
+    r"cho mèo",
+    r"thú cưng",
+    r"máy tính bị",
+    r"màn hình xanh",
 ]
 
 
@@ -48,7 +69,7 @@ OUT_OF_SCOPE_PATTERNS = [
 class SafetyVerdict:
     level: SafetyLevel
     reason: str = ""
-    force_intent: str | None = None  
+    force_intent: str | None = None
 
 
 def check_safety(text: str) -> SafetyVerdict:

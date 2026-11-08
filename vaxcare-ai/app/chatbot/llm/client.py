@@ -68,9 +68,11 @@ class LLMClient:
             logger.warning("Unknown LLM backend %s – fallback mock", self.backend)
             return self._mock_generate(messages)
         except Exception as e:
-            logger.error("LLM generate failed (backend=%s): %s", self.backend, e)
-            if self.backend != "mock":
-                raise
+            logger.error(
+                "LLM generate failed (backend=%s): %s – fallback mock để tránh treo/500",
+                self.backend,
+                e,
+            )
             return self._mock_generate(messages)
 
     def health_check(self) -> dict[str, Any]:

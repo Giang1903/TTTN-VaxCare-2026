@@ -219,6 +219,39 @@ CREATE TABLE `chat_messages` (
 
 -- --------------------------------------------------------
 
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `chatbot_sessions` (hội thoại chatbot AI)
+--
+
+CREATE TABLE `chatbot_sessions` (
+  `session_id` bigint NOT NULL,
+  `session_key` varchar(64) NOT NULL,
+  `account_id` bigint DEFAULT NULL,
+  `created_at` datetime(6) DEFAULT NULL,
+  `updated_at` datetime(6) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `chatbot_messages` (tin nhắn USER/BOT của chatbot AI)
+--
+
+CREATE TABLE `chatbot_messages` (
+  `message_id` bigint NOT NULL,
+  `session_id` bigint NOT NULL,
+  `role` varchar(16) NOT NULL,
+  `content` text NOT NULL,
+  `intent` varchar(64) DEFAULT NULL,
+  `intent_confidence` double DEFAULT NULL,
+  `safe_mode` bit(1) DEFAULT NULL,
+  `meta_json` text,
+  `created_at` datetime(6) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
 --
 -- Cấu trúc bảng cho bảng `payments`
 --
@@ -796,6 +829,22 @@ ALTER TABLE `chat_messages`
   ADD KEY `idx_chat_sender_recipient` (`sender_id`,`recipient_id`),
   ADD KEY `idx_chat_recipient_read` (`recipient_id`,`is_read`);
 
+
+--
+-- Chỉ mục cho bảng `chatbot_sessions`
+--
+ALTER TABLE `chatbot_sessions`
+  ADD PRIMARY KEY (`session_id`),
+  ADD UNIQUE KEY `idx_chatbot_session_key` (`session_key`),
+  ADD KEY `idx_chatbot_session_account` (`account_id`);
+
+--
+-- Chỉ mục cho bảng `chatbot_messages`
+--
+ALTER TABLE `chatbot_messages`
+  ADD PRIMARY KEY (`message_id`),
+  ADD KEY `idx_chatbot_msg_session` (`session_id`,`created_at`);
+
 --
 -- Chỉ mục cho bảng `payments`
 --
@@ -971,6 +1020,19 @@ ALTER TABLE `notifications`
 ALTER TABLE `chat_messages`
   MODIFY `message_id` bigint NOT NULL AUTO_INCREMENT;
 
+
+--
+-- AUTO_INCREMENT cho bảng `chatbot_sessions`
+--
+ALTER TABLE `chatbot_sessions`
+  MODIFY `session_id` bigint NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT cho bảng `chatbot_messages`
+--
+ALTER TABLE `chatbot_messages`
+  MODIFY `message_id` bigint NOT NULL AUTO_INCREMENT;
+
 --
 -- AUTO_INCREMENT cho bảng `payments`
 --
@@ -1121,6 +1183,19 @@ ALTER TABLE `notifications`
 ALTER TABLE `chat_messages`
   ADD CONSTRAINT `fk_chat_sender` FOREIGN KEY (`sender_id`) REFERENCES `accounts` (`account_id`),
   ADD CONSTRAINT `fk_chat_recipient` FOREIGN KEY (`recipient_id`) REFERENCES `accounts` (`account_id`);
+
+
+--
+-- Ràng buộc cho bảng `chatbot_sessions`
+--
+ALTER TABLE `chatbot_sessions`
+  ADD CONSTRAINT `fk_chatbot_session_account` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`account_id`);
+
+--
+-- Ràng buộc cho bảng `chatbot_messages`
+--
+ALTER TABLE `chatbot_messages`
+  ADD CONSTRAINT `fk_chatbot_msg_session` FOREIGN KEY (`session_id`) REFERENCES `chatbot_sessions` (`session_id`);
 
 --
 -- Ràng buộc cho bảng `payments`
