@@ -75,7 +75,6 @@ def _reply_from_records(records: list[dict[str, Any]]) -> str:
             "hoặc đặt lịch mũi mới trên hệ thống."
         )
     lines = ["Trong hồ sơ VaxCare của bạn đã ghi nhận các mũi sau:\n"]
-    # mới nhất trước nếu có ngày
     sorted_recs = sorted(
         records,
         key=lambda r: str(r.get("injection_date") or ""),
@@ -90,7 +89,6 @@ def _reply_from_records(records: list[dict[str, Any]]) -> str:
 
 
 def _reply_from_upcoming(appointments: list[dict[str, Any]]) -> str:
-    # chỉ lịch chưa hủy / chưa hoàn thành
     active = [
         a
         for a in appointments
@@ -122,6 +120,8 @@ def handle_history_lookup(
     conf: float,
     context: dict[str, Any] | None = None,
     entities: dict[str, Any] | None = None,
+    history: list | None = None,
+    **kwargs,
 ) -> ChatResponse:
     ctx = context or {}
     entities = entities or EntityExtractor().extract(message)
@@ -138,9 +138,8 @@ def handle_history_lookup(
     actions: list[Action] = [
         Action(type="OPEN_HISTORY", label="Xem lịch sử tiêm / Tra hồ sơ", path="/history")
     ]
-    sources: list[Source] = []  # trả lời từ DB hệ thống → không gắn nguồn BYT giả
+    sources: list[Source] = []  
 
-    # --- Lịch sắp tới: chỉ dùng appointment trên hệ thống ---
     if _is_upcoming_question(message):
         if not ctx.get("user_id") and not upcoming:
             reply = (
@@ -169,7 +168,6 @@ def handle_history_lookup(
             meta={"handler": "history_lookup", "mode": "upcoming", "count": len(upcoming)},
         )
 
-    # --- Đã tiêm những gì: liệt kê records, không LLM bịa ---
     if _is_completed_question(message):
         if not ctx.get("user_id") and not records:
             reply = (
@@ -196,7 +194,6 @@ def handle_history_lookup(
             meta={"handler": "history_lookup", "mode": "completed", "count": len(records)},
         )
 
-    # --- Không có hồ sơ / chưa login: không mặc định tuổi 20 ---
     if age_months is None and age_years is None and not records:
         reply = (
             "Để đối chiếu hồ sơ tiêm của bạn, hãy **đăng nhập** VaxCare "
@@ -213,7 +210,6 @@ def handle_history_lookup(
             meta={"handler": "history_lookup", "need_profile": True},
         )
 
-    # --- Hỏi «còn thiếu gì / nên tiêm tiếp» → rule engine (có records thật) ---
     if age_months is None and age_years is None:
         age_years = 20
 
@@ -224,11 +220,11 @@ def handle_history_lookup(
     )
     rule_text = format_history_text(result)
 
-    # Ưu tiên rule_text; LLM chỉ diễn đạt lại, không bịa nguồn ngoài result.sources
     messages = build_messages(
         "history_lookup",
         question=message,
         rule_result=rule_text,
+        history=history,
     )
     try:
         raw = get_llm_client().generate(messages)
@@ -237,10 +233,8 @@ def handle_history_lookup(
 
     base = rule_text
     if raw and len(raw.strip()) > 40:
-        # Chỉ dùng LLM nếu không mâu thuẫn hoàn toàn — vẫn neo rule_text
         base = rule_text + "\n\n" + raw.strip()
 
-    # Gắn rõ đây là đối chiếu hồ sơ hệ thống
     if records:
         rec_block = _reply_from_records(records)
         base = rec_block + "\n\n— Đối chiếu gợi ý tiếp theo —\n" + rule_text

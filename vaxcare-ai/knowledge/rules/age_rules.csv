@@ -1,41 +1,44 @@
 rule_id,age_group,age_from_months,age_to_months,vaccine_id,vaccine_short,dose_number,interval_days_min,source_doc,note
-1,Sơ sinh,0,1,1,BCG,1,0,tt10-2024,Tiêm trong da càng sớm càng tốt trong vòng 1 tháng; trẻ <34 tuần tạm hoãn đến đủ 34 tuần
-2,Sơ sinh,0,1,2,Viêm gan B,1,0,tt10-2024,Liều sơ sinh trong 24 giờ sau sinh (đơn giá); trẻ <2000g vẫn tiêm nhưng không tính vào 3 liều cơ bản
-3,2 tháng,2,2,3,DTP/5-in-1,1,0,tt10-2024,Bắt đầu từ đủ 2 tháng; thường dạng phối hợp có HepB/Hib
-4,2 tháng,2,2,4,IPV,1,0,tt10-2024,Có thể nằm trong vaccine phối hợp tùy lịch
-5,2 tháng,2,2,5,Hib,1,0,tt10-2024,Thường trong vaccine phối hợp
-6,2 tháng,2,2,2,Viêm gan B,2,28,tt10-2024,Cách mũi sơ sinh tối thiểu 28 ngày
-7,3-4 tháng,3,4,3,DTP/5-in-1,2,28,tt10-2024,Cách mũi 1 tối thiểu 28 ngày
-8,3-4 tháng,3,4,4,IPV,2,28,tt10-2024,
-9,3-4 tháng,3,4,5,Hib,2,28,tt10-2024,
-10,3-4 tháng,3,4,2,Viêm gan B,3,28,who-hepb,Theo lịch WHO/TCMR
-11,5-6 tháng,5,6,3,DTP/5-in-1,3,28,tt10-2024,Cách mũi 2 tối thiểu 28 ngày
-12,5-6 tháng,5,6,5,Hib,3,28,tt10-2024,
-13,5 tháng,5,5,4,IPV,1,0,tt10-2024,Lịch IPV riêng VN: mũi 1 lúc 5 tháng (nếu không dùng phối hợp sớm)
-14,9 tháng,9,9,4,IPV,2,120,tt10-2024,Mũi 2 lúc 9 tháng
-15,9 tháng,9,9,6,Sởi/MMR,1,0,tt10-2024,Đủ 9 tháng tuổi
-16,12 tháng,12,12,9,JE,1,0,tt10-2024,Đủ 1 tuổi
-17,12-15 tháng,12,15,7,Thủy đậu,1,0,hdsd-varivax,Từ 12 tháng; HDSD VN 1 liều <13 tuổi — WHO khuyến cáo 2 liều
-18,12-15 tháng,12,15,8,PCV,1,0,who-pcv,Lịch 2+1 hoặc 3+1 tùy chương trình (dịch vụ tại VN)
-19,13-24 tháng,13,24,9,JE,2,14,tt10-2024,Cách mũi 1 khoảng 1-2 tuần (tối thiểu theo loại vaccine)
-20,18 tháng,18,18,3,DTP nhắc,4,180,tt10-2024,Nhắc lại lúc 18 tháng
-21,18 tháng,18,18,6,MMR,2,90,tt10-2024,Cách mũi sởi đầu tối thiểu 3 tháng
-22,24 tháng,24,24,9,JE,3,365,tt10-2024,Cách mũi 2 khoảng 1 năm
-23,4-7 tuổi,48,84,3,Td/Tdap,5,0,tt10-2024,Nhắc bạch hầu giảm liều + uốn ván
-24,9-14 tuổi,108,168,11,HPV,1,0,who-hpv,Ưu tiên 9-14 tuổi phác đồ 2 liều
-25,9-14 tuổi,108,168,11,HPV,2,180,who-hpv,Cách mũi 1 tối thiểu 6 tháng
-26,≥15 tuổi,180,1200,11,HPV,1,0,who-hpv,Từ 15 tuổi dùng 3 liều
-27,≥15 tuổi,180,1200,11,HPV,2,30,hdsd-gardasil9,Cách mũi 1 khoảng 1-2 tháng
-28,≥15 tuổi,180,1200,11,HPV,3,150,hdsd-gardasil9,Cách mũi 2 ≥3 tháng; tổng ≥6 tháng từ mũi 1
-29,Người lớn hàng năm,216,1200,10,Cúm,1,365,who-flu,Tiêm mỗi năm; ưu tiên nhóm nguy cơ và thai phụ
-30,≥50 tuổi,600,1200,13,Shingrix,1,0,who-zoster,Từ 50 tuổi
-31,≥50 tuổi,600,1200,13,Shingrix,2,60,hdsd-shingrix,Cách mũi 1 từ 2-6 tháng
-32,Thai phụ,0,9,3,Uốn ván,1,0,tt10-2024,Tùy 4 tình huống tiền sử tiêm theo TT 10/2024
-33,Thai phụ,0,9,3,Uốn ván,2,28,tt10-2024,Cách mũi 1 tối thiểu 28 ngày khi cần đủ 2 mũi trong thai kỳ
-34,Thai phụ,0,9,10,Cúm,1,0,who-flu,Bất kỳ quý nào của thai kỳ
-35,12-23 tháng tiêm bù,12,23,6,Sởi,1,0,tt10-2024,Tiêm bù nếu chưa tiêm
-36,Mọi lứa tuổi tiêm bù,0,1200,2,Viêm gan B,1,0,who-hepb,Phác đồ bù 0-1-6 tháng nếu chưa có
-37,Mọi lứa tuổi tiêm bù,0,1200,3,Uốn ván,1,0,tt10-2024,Đủ 5 mũi trong đời
-38,≥13 tuổi thủy đậu,156,1200,7,Thủy đậu,1,0,hdsd-varivax,2 liều cách 4-8 tuần
-39,≥13 tuổi thủy đậu,156,1200,7,Thủy đậu,2,28,hdsd-varivax,Cách mũi 1 từ 4-8 tuần
-40,2-5 tuổi PCV bắt kịp,24,60,8,PCV,1,0,who-pcv,Lịch bắt kịp tùy số mũi đã tiêm (dịch vụ)
+1,Sơ sinh,0,1,1,BCG,1,0,tt10-2024,Tiêm 1 lần trong vòng 1 tháng sau sinh (TT-10/2024; TT-52/2025: bù trước 12 tháng nếu trễ)
+2,Sơ sinh,0,1,2,Viêm gan B,1,0,tt10-2024,Liều sơ sinh trong 24 giờ sau sinh; nếu trễ thì tiêm sớm trong 28 ngày (TT-52/2025)
+3,2 tháng,2,2,3,DTP/5-in-1,1,0,tt10-2024,Bạch hầu - ho gà - uốn ván (và thường kèm Hib/HepB): mũi 1 khi đủ 2 tháng
+4,2 tháng,2,2,4,IPV/OPV,1,0,tt10-2024,OPV uống lần 1 khi đủ 2 tháng (TT-10/2024; TT-52/2025)
+5,2 tháng,2,2,5,Hib,1,0,tt10-2024,Hib mũi 1 khi đủ 2 tháng (đơn giá hoặc trong phối hợp)
+6,2 tháng,2,2,2,Viêm gan B,2,28,tt10-2024,HepB trong phối hợp: mũi 1 lịch trẻ em khi đủ 2 tháng (sau liều sơ sinh ≥28 ngày)
+7,2 tháng,2,2,14,Rota,1,0,tt52-2025,Rota uống lần 1 khi đủ 2 tháng (TT-52/2025)
+8,2 tháng,2,2,8,PCV,1,0,tt52-2025,Phế cầu mũi 1 khi đủ 2 tháng (TT-52/2025)
+9,3-4 tháng,3,4,3,DTP/5-in-1,2,28,tt10-2024,Mũi 2: cách mũi 1 ít nhất 28 ngày
+10,3-4 tháng,3,4,4,IPV/OPV,2,28,tt10-2024,OPV uống lần 2: cách lần 1 ≥28 ngày
+11,3-4 tháng,3,4,5,Hib,2,28,tt10-2024,Hib mũi 2: cách mũi 1 ≥28 ngày
+12,3-4 tháng,3,4,2,Viêm gan B,3,28,tt10-2024,HepB phối hợp mũi 2 lịch trẻ em (tương ứng lần 2 sau mũi 2 tháng)
+13,3-4 tháng,3,4,14,Rota,2,28,tt52-2025,Rota uống lần 2: cách lần 1 ≥28 ngày; hoàn thành trước 6 tháng (TT-52/2025)
+14,3-4 tháng,3,4,8,PCV,2,60,tt52-2025,Phế cầu mũi 2: cách mũi 1 ít nhất 2 tháng (TT-52/2025)
+15,5-6 tháng,5,6,3,DTP/5-in-1,3,28,tt10-2024,Mũi 3: cách mũi 2 ≥28 ngày
+16,5-6 tháng,5,6,4,IPV/OPV,3,28,tt10-2024,OPV uống lần 3: cách lần 2 ≥28 ngày
+17,5-6 tháng,5,6,5,Hib,3,28,tt10-2024,Hib mũi 3: cách mũi 2 ≥28 ngày
+18,5 tháng,5,5,4,IPV,1,0,tt10-2024,IPV tiêm lần 1 khi đủ 5 tháng (TT-10/2024; TT-52/2025)
+19,9 tháng,9,9,4,IPV,2,120,tt10-2024,IPV tiêm lần 2 khi đủ 9 tháng
+20,9 tháng,9,12,6,Sởi/MMR,1,0,tt10-2024,Sởi (đơn giá hoặc có thành phần sởi) khi đủ 9 tháng; bù ngay nếu trễ (TT-52/2025)
+21,12 tháng,12,12,9,JE,1,0,tt10-2024,Viêm não Nhật Bản mũi 1 khi đủ 1 tuổi
+22,12-15 tháng,13,15,9,JE,2,14,tt10-2024,JE mũi 2: 1–2 tuần sau mũi 1 (TT-10/2024; TT-52/2025)
+23,12-15 tháng,12,15,7,Thủy đậu,1,0,hdsd-varivax,Thủy đậu dịch vụ từ 12 tháng (không thuộc TCMR bắt buộc TT-10/52)
+24,12-23 tháng,12,23,6,Sởi,1,0,tt10-2024,Tiêm bù sởi nếu chưa tiêm mũi 9 tháng
+25,18 tháng,18,18,3,DTP nhắc,4,180,tt10-2024,Nhắc bạch hầu–ho gà–uốn ván khi đủ 18 tháng; TT-52: bù từ 18 tháng đến trước 4 tuổi (≥6 tháng sau mũi 3)
+26,18 tháng,18,24,6,MMR,2,28,tt10-2024,Sởi/MMR nhắc khi đủ 18 tháng; cách mũi sởi trước ≥1 tháng (TT-52/2025)
+27,18 tháng,18,24,12,Rubella,1,0,tt10-2024,Rubella (thường trong MMR) khi đủ 18 tháng; bù ngay từ 18 tháng trở lên (TT-52/2025)
+28,24 tháng,24,24,9,JE,3,365,tt10-2024,JE mũi 3: 1 năm sau mũi 1 (mốc khoảng 2 tuổi)
+29,24-60 tháng PCV,24,60,8,PCV,1,0,tt52-2025,PCV bắt kịp: từ 24 tháng trở lên chưa tiêm thì 1 liều trước 5 tuổi (TT-52/2025)
+30,4-7 tuổi,48,84,3,Td/Tdap,5,0,tt10-2024,Nhắc bạch hầu giảm liều + uốn ván khi đủ 7 tuổi (TT-10; TT-52: ≥4 năm sau nhắc 18 tháng)
+31,9-14 tuổi,108,168,11,HPV,1,0,who-hpv,HPV ưu tiên 9–14 tuổi phác đồ 2 liều (dịch vụ / khuyến cáo)
+32,9-14 tuổi,108,168,11,HPV,2,180,who-hpv,HPV mũi 2: cách mũi 1 tối thiểu 6 tháng
+33,≥15 tuổi,180,1200,11,HPV,1,0,who-hpv,Từ 15 tuổi thường 3 liều (theo HDSD)
+34,≥15 tuổi,180,1200,11,HPV,2,30,hdsd-gardasil9,HPV mũi 2: khoảng 1–2 tháng sau mũi 1
+35,≥15 tuổi,180,1200,11,HPV,3,150,hdsd-gardasil9,HPV mũi 3: ≥3 tháng sau mũi 2; tổng ≥6 tháng từ mũi 1
+36,Người lớn hàng năm,216,1200,10,Cúm,1,365,who-flu,Cúm hàng năm; ưu tiên nhóm nguy cơ và thai phụ
+37,≥50 tuổi,600,1200,13,Shingrix,1,0,who-zoster,Zona (Shingrix) từ 50 tuổi — dịch vụ
+38,≥50 tuổi,600,1200,13,Shingrix,2,60,hdsd-shingrix,Shingrix mũi 2: cách mũi 1 từ 2–6 tháng
+39,Thai phụ,0,9,3,Uốn ván,1,0,tt10-2024,Uốn ván thai phụ: lịch theo 4 tình huống tiền sử (TT-10/2024; TT-52/2025)
+40,Thai phụ,0,9,3,Uốn ván,2,28,tt10-2024,Cách mũi 1 ≥28 ngày khi cần đủ liệu trình trong thai kỳ; mũi cuối ≥2 tuần trước dự sinh
+41,Thai phụ,0,9,10,Cúm,1,0,who-flu,Cúm bất kỳ quý nào của thai kỳ (khuyến cáo)
+42,Mọi lứa tuổi tiêm bù,0,1200,2,Viêm gan B,1,0,tt52-2025,HepB bù nếu chưa có: trẻ ≥12 tháng phác đồ 0-1-6 tháng (TT-52/2025)
+43,Mọi lứa tuổi tiêm bù,0,1200,3,Uốn ván,1,0,tt10-2024,Đủ liệu trình uốn ván trong đời theo hướng dẫn BYT — chỉ khi chưa tiêm đủ

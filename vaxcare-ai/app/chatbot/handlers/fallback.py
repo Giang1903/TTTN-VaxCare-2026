@@ -3,7 +3,7 @@ from __future__ import annotations
 from app.schemas.chat import Action, ChatResponse, Source
 
 
-def handle_chitchat(message: str, session_id: str, conf: float) -> ChatResponse:
+def handle_chitchat(message: str, session_id: str, conf: float, history: list | None = None, **kwargs) -> ChatResponse:
     t = (message or "").strip().lower()
     short_fillers = {
         "ah", "uh", "uhm", "ừ", "ừm", "ờ", "ờm", "à", "á", "ơ", "hả",
@@ -32,6 +32,8 @@ def handle_out_of_scope(
     conf: float,
     reason: str = "",
     emergency: bool = False,
+    history: list | None = None,
+    **kwargs,
 ) -> ChatResponse:
     if emergency:
         reply = (
@@ -57,7 +59,7 @@ def handle_out_of_scope(
     )
 
 
-def handle_unknown(message: str, session_id: str, conf: float) -> ChatResponse:
+def handle_unknown(message: str, session_id: str, conf: float, history: list | None = None, **kwargs) -> ChatResponse:
     reply = (
         "Mình chưa chắc ý bạn. Bạn có thể hỏi rõ hơn, ví dụ:\n"
         "• «Tôi 20 tuổi nên kiểm tra vaccine nào?»\n"

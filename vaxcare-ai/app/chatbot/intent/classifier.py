@@ -17,7 +17,7 @@ class IntentClassifier:
         self,
         pipeline: Any,
         labels: list[str] | None = None,
-        min_confidence: float = 0.45,
+        min_confidence: float = 0.62,
     ):
         self.pipeline = pipeline
         self.labels = labels or list(INTENT_LABELS)
@@ -35,14 +35,12 @@ class IntentClassifier:
         texts = [text or ""]
         if hasattr(self.pipeline, "predict_proba"):
             proba = self.pipeline.predict_proba(texts)[0]
-            # map theo classes_ của model nếu có
             classes = list(getattr(self.pipeline, "classes_", self.labels))
             out = np.zeros(len(self.labels), dtype=np.float64)
             for i, c in enumerate(classes):
                 if c in self.labels:
                     out[self.labels.index(c)] = proba[i]
             return out
-        # fallback: predict only
         pred = self.pipeline.predict(texts)[0]
         out = np.zeros(len(self.labels), dtype=np.float64)
         if pred in self.labels:
@@ -53,7 +51,7 @@ class IntentClassifier:
         return confidence >= self.min_confidence
 
     @classmethod
-    def load(cls, path: str | Path, min_confidence: float = 0.45) -> "IntentClassifier":
+    def load(cls, path: str | Path, min_confidence: float = 0.62) -> "IntentClassifier":
         path = Path(path)
         obj = joblib.load(path)
         if isinstance(obj, IntentClassifier):
@@ -65,7 +63,6 @@ class IntentClassifier:
                 labels=obj.get("labels", list(INTENT_LABELS)),
                 min_confidence=obj.get("min_confidence", min_confidence),
             )
-        # raw sklearn pipeline
         labels = list(getattr(obj, "classes_", INTENT_LABELS))
         return cls(pipeline=obj, labels=labels, min_confidence=min_confidence)
 

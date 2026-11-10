@@ -97,6 +97,8 @@ def handle_faq_vaccine(
     conf: float,
     context: dict[str, Any] | None = None,
     entities: dict[str, Any] | None = None,
+    history: list | None = None,
+    **kwargs,
 ) -> ChatResponse:
     msg = (message or "").strip()
     if len(msg) <= 3 or (
@@ -317,6 +319,7 @@ def handle_faq_vaccine(
         question=message,
         context=context_str,
         rule_result=eligibility_block,
+        history=history,
     )
     try:
         raw = get_llm_client().generate(messages)

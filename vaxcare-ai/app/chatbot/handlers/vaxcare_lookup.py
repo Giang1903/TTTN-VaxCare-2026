@@ -46,6 +46,8 @@ def handle_vaxcare_lookup(
     conf: float,
     context: dict[str, Any] | None = None,
     entities: dict[str, Any] | None = None,
+    history: list | None = None,
+    **kwargs,
 ) -> ChatResponse:
     entities = entities or EntityExtractor().extract(message)
     vaccines = entities.get("vaccines") or []
