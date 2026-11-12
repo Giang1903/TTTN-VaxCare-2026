@@ -95,7 +95,7 @@ def format_protocol_text(rows: list[dict[str, Any]], vaccine_label: str = "") ->
             d = 0
         by_dose.setdefault(d, []).append(r)
 
-    lines = [f"Với **{name}**, lịch tham khảo thường như sau:"]
+    lines = [f"Với {name}, lịch tham khảo thường như sau:"]
     sources = []
     for dose in sorted(by_dose.keys()):
         parts = []
@@ -129,9 +129,9 @@ def format_protocol_text(rows: list[dict[str, Any]], vaccine_label: str = "") ->
             if p_ not in uniq:
                 uniq.append(p_)
         if len(uniq) == 1:
-            lines.append(f"• Mũi {dose}: {uniq[0]}")
+            lines.append(f"- Mũi {dose}: {uniq[0]}")
         else:
-            lines.append(f"• Mũi {dose}:")
+            lines.append(f"- Mũi {dose}:")
             for u in uniq:
                 lines.append(f"  – {u}")
     if sources:

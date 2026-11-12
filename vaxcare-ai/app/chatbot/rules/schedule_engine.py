@@ -162,7 +162,7 @@ def _select_relevant_rows(df: pd.DataFrame, age_months: float) -> pd.DataFrame:
         out = pd.concat([in_w, od], ignore_index=True)
     for col in ("_overdue", "_upcoming_soon", "_is_catch_up"):
         if col in out.columns:
-            out[col] = out[col].fillna(False).astype(bool)
+            out[col] = out[col].where(out[col].notna(), False).astype(bool)
     return out.sort_values(["_priority", "vaccine_id", "dose_number"])
 
 

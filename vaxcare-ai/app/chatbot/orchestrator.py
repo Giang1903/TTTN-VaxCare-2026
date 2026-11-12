@@ -38,6 +38,7 @@ def _get_classifier():
     try:
         from app.chatbot.intent.classifier import IntentClassifier
 
+        # Sprint 1: load với threshold mới từ settings
         _clf = IntentClassifier.load(
             _CLF_PATH, min_confidence=settings.intent_min_confidence
         )
@@ -58,6 +59,7 @@ def _guess_intent_regex(text: str) -> tuple[str, float]:
     """
     t = text.lower().strip()
 
+    # --- Safety / out of scope (ưu tiên tuyệt đối) ---
     if re.search(
         r"(đau ngực|khó thở|cấp cứu|co giật|sốc phản vệ|bất tỉnh|tím tái|"
         r"chẩn đoán|tôi bị bệnh gì|uống thuốc gì|kê đơn|cho tôi đơn|"
@@ -67,6 +69,7 @@ def _guess_intent_regex(text: str) -> tuple[str, float]:
     ):
         return "out_of_scope", 0.93
 
+    # --- Chitchat ---
     if re.search(
         r"^(chào|hello|hi|hey|xin chào|cảm ơn|thanks|thank you|"
         r"tạm biệt|bye|goodbye|bạn khỏe không|ok|oke|okay|"
@@ -87,6 +90,7 @@ def _guess_intent_regex(text: str) -> tuple[str, float]:
     }:
         return "chitchat", 0.94
 
+    # --- VaxCare product / facility / booking ---
     if re.search(
         r"((có|còn)\s*(vaccine|vaccin|vắc\s*xin|vắc-xin)|"
         r"bên bạn có|bên mình có|cửa hàng có|đang có.*vaccine|"
@@ -100,6 +104,8 @@ def _guess_intent_regex(text: str) -> tuple[str, float]:
     ):
         return "vaxcare_lookup", 0.91
 
+    # --- History / personal record (hồ sơ cá nhân, đã tiêm cụ thể) ---
+    # Tránh bắt câu "tiêm những mũi nào theo tuổi" (đó là schedule_advice)
     if re.search(
         r"(lịch sử tiêm|hồ sơ tiêm|xem lịch sử|dữ liệu tiêm đã ghi|"
         r"đối chiếu hồ sơ|hồ sơ của (tôi|mình)|"
@@ -115,6 +121,7 @@ def _guess_intent_regex(text: str) -> tuple[str, float]:
     ):
         return "history_lookup", 0.94
 
+    # --- Disease etiology / symptoms → FAQ ---
     if re.search(
         r"(nguyên\s*nhân|lý\s*do\s*(mắc|bệnh)|đường\s*lây|triệu\s*chứng|"
         r"vì\s*sao\s*(mắc|bị|nhiễm)|biểu hiện|lây truyền)",
@@ -122,6 +129,7 @@ def _guess_intent_regex(text: str) -> tuple[str, float]:
     ):
         return "faq_vaccine", 0.90
 
+    # --- Explicit FAQ about vaccine properties ---
     if re.search(
         r"(phòng bệnh gì|công dụng|tác dụng|chống chỉ định|chỉ định|"
         r"ai nên tiêm|đối tượng|liều lượng|tiêm đường nào|bao nhiêu ml|"
@@ -133,6 +141,21 @@ def _guess_intent_regex(text: str) -> tuple[str, float]:
     ):
         return "faq_vaccine", 0.88
 
+    # --- Phác đồ / số liều (FAQ kiến thức, KHÔNG phải lịch theo tuổi) ---
+    if re.search(
+        r"((phác đồ|bao nhiêu liều|mấy liều|\d+\s*liều|"
+        r"2\s*liều|3\s*liều|hai liều|ba liều|"
+        r"tiêm (mấy|bao nhiêu) (mũi|liều)|"
+        r"ai (nên|phải) tiêm|người nào (nên|phải) tiêm|"
+        r"đối tượng tiêm|chỉ định tiêm).*)",
+        t,
+    ) and not re.search(
+        r"(\d+\s*tuổi|\d+\s*tháng|theo tuổi|theo tcmr|lịch tiêm của)",
+        t,
+    ):
+        return "faq_vaccine", 0.93
+
+    # --- Schedule / age-based advice ---
     if re.search(
         r"(\d+\s*tuổi|\d+\s*tháng|sơ sinh|bao nhiêu tuổi|lộ trình|"
         r"mốc tiêm|tiêm những (mũi|vaccine)|tiêm gì theo|"
@@ -147,6 +170,7 @@ def _guess_intent_regex(text: str) -> tuple[str, float]:
     ):
         return "schedule_advice", 0.86
 
+    # --- "Hiện tiêm được gì / nên tiêm gì" → schedule (ưu tiên cao hơn FAQ chung) ---
     if re.search(
         r"((hiện giờ|bây giờ|lúc này|hiện tại).*(tiêm|vaccine|vắc)|"
         r"có thể tiêm (các )?(vaccine|mũi|vắc)|"
@@ -158,6 +182,7 @@ def _guess_intent_regex(text: str) -> tuple[str, float]:
     ):
         return "schedule_advice", 0.92
 
+    # --- Generic vaccine mention → FAQ with medium conf ---
     if re.search(
         r"(vaccine|vaccin|vắc xin|vắc-xin|bcg|bbg|hpv|mmr|sởi|cúm|"
         r"shingrix|zona|prevenar|varivax|viêm gan|uốn ván|dại|rabies|"
@@ -175,6 +200,7 @@ def _guess_intent(text: str) -> tuple[str, float]:
     """
     reg_label, reg_conf = _guess_intent_regex(text)
 
+    # Regex rất chắc → tin regex
     if reg_conf >= 0.88:
         return reg_label, reg_conf
 
@@ -182,14 +208,18 @@ def _guess_intent(text: str) -> tuple[str, float]:
     if clf is not None:
         label, conf = clf.predict(text)
 
+        # Tránh classifier ép chitchat khi regex đã nhận ra intent khác
         if label == "chitchat" and reg_label != "chitchat" and reg_conf >= 0.65:
             return reg_label, max(reg_conf, 0.78)
 
+        # Classifier không đủ tự tin → ưu tiên regex nếu regex tốt hơn
         if not clf.is_confident(conf):
             if reg_conf >= conf:
                 return reg_label, reg_conf
+            # cả hai đều thấp → vẫn trả classifier nhưng conf thấp
             return label, conf
 
+        # Classifier tự tin nhưng regex cũng khá mạnh và khác label
         if reg_conf >= 0.80 and label != reg_label and conf < 0.78:
             return reg_label, reg_conf
 
@@ -230,6 +260,114 @@ def _merge_memory_soft_context(
     return out
 
 
+
+def _is_follow_up_message(message: str) -> bool:
+    """Câu ngắn / đại từ / nối tiếp chủ đề trước — chưa chắc là intent mới độc lập."""
+    t = (message or "").strip()
+    if not t:
+        return False
+    tl = t.lower()
+    # Rõ ràng chủ đề mới → không coi follow-up cưỡng bức
+    if re.search(
+        r"(\d+\s*tuổi|\d+\s*tháng|sơ sinh|"
+        r"đặt lịch|tìm cơ sở|hồ sơ tiêm|lịch sử tiêm|"
+        r"chào|hello|hi\b|bạn là ai)",
+        tl,
+    ):
+        return False
+    if len(t) <= 80 and re.search(
+        r"(còn |thế |vậy |thế còn|còn về|còn (gì|ai|khi|bao)|"
+        r"còn không|thế nào|như thế nào|ra sao|"
+        r"còn (liều|mũi|phác đồ)|"
+        r"\b(nó|cái đó|loại đó|vaccine đó|mũi đó|thuốc đó)\b|"
+        r"^(còn|thế|vậy|còn về)\b|"
+        r"(ai|người nào|đối tượng).*(tiêm|dùng|nên)|"
+        r"(bao nhiêu|mấy)\s*(liều|mũi)|"
+        r"(\d+|hai|ba)\s*liều|"
+        r"phác đồ|chỉ định|chống chỉ định|"
+        r"tác dụng phụ|phản ứng|sau tiêm|"
+        r"khi nào (tiêm|nên)|tiêm lúc nào|"
+        r"có (cần|phải|nên) không|được không)",
+        tl,
+    ):
+        return True
+    # Câu rất ngắn không nêu vaccine/tuổi cụ thể
+    if len(t) <= 40 and not re.search(
+        r"(bcg|hpv|mmr|sởi|cúm|zona|shingrix|viêm gan|uốn ván|"
+        r"dtp|hib|ipv|je|rota|pcv|thủy đậu|covid)",
+        tl,
+    ):
+        if re.search(r"(liều|mũi|tiêm|phòng|bệnh|ai |khi nào|bao nhiêu)", tl):
+            return True
+    return False
+
+
+def _apply_conversation_continuity(
+    message: str,
+    intent: str,
+    conf: float,
+    mem,
+    entities: dict,
+) -> tuple[str, float, dict]:
+    """
+    Giữ chủ đề/intent lượt trước khi user hỏi nối tiếp.
+    Tránh: đang hỏi HPV → câu sau bị kéo sang lịch theo tuổi hồ sơ.
+    """
+    last_intent = mem.soft_context.get("last_intent")
+    last_vax = list(mem.soft_context.get("last_vaccines") or [])
+    last_vids = list(mem.soft_context.get("vaccine_ids") or [])
+    follow = _is_follow_up_message(message)
+
+    entities = dict(entities or {})
+
+    # Gắn vaccine lượt trước nếu câu hiện tại không nêu tên mới
+    has_new_vax = bool(entities.get("vaccines") or entities.get("vaccine_ids"))
+    if last_vax and not has_new_vax and (
+        follow or intent in ("faq_vaccine", "unknown", "chitchat")
+    ):
+        entities["vaccines"] = last_vax[:3]
+        if last_vids and not entities.get("vaccine_ids"):
+            entities["vaccine_ids"] = last_vids[:3]
+
+    if not follow or not last_intent:
+        return intent, conf, entities
+
+    # Follow-up sau FAQ → giữ FAQ (kiến thức / phác đồ / đối tượng)
+    if last_intent == "faq_vaccine" and intent in (
+        "schedule_advice",
+        "chitchat",
+        "unknown",
+        "faq_vaccine",
+    ):
+        # Chỉ chuyển schedule nếu user rõ ràng hỏi lịch cá nhân theo tuổi
+        personal_schedule = bool(
+            re.search(
+                r"((hiện giờ|bây giờ|lúc này).*(tiêm|vaccine)|"
+                r"tôi (nên|có thể) tiêm|"
+                r"bé (nên|cần) tiêm|"
+                r"theo (tuổi|hồ sơ)|lịch của (tôi|bé|mình)|"
+                r"\d+\s*(tuổi|tháng).*(tiêm|vaccine|lịch))",
+                message or "",
+                re.I,
+            )
+        )
+        if not personal_schedule:
+            return "faq_vaccine", max(conf, 0.88), entities
+
+    # Follow-up sau schedule → giữ schedule nếu vẫn nói mũi/lịch
+    if last_intent == "schedule_advice" and intent in ("chitchat", "unknown", "faq_vaccine"):
+        if re.search(r"(mũi|lịch|tiêm|tuổi|tháng|còn|tiếp)", message or "", re.I):
+            return "schedule_advice", max(conf, 0.85), entities
+
+    # Follow-up sau history
+    if last_intent == "history_lookup" and intent in ("chitchat", "unknown"):
+        if re.search(r"(mũi|đã tiêm|hồ sơ|lịch sử|sắp)", message or "", re.I):
+            return "history_lookup", max(conf, 0.85), entities
+
+    return intent, conf, entities
+
+
+
 def handle_chat(req: ChatRequest) -> ChatResponse:
     session_id = req.session_id or str(uuid.uuid4())
     message = (req.message or "").strip()
@@ -266,16 +404,20 @@ def handle_chat(req: ChatRequest) -> ChatResponse:
         intent = "faq_vaccine"
 
     entities = _extractor.extract(message)
+    # Cập nhật soft context (tuổi, vaccine) để lượt sau dùng
     store.update_soft_context(session_id, entities)
 
     context = _normalize_context(req)
     context = _merge_memory_soft_context(context, mem.soft_context)
 
+    # Nếu entity không bắt được tuổi nhưng memory có → bổ sung vào entities
     if entities.get("age_years") is None and mem.soft_context.get("age_years") is not None:
         entities = dict(entities)
         entities["age_years"] = mem.soft_context["age_years"]
         entities["age_months"] = mem.soft_context.get("age_months")
 
+    # Có tuổi (message / context / memory) + hỏi "tiêm được gì" → ép schedule_advice
+    # Tránh rơi FAQ/RAG với chunk không liên quan.
     has_age = (
         entities.get("age_years") is not None
         or entities.get("age_months") is not None
@@ -284,18 +426,50 @@ def handle_chat(req: ChatRequest) -> ChatResponse:
     )
     ask_what_vax = bool(
         re.search(
-            r"((hiện giờ|bây giờ|lúc này|hiện tại).*(tiêm|vaccine)|"
-            r"có thể tiêm|nên tiêm gì|tiêm được.*gì|"
-            r"tiêm những (gì|vaccine|mũi)|các vaccine nào)",
+            r"((hiện giờ|bây giờ|lúc này|hiện tại).*(tiêm|vaccine|vắc)|"
+            r"có thể tiêm (các )?(vaccine|mũi|vắc)|"
+            r"nên tiêm (gì|những gì|vaccine gì|mũi gì)(\s|$|\?)|"
+            r"tiêm được (các )?(vaccine|mũi) gì|"
+            r"tiêm những (vaccine|mũi) nào|"
+            r"các vaccine (nào )?(nên|có thể) tiêm)",
             message or "",
             re.I,
         )
     )
-    if has_age and ask_what_vax and intent in ("faq_vaccine", "unknown", "chitchat"):
+    is_regimen_faq = bool(
+        re.search(
+            r"(phác đồ|\d+\s*liều|2\s*liều|3\s*liều|bao nhiêu liều|mấy liều|"
+            r"ai (nên|phải) tiêm|người nào (nên|phải) tiêm|đối tượng tiêm)",
+            message or "",
+            re.I,
+        )
+    )
+
+    # Continuity: follow-up bám intent + vaccine lượt trước
+    intent, conf, entities = _apply_conversation_continuity(
+        message, intent, conf, mem, entities
+    )
+
+    if (
+        has_age
+        and ask_what_vax
+        and not is_regimen_faq
+        and intent in ("faq_vaccine", "unknown", "chitchat")
+    ):
         intent = "schedule_advice"
         conf = max(conf, 0.9)
 
+    # Đang chờ user xác nhận tuổi hồ sơ → giữ schedule (kể cả "ok"/"đúng")
     if mem.soft_context.get("awaiting_age_confirm") and intent in (
+        "chitchat",
+        "unknown",
+        "faq_vaccine",
+    ):
+        intent = "schedule_advice"
+        conf = max(conf, 0.9)
+
+    # Bot đã hỏi tuổi để tư vấn lịch → câu trả lời tuổi/tiếp theo vẫn vào schedule
+    if mem.soft_context.get("awaiting_age_for_advice") and intent in (
         "chitchat",
         "unknown",
         "faq_vaccine",
@@ -342,9 +516,13 @@ def handle_chat(req: ChatRequest) -> ChatResponse:
             meta={"error": str(e), "handler": "orchestrator"},
         )
 
-    # Lưu lượt hội thoại
+    # Lưu lượt hội thoại + intent/chủ đề để follow-up
     store.add_turn(session_id, "user", message, intent=intent)
     store.add_turn(session_id, "assistant", resp.reply, intent=resp.intent)
+    mem.set_soft(last_intent=resp.intent or intent)
+    # Nếu FAQ vừa nói vaccine cụ thể trong entities, đã merge; bổ sung từ meta nếu có
+    if resp.intent == "faq_vaccine" and entities.get("vaccines"):
+        mem.set_soft(last_vaccines=entities.get("vaccines")[:5])
 
     meta = dict(resp.meta or {})
     meta.setdefault("stage", "logic-llm")

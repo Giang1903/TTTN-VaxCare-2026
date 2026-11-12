@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 from typing import Any
 
 from app.chatbot.entities import EntityExtractor
@@ -19,6 +21,33 @@ from app.chatbot.slots import (
 )
 from app.schemas.chat import Action, ChatResponse, Source
 
+def _is_age_only_statement(message: str) -> bool:
+    """User chỉ nêu tuổi/đối tượng, chưa hỏi lịch / tiêm gì."""
+    t = (message or "").strip().lower()
+    if not t:
+        return False
+    # Có hỏi về lịch / vaccine / tiêm gì → không phải age-only
+    if re.search(
+        r"(tiêm gì|tiêm những|vaccine gì|vắc xin gì|nên tiêm|có thể tiêm|"
+        r"lịch tiêm|mũi nào|còn mũi|theo lịch|tcmr|phác đồ|"
+        r"kiểm tra|tư vấn lịch|gợi ý)",
+        t,
+    ):
+        return False
+    # Có nêu tuổi/tháng và câu ngắn
+    has_age = bool(re.search(r"\d+\s*(tuổi|tháng)|sơ sinh", t))
+    if not has_age:
+        return False
+    # Câu chủ yếu khai báo (bé/con/tôi + tuổi)
+    if len(t) <= 80 and re.search(
+        r"(bé|con|cháu|trẻ|nhà mình|tôi|mình|em).{0,20}\d+\s*(tuổi|tháng)"
+        r"|\d+\s*(tuổi|tháng)",
+        t,
+    ):
+        return True
+    return False
+
+
 
 def handle_schedule_advice(
     message: str,
@@ -35,6 +64,7 @@ def handle_schedule_advice(
     mem = store.get(session_id)
     soft = dict(mem.soft_context or {})
 
+    # User xác nhận tuổi hồ sơ ở lượt trước đang chờ
     if soft.get("awaiting_age_confirm"):
         if is_asking_for_other_person(message):
             mem.set_soft(
@@ -65,10 +95,12 @@ def handle_schedule_advice(
             and soft.get("age_source") == "profile"
             and len((message or "").strip()) < 12
         ):
+            # Chỉ affirm khi không nêu tuổi mới
             if entities.get("age_years") is None and entities.get("age_months") is None:
                 mem.set_soft(age_confirmed=True, awaiting_age_confirm=False, subject="self")
                 soft = dict(mem.soft_context)
 
+    # User nêu tuổi mới trong câu → luôn ưu tiên, đánh dấu confirmed
     if entities.get("age_years") is not None or entities.get("age_months") is not None:
         store.update_soft_context(
             session_id,
@@ -100,8 +132,10 @@ def handle_schedule_advice(
             )
         )
 
+    # --- Thiếu tuổi: hỏi, không bịa ---
     if age_info["needs_age"]:
         logged_in = ctx.get("user_id") is not None or ctx.get("user_id") is not None
+        # user_id may be only on request; orchestrator puts it in context
         has_account = bool(ctx.get("user_id") or ctx.get("full_name"))
         if has_account:
             reply = (
@@ -125,6 +159,8 @@ def handle_schedule_advice(
                 tier="A",
             )
         )
+        # Chờ user trả tuổi để tiếp tục tư vấn lịch
+        mem.set_soft(awaiting_age_for_advice=True)
         return ChatResponse(
             reply=reply,
             intent="schedule_advice",
@@ -140,6 +176,7 @@ def handle_schedule_advice(
             },
         )
 
+    # --- Có tuổi từ hồ sơ nhưng chưa xác nhận ---
     if age_info["needs_confirm"] and age_info["source"] == "profile":
         years = age_info["age_years"]
         months = age_info["age_months"]
@@ -148,6 +185,7 @@ def handle_schedule_advice(
             if months is not None and months < 36
             else f"{years:g} tuổi" if years is not None else "tuổi trên hồ sơ"
         )
+        # Lưu tuổi profile vào soft + chờ confirm
         mem.set_soft(
             age_years=age_info["age_years"],
             age_months=age_info["age_months"],
@@ -185,15 +223,49 @@ def handle_schedule_advice(
     age_months = age_info["age_months"]
     age_years = age_info["age_years"]
 
+    # Đồng bộ soft sau khi đã chắc
     mem.set_soft(
         age_years=age_years,
         age_months=age_months,
         age_source=age_info["source"],
         age_confirmed=True,
         awaiting_age_confirm=False,
+        awaiting_age_for_advice=False,
     )
 
+# Chỉ nêu tuổi tự nhiên (bot không đang hỏi tuổi để tư vấn) → ghi nhận thôi
+    if _is_age_only_statement(message) and not soft.get("awaiting_age_for_advice"):
+        years = age_info.get("age_years")
+        months = age_info.get("age_months")
+        if months is not None and months < 36:
+            age_label = f"{int(months)} tháng"
+        elif years is not None:
+            age_label = f"{years:g} tuổi"
+        else:
+            age_label = "tuổi bạn vừa nêu"
+        subject = age_info.get("subject") or soft.get("subject")
+        who = "bé" if subject == "child" or re.search(r"(bé|con|cháu)", message or "", re.I) else "bạn"
+        mem.set_soft(awaiting_age_for_advice=False)
+        reply = (
+            f"Mình đã ghi nhận {who} khoảng {age_label}. "
+            "Bạn muốn hỏi lịch tiêm theo tuổi này, mũi còn thiếu, hay vaccine cụ thể?"
+        )
+        return ChatResponse(
+            reply=reply,
+            intent="schedule_advice",
+            intent_confidence=conf,
+            session_id=session_id,
+            meta={
+                "handler": "schedule_advice",
+                "age_only_ack": True,
+                "age_years": years,
+                "age_months": months,
+                "age_source": age_info.get("source"),
+            },
+        )
+
     completed: set[tuple[int, int]] = set()
+
     records = ctx.get("records") or []
     for r in records:
         try:

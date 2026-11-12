@@ -81,14 +81,16 @@ def build_messages(
     entities: str = "",
     history: list[dict[str, str]] | None = None,
 ) -> list[dict[str, str]]:
+    """Ghép prompt; dùng replace thay vì str.format để chunk RAG có { } không làm crash."""
     template = INTENT_TEMPLATES.get(intent) or INTENT_TEMPLATES["faq_vaccine"]
     history_block = _format_history_block(history)
-    user_content = template.format(
-        question=question or "",
-        context=context or "(không có)",
-        rule_result=rule_result or "(không có)",
-        entities=entities or "(không có)",
-        history_block=history_block,
+    user_content = (
+        template
+        .replace("{question}", question or "")
+        .replace("{context}", context or "(không có)")
+        .replace("{rule_result}", rule_result or "(không có)")
+        .replace("{entities}", entities or "(không có)")
+        .replace("{history_block}", history_block or "")
     )
     return [
         {"role": "system", "content": SYSTEM_PROMPT},

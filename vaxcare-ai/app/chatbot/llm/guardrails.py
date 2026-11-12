@@ -146,6 +146,14 @@ def enforce_guardrails(
             "Bạn hỏi về vaccine (phòng bệnh gì, mấy mũi, đối tượng) hoặc gặp bác sĩ nếu cần khám chữa bệnh."
         )
 
+    if re.search(
+        r"(xong được khoảng|cách đây khoảng|khoảng một năm|một năm rưỡi|"
+        r"đã tiêm.*cách đây|hoàn thành mũi.*khoảng)",
+        out,
+        re.I,
+    ):
+        warnings.append("possible_invented_elapsed_time")
+
     if _mostly_english(out):
         warnings.append("non_vietnamese_output")
         src = ", ".join((known_sources or [])[:2]) if known_sources else ""
