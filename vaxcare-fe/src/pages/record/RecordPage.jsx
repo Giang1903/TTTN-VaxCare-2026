@@ -33,7 +33,7 @@ export default function RecordPage() {
     setError('');
     try {
       const [hist, appts, hp, vaccines] = await Promise.all([
-        vaccinationService.getMyVaccinationHistory().catch(() => null),
+        vaccinationService.getMyVaccinationHistory(),
         getMyAppointments().catch(() => []),
         getMyHealthProfile().catch(() => null),
         searchVaccines({}).catch(() => []),
@@ -183,6 +183,7 @@ export default function RecordPage() {
           <VaccinationTimeline
             items={timelineItems}
             loading={loading}
+            error={error}
             onOpenShotDetail={(shot) => setShotModal({ open: true, shot })}
           />
           <CertificateSidebar

@@ -224,7 +224,7 @@ export default function Staff() {
         </div>
 
         <div className="panel">
-          <div className="panel-head"><div><h3>Danh sách nhân viên</h3><div className="sub">medical_staff + accounts (role MEDICAL_STAFF)</div></div></div>
+          <div className="panel-head"><div><h3>Danh sách nhân viên</h3><div className="sub"></div></div></div>
           <div className="table-wrap">
             <table>
               <thead>

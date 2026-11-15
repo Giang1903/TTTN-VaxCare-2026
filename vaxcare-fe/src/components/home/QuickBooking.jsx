@@ -123,7 +123,7 @@ export default function QuickBooking() {
               <path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8" />
               <circle cx="12" cy="12" r="3" />
             </svg>
-            AI sẽ hỗ trợ phân tích lịch và đề xuất khung giờ phù hợp
+            Tìm khung giờ phù hợp
           </div>
         </div>
 
@@ -192,7 +192,7 @@ export default function QuickBooking() {
         {searched && openSlots.length > 0 ? (
           <div style={{ marginTop: 16 }}>
             <div className="qb-note" style={{ marginBottom: 8 }}>
-              Tất cả khung giờ AI gợi ý
+              Tất cả khung giờ 
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {openSlots.map((s) => {

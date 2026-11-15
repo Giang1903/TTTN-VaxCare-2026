@@ -138,7 +138,7 @@ export default function Facilities() {
         </div>
 
         <div className="panel">
-          <div className="panel-head"><div><h3>Danh sách cơ sở</h3><div className="sub">vaccination_facilities · {rows.length} bản ghi</div></div></div>
+          <div className="panel-head"><div><h3>Danh sách cơ sở</h3><div className="sub">facilities · {rows.length} bản ghi</div></div></div>
           <div className="table-wrap">
             <table>
               <thead>
