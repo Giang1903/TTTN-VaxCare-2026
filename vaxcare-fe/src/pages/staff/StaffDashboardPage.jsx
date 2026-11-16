@@ -364,7 +364,7 @@ export default function StaffDashboardPage() {
             <div className="panel">
               <div className="panel-head">
                 <div>
-                  <h3>Dự báo quá tải (AI)</h3>
+                  <h3>Dự báo quá tải</h3>
                   <div className="sub">Khung giờ hôm nay</div>
                 </div>
               </div>

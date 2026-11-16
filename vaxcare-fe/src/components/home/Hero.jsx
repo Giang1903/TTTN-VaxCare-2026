@@ -169,7 +169,7 @@ export default function Hero() {
               </svg>
             </div>
             <div>
-              <div className="fc-title">AI Smart Booking</div>
+              <div className="fc-title">Smart Booking</div>
               <div className="fc-sub">Khung giờ phù hợp đã được đề xuất</div>
             </div>
           </div>

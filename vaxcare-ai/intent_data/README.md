@@ -1,22 +1,32 @@
-# Intent Data – Quy ước gán nhãn (VaxCare Chatbot)
+# Dữ liệu intent chatbot
 
-Tài liệu này định nghĩa **6 nhóm intent** dùng để huấn luyện / đánh giá bộ phân loại ý định (intent classifier) của chatbot tư vấn tiêm chủng VaxCare.
+Thư mục này chứa câu hỏi và nhãn dùng để huấn luyện hoặc đánh giá bộ phân loại intent. Intent quyết định chatbot nên dùng FAQ/RAG, rule lịch tiêm, tra cứu hồ sơ, điều hướng chức năng hay từ chối câu hỏi ngoài phạm vi.
 
-## 1. Mục tiêu
+## Các nhãn
 
-- Phân loại câu hỏi người dùng vào đúng nhóm để định tuyến:
-  - Gọi RAG trên đúng tập chunk
-  - Gọi rule engine (lịch tiêm, chống chỉ định)
-  - Hoặc trả lời template cố định
-- Dùng làm ground-truth cho tập train / test / evaluation.
+Giữ nguyên chính xác các tên nhãn sau trong dữ liệu và mã nguồn:
 
-## 2. 6 nhóm Intent (bắt buộc dùng đúng tên)
+| Nhãn | Ý nghĩa |
+|---|---|
+| `faq_vaccine` | Hỏi thông tin về vắc xin. |
+| `schedule_advice` | Hỏi lịch tiêm, khoảng cách mũi hoặc tiêm bù. |
+| `history_lookup` | Hỏi lịch sử/hồ sơ tiêm. |
+| `vaxcare_lookup` | Hỏi cơ sở, đặt lịch hoặc điều hướng trên VaxCare. |
+| `chitchat` | Chào hỏi, cảm ơn hoặc tạm biệt. |
+| `out_of_scope` | Câu hỏi ngoài phạm vi, gồm chẩn đoán, kê đơn hoặc cấp cứu. |
 
-| Label | Mô tả |
-|-------|--------|
-| `faq_vaccine` | Thông tin vaccine: chỉ định, chống chỉ định, liều, tác dụng phụ, FAQ |
-| `schedule_advice` | Lịch / lộ trình theo tuổi, khoảng cách mũi, tiêm bù |
-| `history_lookup` | Hỏi lịch sử / hồ sơ tiêm của user |
-| `vaxcare_lookup` | Tìm cơ sở, đặt lịch, mở trang vaccine trên VaxCare |
-| `chitchat` | Chào, cảm ơn, tạm biệt |
-| `out_of_scope` | Cấp cứu, kê đơn, chẩn đoán, ngoài tiêm chủng |
+## Các tập dữ liệu
+
+- `seed_intents_v1.csv`, `seed_expanded.csv`: dữ liệu seed và các câu mở rộng.
+- `train_intents_v1.csv`, `train.csv`: dữ liệu huấn luyện.
+- `test.csv`: dữ liệu đánh giá.
+- `all_aligned_v2.csv`: tập dữ liệu được chuẩn hóa nhãn.
+
+`README` này mô tả mục đích và quy ước. Hãy xem header của từng CSV để biết tên cột hiện tại.
+
+## Quy tắc cập nhật
+
+1. Dùng đúng sáu nhãn nêu trên; không tự tạo biến thể viết hoa/viết tắt.
+2. Câu hỏi phải được gán nhãn theo mục đích chính của người dùng.
+3. Giữ các ví dụ kiểm thử riêng khỏi dữ liệu huấn luyện để việc đánh giá có ý nghĩa.
+4. Sau khi thay dữ liệu, chạy lại pipeline huấn luyện/đánh giá và kiểm thử chatbot.

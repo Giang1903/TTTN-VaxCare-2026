@@ -57,7 +57,7 @@ export default function AIBooking() {
           </div>
           <div className="ai-content">
             <span className="eyebrow"
-              ><span className="dot"></span>AI Smart Booking</span
+              ><span className="dot"></span>Smart Booking</span
             >
             <h2>Đặt lịch tiêm thông minh,<br />giảm thời gian chờ</h2>
             <p className="lead">

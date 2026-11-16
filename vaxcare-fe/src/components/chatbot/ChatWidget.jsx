@@ -83,6 +83,7 @@ export default function ChatWidget() {
       // Đổi người dùng: xóa tin của owner mới (bắt đầu sạch) rồi hiện welcome
       clearStoredMessages(ownerKey);
       const welcome = { ...WELCOME, id: `welcome_${Date.now()}` };
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMessages([welcome]);
       saveStoredMessages(ownerKey, [welcome]);
       setError(null);

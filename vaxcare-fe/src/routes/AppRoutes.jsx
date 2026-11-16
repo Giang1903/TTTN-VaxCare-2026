@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 
 // ===== LAYOUTS =====
@@ -67,6 +67,8 @@ export default function AppRoutes() {
         <Route path="/support" element={<SupportPage />} />
         <Route path="/payment-result" element={<PaymentResultPage />} />
       </Route>
+
+      <Route path="/history" element={<Navigate to="/record" replace />} />
 
       {/* USER SAU ĐĂNG NHẬP */}
       <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>
