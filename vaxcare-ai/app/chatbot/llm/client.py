@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 from pathlib import Path
 from typing import Any
 
@@ -129,6 +130,55 @@ class LLMClient:
             if m.get("role") == "user":
                 user = m.get("content") or ""
                 break
+
+        # Câu hỏi định nghĩa / phòng bệnh gì → ưu tiên dòng Phòng bệnh / Mô tả
+        q_part = ""
+        if "Câu hỏi hiện tại" in user:
+            q_part = user[user.rfind("Câu hỏi hiện tại") :][:200].lower()
+        is_def_q = bool(
+            re.search(
+                r"(phòng\s*(bệnh\s*)?gì|dùng\s*để|công\s*dụng|tác\s*dụng|"
+                r"là\s*gì|chủng\s*nào|phòng\s*những)",
+                q_part or user[:300].lower(),
+            )
+        )
+        if is_def_q:
+            disease_lines: list[str] = []
+            for line in user.splitlines():
+                ls = line.strip()
+                if re.match(
+                    r"^(Phòng\s*bệnh|Mô\s*tả|Vaccine)\s*:",
+                    ls,
+                    re.I,
+                ):
+                    disease_lines.append(ls)
+            if disease_lines:
+                # gom theo card: lấy bộ Vaccine + Phòng bệnh + Mô tả đầu tiên đủ
+                name = ""
+                disease = ""
+                desc = ""
+                for ls in disease_lines:
+                    if re.match(r"^Vaccine\s*:", ls, re.I) and not name:
+                        name = re.sub(r"^Vaccine\s*:\s*", "", ls, flags=re.I).strip()
+                    elif re.match(r"^Phòng\s*bệnh\s*:", ls, re.I) and not disease:
+                        disease = re.sub(
+                            r"^Phòng\s*bệnh\s*:\s*", "", ls, flags=re.I
+                        ).strip()
+                    elif re.match(r"^Mô\s*tả\s*:", ls, re.I) and not desc:
+                        desc = re.sub(r"^Mô\s*tả\s*:\s*", "", ls, flags=re.I).strip()
+                parts: list[str] = []
+                label = name or "Vaccine này"
+                if disease:
+                    parts.append(f"{label} dùng để phòng: {disease}.")
+                if desc:
+                    parts.append(desc)
+                if parts:
+                    parts.append(
+                        "Nội dung mang tính tham khảo; xác nhận lại với nhân viên y tế "
+                        "trước khi quyết định."
+                    )
+                    return "\n".join(parts)
+
         snippet = ""
         for key in (
             "Kết quả rule engine:",
@@ -142,6 +192,16 @@ class LLMClient:
                 break
         if not snippet:
             snippet = user[:400]
+
+        # Tránh trả về thuần "Khoảng cách (ngày): N" khi mock cắt giữa card
+        lines = [ln for ln in snippet.splitlines() if ln.strip()]
+        filtered = [
+            ln
+            for ln in lines
+            if not re.match(r"^\s*Khoảng\s*cách\s*\(?ngày\)?\s*:", ln, re.I)
+        ]
+        if filtered:
+            snippet = "\n".join(filtered[:12])
 
         return (
             "Dựa trên thông tin hiện có:\n"

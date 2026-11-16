@@ -75,6 +75,13 @@ class SessionMemory:
             self.soft_context["subject"] = entities["subject"]
         if entities.get("awaiting_age_confirm") is not None:
             self.soft_context["awaiting_age_confirm"] = bool(entities["awaiting_age_confirm"])
+        # Thai kỳ / tình trạng đặc biệt — giữ qua các lượt để không mất ngữ cảnh
+        if entities.get("is_pregnant"):
+            self.soft_context["is_pregnant"] = True
+        if entities.get("gestational_weeks") is not None:
+            self.soft_context["gestational_weeks"] = entities["gestational_weeks"]
+        if entities.get("gestational_months") is not None:
+            self.soft_context["gestational_months"] = entities["gestational_months"]
         vids = entities.get("vaccine_ids")
         if vids:
             prev = self.soft_context.get("vaccine_ids") or []

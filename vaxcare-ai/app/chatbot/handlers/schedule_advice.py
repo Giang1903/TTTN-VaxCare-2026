@@ -22,30 +22,11 @@ from app.chatbot.slots import (
 from app.schemas.chat import Action, ChatResponse, Source
 
 def _is_age_only_statement(message: str) -> bool:
-    """User chỉ nêu tuổi/đối tượng, chưa hỏi lịch / tiêm gì."""
-    t = (message or "").strip().lower()
-    if not t:
-        return False
-    # Có hỏi về lịch / vaccine / tiêm gì → không phải age-only
-    if re.search(
-        r"(tiêm gì|tiêm những|vaccine gì|vắc xin gì|nên tiêm|có thể tiêm|"
-        r"lịch tiêm|mũi nào|còn mũi|theo lịch|tcmr|phác đồ|"
-        r"kiểm tra|tư vấn lịch|gợi ý)",
-        t,
-    ):
-        return False
-    # Có nêu tuổi/tháng và câu ngắn
-    has_age = bool(re.search(r"\d+\s*(tuổi|tháng)|sơ sinh", t))
-    if not has_age:
-        return False
-    # Câu chủ yếu khai báo (bé/con/tôi + tuổi)
-    if len(t) <= 80 and re.search(
-        r"(bé|con|cháu|trẻ|nhà mình|tôi|mình|em).{0,20}\d+\s*(tuổi|tháng)"
-        r"|\d+\s*(tuổi|tháng)",
-        t,
-    ):
-        return True
-    return False
+    """User chỉ nêu tuổi — không kèm câu hỏi / tên vaccine / triệu chứng."""
+    from app.chatbot.message_shape import is_pure_age_statement
+    # Mọi nội dung hỏi thêm (mũi N, là sao, phác đồ…) → không phải age-only
+    # Không liệt kê từng loại vaccine tại đây.
+    return is_pure_age_statement(message)
 
 
 
@@ -119,18 +100,59 @@ def handle_schedule_advice(
     sources: list[Source] = []
     actions: list[Action] = []
 
+    is_pregnant = bool(entities.get("is_pregnant"))
+    gest_months = entities.get("gestational_months")
+    gest_weeks = entities.get("gestational_weeks")
+    if not is_pregnant and re.search(
+        r"(mang\s*thai|có\s*thai|thai\s*\d+\s*tuần|\d+\s*tuần\s*thai|"
+        r"thai\s*phụ|pnct|(?:^|[\s,;])thai(?:\s+\d+|\s|$))",
+        message or "",
+        re.I,
+    ):
+        is_pregnant = True
+        mw = re.search(r"(\d+)\s*tuần", message or "", re.I)
+        if mw and gest_weeks is None:
+            gest_weeks = float(mw.group(1))
+            gest_months = round(gest_weeks / 4.345, 1)
+    if is_pregnant:
+        store.update_soft_context(
+            session_id,
+            {
+                "is_pregnant": True,
+                "gestational_months": gest_months,
+                "gestational_weeks": gest_weeks,
+            },
+        )
+    elif soft.get("is_pregnant"):
+        is_pregnant = True
+        gest_months = soft.get("gestational_months")
+        gest_weeks = soft.get("gestational_weeks")
+
     eligibility = check_eligibility_from_text(message)
     eligibility_block = ""
-    if eligibility.status in ("defer_suggested", "caution"):
+    if eligibility.status in ("defer_suggested", "caution", "pregnancy"):
         eligibility_block = format_eligibility_text(eligibility)
         sources.append(
             Source(
-                doc_id="qd-1575-byt",
-                title="Quyết định 1575/QĐ-BYT – Hướng dẫn khám sàng lọc trước tiêm",
+                doc_id="tt10-2024" if eligibility.status == "pregnancy" else "qd-1575-byt",
+                title=(
+                    "TT-10/2024 – tiêm chủng thai phụ"
+                    if eligibility.status == "pregnancy"
+                    else "Quyết định 1575/QĐ-BYT – Hướng dẫn khám sàng lọc trước tiêm"
+                ),
                 issuer="Bộ Y tế",
                 tier="A",
             )
         )
+
+    # --- Thai kỳ: không bắt buộc tuổi lịch sử người lớn; dùng rule Thai phụ ---
+    if is_pregnant and age_info.get("needs_age"):
+        # Coi như đủ thông tin để tư vấn theo tuổi thai
+        age_info = dict(age_info)
+        age_info["needs_age"] = False
+        age_info["age_months"] = age_info.get("age_months") or 0
+        age_info["age_years"] = age_info.get("age_years") or 0
+        age_info["source"] = age_info.get("source") or "pregnancy"
 
     # --- Thiếu tuổi: hỏi, không bịa ---
     if age_info["needs_age"]:
@@ -177,7 +199,12 @@ def handle_schedule_advice(
         )
 
     # --- Có tuổi từ hồ sơ nhưng chưa xác nhận ---
-    if age_info["needs_confirm"] and age_info["source"] == "profile":
+    # Khi đang mang thai: không chặn bằng confirm tuổi người lớn — ưu tiên rule Thai phụ
+    if (
+        age_info["needs_confirm"]
+        and age_info["source"] == "profile"
+        and not is_pregnant
+    ):
         years = age_info["age_years"]
         months = age_info["age_months"]
         age_label = (
@@ -219,6 +246,22 @@ def handle_schedule_advice(
                 "eligibility": eligibility.to_dict(),
             },
         )
+    if is_pregnant and age_info.get("needs_confirm") and age_info["source"] == "profile":
+        # Ghi nhận tuổi hồ sơ nhưng không chờ confirm — tư vấn theo thai kỳ ngay
+        mem.set_soft(
+            age_years=age_info["age_years"],
+            age_months=age_info["age_months"],
+            age_source="profile",
+            age_confirmed=True,
+            awaiting_age_confirm=False,
+            subject="self",
+            is_pregnant=True,
+            gestational_weeks=gest_weeks,
+            gestational_months=gest_months,
+        )
+        age_info = dict(age_info)
+        age_info["needs_confirm"] = False
+        age_info["age_confirmed"] = True
 
     age_months = age_info["age_months"]
     age_years = age_info["age_years"]
@@ -233,8 +276,15 @@ def handle_schedule_advice(
         awaiting_age_for_advice=False,
     )
 
-# Chỉ nêu tuổi tự nhiên (bot không đang hỏi tuổi để tư vấn) → ghi nhận thôi
-    if _is_age_only_statement(message) and not soft.get("awaiting_age_for_advice"):
+# Chỉ nêu tuổi thuần — nếu còn hỏi mũi/vaccine/triệu chứng thì BỎ QUA (mọi vaccine)
+    from app.chatbot.message_shape import has_substantive_question as _has_q
+    if (
+        not _has_q(message or "")
+        and _is_age_only_statement(message)
+        and not soft.get("awaiting_age_for_advice")
+        and not soft.get("awaiting_faq_age")
+        and soft.get("last_intent") != "faq_vaccine"
+    ):
         years = age_info.get("age_years")
         months = age_info.get("age_months")
         if months is not None and months < 36:
@@ -277,8 +327,23 @@ def handle_schedule_advice(
         age_months=age_months,
         age_years=age_years,
         completed=completed or None,
+        is_pregnant=is_pregnant,
+        gestational_months=float(gest_months) if gest_months is not None else None,
     )
     rule_text = format_schedule_text(result)
+    if is_pregnant:
+        g_label = ""
+        if gest_weeks is not None:
+            g_label = f" (khoảng {gest_weeks:g} tuần thai)"
+        elif gest_months is not None:
+            g_label = f" (khoảng {gest_months:g} tháng thai)"
+        rule_text = (
+            f"Đối tượng: phụ nữ đang mang thai{g_label}.\n"
+            "Các mũi thường được cân nhắc trong thai kỳ (theo hướng dẫn / khuyến cáo đã nạp):\n"
+            + rule_text
+            + "\n• Vắc xin sống giảm độc lực (MMR, thủy đậu, BCG, …): thường chống chỉ định khi đang mang thai — để sau khi sinh (và hết chống chỉ định).\n"
+            "• Cần khám sàng lọc trước tiêm tại cơ sở; quyết định cuối cùng do nhân viên y tế."
+        )
     if age_info["source"] == "profile":
         rule_text = (
             f"Theo hồ sơ tài khoản: khoảng {age_years:g} tuổi ({int(age_months or 0)} tháng).\n"

@@ -73,7 +73,7 @@ def _mostly_english(text: str) -> bool:
 
 
 def _strip_prompt_leak(text: str) -> tuple[str, bool]:
-    """Bỏ đoạn model copy hướng dẫn nội bộ."""
+    """Bỏ đoạn model copy hướng dẫn / dump ngữ cảnh thô."""
     if not text:
         return text, False
     bad_markers = (
@@ -82,13 +82,40 @@ def _strip_prompt_leak(text: str) -> tuple[str, bool]:
         "phân loại câu hỏi của bạn",
         "→ trả lời theo ngữ cảnh",
         "Chỉ trả lời nếu ngữ cảnh",
-        "Ngữ cảnh truy xuất:",
+        "Ngữ cảnh truy xuất",
         "Kết quả sàng lọc sơ bộ",
+        "Dựa trên thông tin hiện có",
+        "chỉ được dùng các ý dưới đây",
+        "Các ông, bà: Chánh Văn phòng",
+        "Chánh Văn phòng Bộ, Cục trưởng",
+        "about:blank",
+        "I. KHÁM SÀNG LỌC",
+        "□ Có □",
+        "□ Không □",
+    )
+    field_line = re.compile(
+        r"^(Vaccine|Nhà sản xuất|Phòng bệnh|Số mũi|Khoảng cách|Mô tả|Phác đồ)\s*:",
+        re.I,
+    )
+    admin_line = re.compile(
+        r"điều\s*\d+\s*\.\s*các\s*ông|chánh\s*văn\s*phòng\s*bộ|"
+        r"cục\s*trưởng\s*cục\s*quản\s*lý\s*khám",
+        re.I,
     )
     changed = False
     lines = []
     for line in text.splitlines():
-        if any(m.lower() in line.lower() for m in bad_markers):
+        s = line.strip()
+        if any(m.lower() in s.lower() for m in bad_markers):
+            changed = True
+            continue
+        if admin_line.search(s):
+            changed = True
+            continue
+        if s.startswith("[") and s.endswith("]") and len(s) < 80:
+            changed = True
+            continue
+        if field_line.match(s):
             changed = True
             continue
         lines.append(line)
@@ -145,14 +172,6 @@ def enforce_guardrails(
             "không hướng dẫn điều trị hay dùng thuốc. "
             "Bạn hỏi về vaccine (phòng bệnh gì, mấy mũi, đối tượng) hoặc gặp bác sĩ nếu cần khám chữa bệnh."
         )
-
-    if re.search(
-        r"(xong được khoảng|cách đây khoảng|khoảng một năm|một năm rưỡi|"
-        r"đã tiêm.*cách đây|hoàn thành mũi.*khoảng)",
-        out,
-        re.I,
-    ):
-        warnings.append("possible_invented_elapsed_time")
 
     if _mostly_english(out):
         warnings.append("non_vietnamese_output")

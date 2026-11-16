@@ -105,21 +105,49 @@ def _row_priority(row: dict[str, Any], age_months: float) -> int:
     return 60
 
 
-def _select_relevant_rows(df: pd.DataFrame, age_months: float) -> pd.DataFrame:
+def _select_relevant_rows(
+    df: pd.DataFrame,
+    age_months: float,
+    is_pregnant: bool = False,
+    gestational_months: float | None = None,
+) -> pd.DataFrame:
     """
     Chọn rule liên quan tuổi hiện tại:
     - Mốc trong cửa sổ tuổi
     - Mốc quá hạn ≤ 6 tháng (nhắc kiểm tra, không liệt kê cả năm đầu)
     - Mốc sắp tới ≤ 2 tháng
     - Catch-up chỉ giữ phụ
-    - Bỏ rule Thai phụ trừ khi tuổi nằm trong cửa sổ thai (hiếm khi dùng age_months thai)
+    - Rule Thai phụ: chỉ khi is_pregnant; dùng gestational_months (0–9) nếu có
     """
     am = float(age_months)
+    g_am = float(gestational_months) if gestational_months is not None else None
     rows = []
     for _, row in df.iterrows():
         age_group = str(row.get("age_group") or "")
-        # Rule thai phụ không áp cho trẻ / người hỏi tuổi thường
-        if "thai phụ" in age_group.lower() or "thai ph" in age_group.lower():
+        is_thai_rule = "thai phụ" in age_group.lower() or "thai ph" in age_group.lower()
+
+        if is_thai_rule:
+            if not is_pregnant:
+                continue
+            # Dùng tuổi thai nếu có, không thì coi mọi rule thai phụ đều áp
+            try:
+                a0 = float(row["age_from_months"])
+                a1 = float(row["age_to_months"])
+            except (TypeError, ValueError):
+                continue
+            if g_am is not None and not (a0 <= g_am <= a1):
+                continue
+            d = row.to_dict()
+            d["_is_catch_up"] = False
+            d["_priority"] = 10
+            d["_overdue"] = False
+            d["_upcoming_soon"] = False
+            d["_pregnancy"] = True
+            rows.append(d)
+            continue
+
+        # Rule thường: bỏ qua khi đang hỏi thai kỳ (tránh lịch trẻ em)
+        if is_pregnant:
             continue
 
         try:
@@ -172,15 +200,18 @@ def advise_schedule(
     completed: set[tuple[int, int]] | None = None,
     df: pd.DataFrame | None = None,
     max_items: int = 10,
+    is_pregnant: bool = False,
+    gestational_months: float | None = None,
 ) -> ScheduleResult:
     """
     Trả về các mũi nên quan tâm ở độ tuổi hiện tại.
     Ưu tiên mốc lịch theo tuổi; catch-up chỉ khi phù hợp / phụ.
+    is_pregnant + gestational_months: dùng rule Thai phụ (0–9 tháng thai).
     """
     if age_months is None:
-        if age_years is None:
+        if age_years is None and not is_pregnant:
             raise ValueError("Cần age_months hoặc age_years")
-        age_months = years_to_months(age_years)
+        age_months = years_to_months(age_years) if age_years is not None else 0.0
     age_months = float(age_months)
     age_years = age_months / 12.0
 
@@ -188,7 +219,12 @@ def advise_schedule(
         df = load_age_rules()
 
     completed = completed or set()
-    subset = _select_relevant_rows(df, age_months)
+    subset = _select_relevant_rows(
+        df,
+        age_months,
+        is_pregnant=is_pregnant,
+        gestational_months=gestational_months,
+    )
 
     recommendations: list[DoseAdvice] = []
     by_vaccine: dict[int, list[DoseAdvice]] = {}

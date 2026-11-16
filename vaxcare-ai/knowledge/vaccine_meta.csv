@@ -1,0 +1,20 @@
+vaccine_id,short_name,aliases,annual,mandatory_tcmr,min_age_months,max_age_months,typical_doses,notes
+1,BCG,"bcg,bbg,lao",0,1,0,12,1,TCMR - 1 lần sơ sinh
+2,Viêm gan B,"viêm gan b,hepb,hep b,hbv",0,1,0,,3,TCMR - liều sơ sinh + lịch 0-1-6
+3,DTP/5-in-1,"dtp,bạch hầu,ho gà,5 trong 1",0,1,2,,4,TCMR cơ bản + nhắc
+4,IPV/OPV,"ipv,opv,bại liệt",0,1,2,,3,TCMR
+5,Hib,"hib",0,1,2,,3,TCMR / trong 5-in-1
+6,Sởi,"sởi,measles",0,1,9,,2,TCMR
+7,MMR,"mmr,sởi-quai bị-rubella",0,0,12,,2,Thường dịch vụ / kết hợp
+8,JE,"je,viêm não nhật bản,viêm não",0,1,12,,3,TCMR JE
+9,Rota,"rota,rotavirus",0,0,2,8,2,Dịch vụ / chương trình tùy địa phương
+10,Cúm,"cúm,flu,influenza",1,0,6,,1,Khuyến cáo hàng năm - không bắt buộc TCMR cốt lõi
+11,HPV,"hpv,gardasil",0,0,108,540,3,Dịch vụ - 9-14 thường 2 liều >=15 thường 3
+12,PCV,"pcv,phế cầu,prevenar",0,0,2,,3,Dịch vụ / khuyến cáo
+13,Shingrix,"zona,shingrix,herpes zoster",0,0,600,,2,Thường >=50 tuổi - dịch vụ
+14,Thủy đậu,"thủy đậu,varivax,varicella",0,0,12,,2,Dịch vụ
+15,Td/Tdap,"td,tdap,uốn ván người lớn",0,0,84,,1,Nhắc / vết thương / thai phụ theo phác đồ
+16,Viêm gan A,"viêm gan a,hepa,hep a,hav",0,0,12,,2,Dịch vụ - thường từ 1 tuổi
+17,Não mô cầu,"não mô cầu,meningococcal,menactra,menveo",0,0,24,,2,Dịch vụ - theo nguy cơ / độ tuổi
+18,Thương hàn,"thương hàn,typhoid",0,0,24,,1,Dịch vụ - vùng dịch / đi vùng có dịch
+19,COVID-19,"covid,covid-19,sars-cov,ncov",0,0,60,,2,Theo chiến dịch / khuyến cáo từng thời điểm
