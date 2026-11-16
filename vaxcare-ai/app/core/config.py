@@ -48,6 +48,7 @@ class Settings(BaseSettings):
     retrieval_top_k: int = 5
     retrieval_min_score: float = 0.50
     retrieval_score_margin: float = 0.10
+    retrieval_dense_min_score: float = 0.60  # cosine thô top-1; chọn từ eval (neg max 0.64, câu tự nhiên min 0.61)
     # Sprint 1: tăng threshold intent (từ 0.45 → 0.62)
     intent_min_confidence: float = 0.62
     chat_timeout_sec: float = 40.0

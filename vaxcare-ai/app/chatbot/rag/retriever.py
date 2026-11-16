@@ -24,12 +24,16 @@ class Retriever:
         min_hits_for_evidence: int = 1,
         rrf_k: int = 60,
         use_rrf: bool = True,
+        dense_min_score: float = 0.0,
     ):
         """
         hybrid_alpha: trọng số điểm dense khi fusion tuyến tính (nếu không dùng RRF).
         min_score: ngưỡng cosine/IP tuyệt đối – dưới mức này coi như không khớp.
         score_margin: top1 phải cao hơn hit tham chiếu ít nhất margin để tránh
                       nhận câu hỏi ngoài miền (negative) làm có căn cứ.
+        dense_min_score: ngưỡng cosine THÔ của hit dense tốt nhất. Điểm sau RRF luôn >= 0.70
+                      (do rrf_norm top1 = 1) nên không phân biệt được câu ngoài miền;
+                      ngưỡng này mới là chốt chặn thật. 0.0 = tắt (hành vi cũ).
         use_rrf: Reciprocal Rank Fusion – ổn định hơn min-max khi BM25 scale lệch.
         """
         self.embedder = embedder
@@ -42,6 +46,7 @@ class Retriever:
         self.min_hits_for_evidence = min_hits_for_evidence
         self.rrf_k = rrf_k
         self.use_rrf = use_rrf
+        self.dense_min_score = dense_min_score
 
     def retrieve(
         self,
@@ -69,6 +74,8 @@ class Retriever:
         dense_hits = self.store.search(
             qvec, top_k=fetch_k, vaccine_id=vaccine_id, min_score=0.0
         )
+
+        dense_max = max((float(h.get("score", 0)) for h in dense_hits), default=0.0)
 
         if self.bm25 is not None:
             sparse_hits = self.bm25.search(query, top_k=fetch_k)
@@ -107,6 +114,12 @@ class Retriever:
         else:
             rejected_reason = "below_min_score"
 
+        # 2b) Chốt chặn theo cosine dense thô
+        if enough and dense_max < self.dense_min_score:
+            rejected_reason = "below_dense_score"
+            above = []
+            enough = False
+
         # 3) Heuristic bổ sung cho negative queries
         if enough and self._looks_out_of_domain(query) and raw_max < (thr + 0.15):
             rejected_reason = "out_of_domain_heuristic"
@@ -126,6 +139,7 @@ class Retriever:
             "enough_evidence": enough,
             "max_score": max_score,
             "raw_max_score": raw_max,
+            "dense_max_score": dense_max,
             "query": query,
             "rejected_reason": rejected_reason,
         }

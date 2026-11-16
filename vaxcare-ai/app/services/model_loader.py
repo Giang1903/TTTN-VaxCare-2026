@@ -68,6 +68,7 @@ def get_retriever() -> Any | None:
             min_score=settings.retrieval_min_score,
             score_margin=getattr(settings, "retrieval_score_margin", 0.10),
             use_rrf=True,
+            dense_min_score=getattr(settings, "retrieval_dense_min_score", 0.0),
         )
         logger.info(
             "Retriever ready (embedder=%s bm25=%s min_score=%s margin=%s n_chunks=%s)",

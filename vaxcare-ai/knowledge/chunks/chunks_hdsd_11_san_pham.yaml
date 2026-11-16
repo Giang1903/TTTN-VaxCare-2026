@@ -179,7 +179,7 @@
   source_file: leaflets/Influvac Tetra.pdf
   source_pages: theo mục tương ứng trong tờ HDSD 
   source_year: HDSD bản Việt Nam
-  conflict_note: 'Bổ sung cho phần chưa đọc của bài WHO về cúm: trẻ dưới 9 tuổi lần đầu tiêm cần 2 liều.
+  conflict_note: 'Bổ sung cho phần chưa đọc của bài WHO về cúm: trẻ dưới 9 tuổi lần đầu tiêm cần 2 liều.'
 - id: flu-hdsd-002
   vaccine_id: 10
   topic: chong_chi_dinh

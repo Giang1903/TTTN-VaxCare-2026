@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -72,8 +73,11 @@ def main() -> None:
 
     min_score = 0.15 if "tfidf" in getattr(embedder, "model_name", "") else 0.48
     retriever = Retriever(
-        embedder, store, bm25=bm25, top_k=5, min_score=min_score, score_margin=0.08
+        embedder, store, bm25=bm25, top_k=5, min_score=min_score, score_margin=0.08,
+        dense_min_score=float(os.environ.get("DENSE_MIN_SCORE", "0.60")),
     )
+    pos_dense: list[float] = []
+    neg_dense: list[float] = []
 
     rows = load_testset(TESTSET)
 
@@ -110,6 +114,9 @@ def main() -> None:
         ranked_ids = [chunk_id_from_hit(h) for h in result.get("hits") or []]
         ranked_ids = [x for x in ranked_ids if x]
 
+        dmax = float(result.get("dense_max_score", 0.0))
+        (pos_dense if gold else neg_dense).append(dmax)
+
         if gold:
             n_pos += 1
             rank = None
@@ -128,6 +135,7 @@ def main() -> None:
                     "gold": sorted(gold),
                     "top5": ranked_ids[:5],
                     "rank_first_gold": rank,
+                    "dense_max": round(dmax, 4),
                     "type": "positive",
                 }
             )
@@ -144,6 +152,7 @@ def main() -> None:
                     "enough_evidence": enough,
                     "type": "negative",
                     "neg_ok": ok,
+                    "dense_max": round(dmax, 4),
                 }
             )
 
@@ -162,7 +171,7 @@ def main() -> None:
 
     REPORT.parent.mkdir(parents=True, exist_ok=True)
     REPORT.write_text(
-        json.dumps({"summary": summary, "details": details[:80]}, ensure_ascii=False, indent=2),
+        json.dumps({"summary": summary, "details": details}, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
 
@@ -170,6 +179,15 @@ def main() -> None:
     for k, v in summary.items():
         print(f"  {k}: {v}")
     print(f"Đã ghi {REPORT}")
+
+    if pos_dense and neg_dense:
+        import statistics as st
+
+        print("\n--- Gợi ý ngưỡng DENSE_MIN_SCORE (cosine thô top-1) ---")
+        print(f"  positive: min={min(pos_dense):.3f} median={st.median(pos_dense):.3f}")
+        print(f"  negative: median={st.median(neg_dense):.3f} max={max(neg_dense):.3f}")
+        print("  Chọn ngưỡng nằm giữa max(negative) và phần thấp của positive, rồi chạy lại:")
+        print("    DENSE_MIN_SCORE=0.55 python eval/eval_retrieval.py")
 
     miss = [d for d in details if d.get("type") == "positive" and not d.get("rank_first_gold")]
     if miss:
