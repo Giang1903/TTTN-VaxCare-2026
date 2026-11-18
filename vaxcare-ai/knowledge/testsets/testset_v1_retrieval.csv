@@ -1,0 +1,176 @@
+qid,question,intent,chunk_id,is_relevant,notes
+1,Chỉ định của vaccine này là gì?,chi_dinh,var-hdsd-001,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+2,Liều lượng tiêm như thế nào?,lieu_cach,var-hdsd-002,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+3,Những trường hợp chống chỉ định tiêm chủng ở trẻ?,chi_dinh,var-hdsd-003,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+4,Phụ nữ mang thai có tiêm được không?,thong_tin_chung,var-hdsd-004,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+5,Vaccine BCG (lao) chỉ định cho đối tượng nào và liều lượng ra sao?,lieu_cach,bcg-hdsd-001,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml | rewritten specific
+6,Những trường hợp chống chỉ định tiêm chủng ở trẻ?,chi_dinh,bcg-hdsd-002,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+7,Phụ nữ mang thai có tiêm được không?,thong_tin_chung,bcg-hdsd-003,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+8,Lịch tiêm vaccine MMR (sởi-quai bị-rubella) như thế nào?,lich_tiem,mmr-hdsd-001,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml | rewritten specific
+9,Những trường hợp chống chỉ định tiêm chủng ở trẻ?,chi_dinh,mmr-hdsd-002,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+10,Lịch tiêm vaccine zona (Shingrix) như thế nào?,lich_tiem,zos-hdsd-001,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml | rewritten specific
+11,Vaccine Tdap (Adacel) chỉ định cho đối tượng nào và liều lượng ra sao?,lieu_cach,tdap-hdsd-001,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml | rewritten specific
+12,Phụ nữ mang thai có tiêm được vaccine Tdap (Adacel) không?,chi_dinh,tdap-hdsd-002,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml | rewritten specific
+13,Vaccine viêm não Nhật Bản chỉ định cho đối tượng nào và liều lượng ra sao?,lieu_cach,je-hdsd-001,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml | rewritten specific
+14,Những trường hợp chống chỉ định tiêm chủng ở trẻ?,chi_dinh,je-hdsd-002,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+15,Lịch tiêm vaccine bại liệt IPV như thế nào?,lich_tiem,ipv-hdsd-001,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml | rewritten specific
+16,Phụ nữ mang thai có tiêm được vaccine bại liệt IPV không?,chi_dinh,ipv-hdsd-002,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml | rewritten specific
+17,Vaccine cúm (Influvac Tetra) chỉ định cho đối tượng nào và liều lượng ra sao?,lieu_cach,flu-hdsd-001,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml | rewritten specific
+18,Những trường hợp chống chỉ định tiêm chủng ở trẻ?,chi_dinh,flu-hdsd-002,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+19,Vaccine phế cầu (Prevenar) chỉ định cho đối tượng nào và liều lượng ra sao?,lieu_cach,pcv-hdsd-001,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml | rewritten specific
+20,Phụ nữ mang thai có tiêm được vaccine phế cầu (Prevenar) không?,chi_dinh,pcv-hdsd-002,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml | rewritten specific
+21,Lịch tiêm vaccine DTaP-IPV (Tetraxim) như thế nào?,lich_tiem,dtap-hdsd-001,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml | rewritten specific
+22,Những trường hợp chống chỉ định tiêm chủng ở trẻ?,chi_dinh,dtap-hdsd-002,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+23,Chỉ định của vaccine này là gì?,chi_dinh,hpv-hdsd-001,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml
+24,Lịch tiêm vaccine HPV (Gardasil) theo hướng dẫn là gì?,lich_tiem,hpv-hdsd-002,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml | rewritten specific
+25,Phụ nữ mang thai có tiêm được vaccine HPV (Gardasil) không?,chi_dinh,hpv-hdsd-003,1,auto from knowledge/chunks/chunks_hdsd_11_san_pham.yaml | rewritten specific
+26,Phạm vi và mục đích của Chương trình Tiêm chủng mở rộng (TCMR) là gì?,thong_tin_chung,tcmr-001,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml | rewritten specific
+27,Trẻ sơ sinh theo TCMR cần tiêm những mũi nào trong 24 giờ đầu?,lich_tiem,tcmr-002,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml | rewritten specific
+28,Lịch tiêm TCMR cho trẻ dưới 1 tuổi gồm những vaccine nào?,lich_tiem,tcmr-003,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml | rewritten specific
+29,Lịch tiêm TCMR cho trẻ từ 5 đến 9 tháng tuổi như thế nào?,lich_tiem,tcmr-004,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml | rewritten specific
+30,Lịch tiêm vaccine viêm não Nhật Bản theo TCMR khi trẻ đủ 1 tuổi?,lich_tiem,tcmr-005,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml | rewritten specific
+31,Lịch tiêm TCMR lúc trẻ 18 tháng tuổi gồm những mũi nào?,lich_tiem,tcmr-006,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml | rewritten specific
+32,Trẻ 7 tuổi theo TCMR cần tiêm nhắc những vaccine nào?,lich_tiem,tcmr-007,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml | rewritten specific
+33,Phụ nữ có thai theo TCMR được tiêm vaccine uốn ván như thế nào?,thong_tin_chung,tcmr-008,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml | rewritten specific
+34,Tiêm bù và tiêm chiến dịch theo Thông tư 10/2024 được quy định ra sao?,thong_tin_chung,tcmr-009,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml | rewritten specific
+35,Vùng có dịch thì lịch tiêm chủng điều chỉnh thế nào theo TCMR?,thong_tin_chung,tcmr-010,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml | rewritten specific
+36,Quyết định 1575/QĐ-BYT hướng dẫn khám sàng lọc trước tiêm chủng nhằm mục đích gì?,thong_tin_chung,scr-001,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml | rewritten specific
+37,Khám sàng lọc trước tiêm chủng trẻ em gồm những nội dung chính nào?,chi_dinh,scr-002,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml | rewritten specific
+38,Khi nào cần tạm hoãn tiêm chủng tại cơ sở ngoài bệnh viện?,chong_chi_dinh,scr-003,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml | rewritten specific
+39,Trường hợp nào trẻ cần được chuyển đến bệnh viện để tiêm chủng?,thong_tin_chung,scr-004,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml | rewritten specific
+40,"Trẻ đang mắc bệnh nhẹ (sốt nhẹ, cảm) có được tiêm chủng không?",thong_tin_chung,scr-005,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml | rewritten specific
+41,Trẻ dưới 1 tháng tuổi khám sàng lọc trước tiêm cần lưu ý gì?,thong_tin_chung,scr-006,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml | rewritten specific
+42,Trẻ phơi nhiễm HIV có được tiêm vaccine sống giảm độc lực không?,thong_tin_chung,scr-007,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml | rewritten specific
+43,Trẻ suy giảm miễn dịch bẩm sinh chống chỉ định những vaccine nào?,thong_tin_chung,scr-008,1,auto from knowledge/chunks/chunks_tcmr_va_sang_loc.yaml | rewritten specific
+44,Đối tượng nào nên tiêm vaccine này?,thong_tin_chung,hepb-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+45,Liều tiêm vaccine viêm gan B là bao nhiêu?,lieu_cach,hepb-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+46,Lịch tiêm vaccine viêm gan B theo hướng dẫn là gì?,lich_tiem,hepb-who-003,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+47,Thông tin chính thức về tre_lon_nguoi_lon của viêm gan B?,thong_tin_chung,hepb-who-004,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+48,Thông tin chính thức về nhom_nguy_co của viêm gan B?,thong_tin_chung,hepb-who-005,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+49,Lịch tiêm cơ bản vaccine bạch hầu theo WHO gồm những mũi nào?,lich_tiem,dip-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+50,Liều tiêm vaccine bạch hầu là bao nhiêu?,lieu_cach,dip-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+51,Liều tiêm vaccine uốn ván là bao nhiêu?,lich_tiem,tet-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+52,Phụ nữ mang thai có tiêm được không?,thong_tin_chung,tet-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+53,Lịch tiêm cơ bản vaccine ho gà theo WHO gồm những mũi nào?,lich_tiem,per-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+54,Thông tin chính thức về chon_vaccine của ho gà?,thong_tin_chung,per-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+55,Thông tin chính thức về lich_chung của bại liệt?,lich_tiem,pol-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+56,Thông tin chính thức về lich_ipv của bại liệt?,lich_tiem,pol-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+57,WHO khuyến cáo tiêm vaccine Hib như thế nào?,thong_tin_chung,hib-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+58,Thông tin chính thức về khoang_cach_va_tre_muon của Hib?,thong_tin_chung,hib-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+59,WHO khuyến cáo tiêm vaccine sởi như thế nào?,thong_tin_chung,mea-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+60,Thông tin chính thức về thoi_diem của sởi?,thong_tin_chung,mea-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+61,WHO khuyến cáo tiêm vaccine quai bị như thế nào?,thong_tin_chung,mum-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+62,Liều lượng tiêm như thế nào?,lieu_cach,mum-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+63,WHO khuyến cáo tiêm vaccine RUB như thế nào?,thong_tin_chung,rub-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+64,WHO khuyến cáo tiêm vaccine thủy đậu (Varivax) như thế nào?,lich_tiem,var-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+65,Thông tin chính thức về sau_phoi_nhiem_va_phoi_hop của thủy đậu (Varivax)?,thong_tin_chung,var-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+66,Những trường hợp chống chỉ định tiêm chủng ở trẻ?,chi_dinh,var-who-003,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+67,Thông tin chính thức về lich_tre_em của phế cầu (Prevenar)?,lich_tiem,pcv-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+68,Thông tin chính thức về tiem_bu_va_doi_san_pham của phế cầu (Prevenar)?,thong_tin_chung,pcv-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+69,Thông tin chính thức về chien_luoc của viêm não Nhật Bản?,thong_tin_chung,je-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+70,Liều tiêm vaccine viêm não Nhật Bản là bao nhiêu?,lieu_cach,je-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+71,Đối tượng nào nên tiêm vaccine này?,thong_tin_chung,flu-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+72,Phụ nữ có thai có tiêm vaccine cúm (Influvac Tetra) được không?,thong_tin_chung,flu-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+73,WHO khuyến cáo tiêm vaccine COVID-19 như thế nào?,thong_tin_chung,cov-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+74,Thông tin chính thức về nhom_uu_tien của COVID-19?,thong_tin_chung,cov-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+75,Đối tượng nào nên tiêm vaccine này?,thong_tin_chung,zos-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml
+76,Liều tiêm vaccine zona (Shingrix) là bao nhiêu?,lieu_cach,zos-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+77,Thông tin chính thức về nhom_dac_biet của zona (Shingrix)?,thong_tin_chung,zos-who-003,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+78,WHO khuyến cáo tiêm vaccine BCG (lao) như thế nào?,thong_tin_chung,bcg-who-001,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+79,Thông tin chính thức về chien_luoc_chon_loc của BCG (lao)?,thong_tin_chung,bcg-who-002,1,auto from knowledge/chunks/chunks_who_16_bai.yaml | rewritten specific
+80,Nội dung liên quan chi_dinh_lich trong đoạn ipv-hdsd-001?,thong_tin_chung,ipv-hdsd-001,1,augmented relevant
+81,Nội dung liên quan thai_ky trong đoạn var-hdsd-004?,thong_tin_chung,var-hdsd-004,1,augmented relevant
+82,Quyết định 1575/QĐ-BYT hướng dẫn khám sàng lọc trước tiêm chủng nhằm mục đích gì?,thong_tin_chung,scr-001,1,augmented relevant | rewritten specific
+83,Trẻ 7 tuổi theo TCMR cần tiêm nhắc những vaccine nào?,thong_tin_chung,tcmr-007,1,augmented relevant | rewritten specific
+84,Lịch tiêm TCMR cho trẻ từ 5 đến 9 tháng tuổi như thế nào?,thong_tin_chung,tcmr-004,1,augmented relevant | rewritten specific
+85,Nội dung liên quan chong_chi_dinh trong đoạn flu-hdsd-002?,thong_tin_chung,flu-hdsd-002,1,augmented relevant
+86,Nội dung liên quan chong_chi_dinh trong đoạn je-hdsd-002?,thong_tin_chung,je-hdsd-002,1,augmented relevant
+87,Nội dung liên quan lieu_theo_loai trong đoạn je-who-002?,thong_tin_chung,je-who-002,1,augmented relevant
+88,Nội dung liên quan chong_chi_dinh_thai_ky trong đoạn tdap-hdsd-002?,thong_tin_chung,tdap-hdsd-002,1,augmented relevant
+89,Nội dung liên quan lieu_va_phoi_hop trong đoạn zos-who-002?,thong_tin_chung,zos-who-002,1,augmented relevant
+90,Nội dung liên quan lich_chung trong đoạn pol-who-001?,thong_tin_chung,pol-who-001,1,augmented relevant
+91,Nội dung liên quan chi_dinh_lieu trong đoạn bcg-hdsd-001?,thong_tin_chung,bcg-hdsd-001,1,augmented relevant
+92,Nội dung liên quan thai_ky trong đoạn var-hdsd-004?,thong_tin_chung,var-hdsd-004,1,augmented relevant
+93,Nội dung liên quan chong_chi_dinh_thai_ky trong đoạn tdap-hdsd-002?,thong_tin_chung,tdap-hdsd-002,1,augmented relevant
+94,Lịch tiêm TCMR cho trẻ dưới 1 tuổi gồm những vaccine nào?,thong_tin_chung,tcmr-003,1,augmented relevant | rewritten specific
+95,Lịch tiêm vaccine viêm não Nhật Bản theo TCMR khi trẻ đủ 1 tuổi?,thong_tin_chung,tcmr-005,1,augmented relevant | rewritten specific
+96,Nội dung liên quan sau_phoi_nhiem_va_phoi_hop trong đoạn var-who-002?,thong_tin_chung,var-who-002,1,augmented relevant
+97,Nội dung liên quan khuyen_cao trong đoạn bcg-who-001?,thong_tin_chung,bcg-who-001,1,augmented relevant
+98,Nội dung liên quan thai_ky trong đoạn var-hdsd-004?,thong_tin_chung,var-hdsd-004,1,augmented relevant
+99,Nội dung liên quan nguoi_lon_tuoi_thai_ky trong đoạn flu-who-002?,thong_tin_chung,flu-who-002,1,augmented relevant
+100,Phạm vi và mục đích của Chương trình Tiêm chủng mở rộng (TCMR) là gì?,thong_tin_chung,tcmr-001,1,augmented relevant | rewritten specific
+101,Nội dung liên quan lieu_theo_loai trong đoạn je-who-002?,thong_tin_chung,je-who-002,1,augmented relevant
+102,Nội dung liên quan chon_vaccine trong đoạn per-who-002?,thong_tin_chung,per-who-002,1,augmented relevant
+103,Lịch tiêm TCMR cho trẻ từ 5 đến 9 tháng tuổi như thế nào?,thong_tin_chung,tcmr-004,1,augmented relevant | rewritten specific
+104,Nội dung liên quan khoang_cach_va_tre_muon trong đoạn hib-who-002?,thong_tin_chung,hib-who-002,1,augmented relevant
+105,Nội dung liên quan lieu_va_phoi_hop trong đoạn zos-who-002?,thong_tin_chung,zos-who-002,1,augmented relevant
+106,Quyết định 1575/QĐ-BYT hướng dẫn khám sàng lọc trước tiêm chủng nhằm mục đích gì?,thong_tin_chung,scr-001,1,augmented relevant | rewritten specific
+107,Nội dung liên quan chi_dinh trong đoạn var-hdsd-001?,thong_tin_chung,var-hdsd-001,1,augmented relevant
+108,Nội dung liên quan chi_dinh_lich trong đoạn dtap-hdsd-001?,thong_tin_chung,dtap-hdsd-001,1,augmented relevant
+109,Nội dung liên quan lich_chung trong đoạn pol-who-001?,thong_tin_chung,pol-who-001,1,augmented relevant
+110,Nội dung liên quan doi_tuong trong đoạn hepb-who-001?,thong_tin_chung,hepb-who-001,1,augmented relevant
+111,Quyết định 1575/QĐ-BYT hướng dẫn khám sàng lọc trước tiêm chủng nhằm mục đích gì?,thong_tin_chung,scr-001,1,augmented relevant | rewritten specific
+112,Nội dung liên quan chong_chi_dinh_thai_ky trong đoạn pcv-hdsd-002?,thong_tin_chung,pcv-hdsd-002,1,augmented relevant
+113,Lịch tiêm TCMR cho trẻ dưới 1 tuổi gồm những vaccine nào?,thong_tin_chung,tcmr-003,1,augmented relevant | rewritten specific
+114,Nội dung liên quan doi_tuong trong đoạn hepb-who-001?,thong_tin_chung,hepb-who-001,1,augmented relevant
+115,Nội dung liên quan chong_chi_dinh trong đoạn je-hdsd-002?,thong_tin_chung,je-hdsd-002,1,augmented relevant
+116,Nội dung liên quan chong_chi_dinh_thai_ky trong đoạn tdap-hdsd-002?,thong_tin_chung,tdap-hdsd-002,1,augmented relevant
+117,Nội dung liên quan lich_co_ban trong đoạn dip-who-001?,thong_tin_chung,dip-who-001,1,augmented relevant
+118,Nội dung liên quan chi_dinh_lieu trong đoạn je-hdsd-001?,thong_tin_chung,je-hdsd-001,1,augmented relevant
+119,Nội dung liên quan lich_tiem trong đoạn hepb-who-003?,thong_tin_chung,hepb-who-003,1,augmented relevant
+120,Nội dung liên quan lieu_so_sinh trong đoạn hepb-who-002?,thong_tin_chung,hepb-who-002,1,augmented relevant
+121,Nội dung liên quan khuyen_cao trong đoạn bcg-who-001?,thong_tin_chung,bcg-who-001,1,augmented relevant
+122,Tiêm bù và tiêm chiến dịch theo Thông tư 10/2024 được quy định ra sao?,thong_tin_chung,tcmr-009,1,augmented relevant | rewritten specific
+123,Nội dung liên quan chong_chi_dinh trong đoạn bcg-hdsd-002?,thong_tin_chung,bcg-hdsd-002,1,augmented relevant
+124,Nội dung liên quan khuyen_cao trong đoạn mea-who-001?,thong_tin_chung,mea-who-001,1,augmented relevant
+125,Nội dung liên quan chien_luoc trong đoạn je-who-001?,thong_tin_chung,je-who-001,1,augmented relevant
+126,Nội dung liên quan chong_chi_dinh_thai_ky trong đoạn ipv-hdsd-002?,thong_tin_chung,ipv-hdsd-002,1,augmented relevant
+127,Nội dung liên quan lich_co_ban trong đoạn dip-who-001?,thong_tin_chung,dip-who-001,1,augmented relevant
+128,Nội dung liên quan chi_dinh_lieu trong đoạn tdap-hdsd-001?,thong_tin_chung,tdap-hdsd-001,1,augmented relevant
+129,Nội dung liên quan doi_tuong trong đoạn flu-who-001?,thong_tin_chung,flu-who-001,1,augmented relevant
+130,Khi nào cần tạm hoãn tiêm chủng tại cơ sở ngoài bệnh viện?,thong_tin_chung,scr-003,1,augmented relevant | rewritten specific
+131,Nội dung liên quan tre_lon_nguoi_lon trong đoạn hepb-who-004?,thong_tin_chung,hepb-who-004,1,augmented relevant
+132,Nội dung liên quan nhom_uu_tien trong đoạn cov-who-002?,thong_tin_chung,cov-who-002,1,augmented relevant
+133,Nội dung liên quan chong_chi_dinh_thai_ky trong đoạn hpv-hdsd-003?,thong_tin_chung,hpv-hdsd-003,1,augmented relevant
+134,Nội dung liên quan chong_chi_dinh trong đoạn mmr-hdsd-002?,thong_tin_chung,mmr-hdsd-002,1,augmented relevant
+135,Nội dung liên quan chong_chi_dinh trong đoạn bcg-hdsd-002?,thong_tin_chung,bcg-hdsd-002,1,augmented relevant
+136,Lịch tiêm vaccine viêm não Nhật Bản theo TCMR khi trẻ đủ 1 tuổi?,thong_tin_chung,tcmr-005,1,augmented relevant | rewritten specific
+137,Khi nào cần tạm hoãn tiêm chủng tại cơ sở ngoài bệnh viện?,thong_tin_chung,scr-003,1,augmented relevant | rewritten specific
+138,Nội dung liên quan chi_dinh_lieu trong đoạn tdap-hdsd-001?,thong_tin_chung,tdap-hdsd-001,1,augmented relevant
+139,Lịch tiêm vaccine viêm não Nhật Bản theo TCMR khi trẻ đủ 1 tuổi?,thong_tin_chung,tcmr-005,1,augmented relevant | rewritten specific
+140,Nội dung liên quan chi_dinh_lieu trong đoạn je-hdsd-001?,thong_tin_chung,je-hdsd-001,1,augmented relevant
+141,Nội dung liên quan lich_co_ban trong đoạn dip-who-001?,thong_tin_chung,dip-who-001,1,augmented relevant
+142,Quyết định 1575/QĐ-BYT hướng dẫn khám sàng lọc trước tiêm chủng nhằm mục đích gì?,thong_tin_chung,scr-001,1,augmented relevant | rewritten specific
+143,Nội dung liên quan khuyen_cao trong đoạn mea-who-001?,thong_tin_chung,mea-who-001,1,augmented relevant
+144,Nội dung liên quan tre_lon_nguoi_lon trong đoạn hepb-who-004?,thong_tin_chung,hepb-who-004,1,augmented relevant
+145,Nội dung liên quan chi_dinh_lich trong đoạn dtap-hdsd-001?,thong_tin_chung,dtap-hdsd-001,1,augmented relevant
+146,Nội dung liên quan nhom_nguy_co trong đoạn hepb-who-005?,thong_tin_chung,hepb-who-005,1,augmented relevant
+147,Nội dung liên quan lich_tiem trong đoạn hepb-who-003?,thong_tin_chung,hepb-who-003,1,augmented relevant
+148,Trẻ sơ sinh theo TCMR cần tiêm những mũi nào trong 24 giờ đầu?,thong_tin_chung,tcmr-002,1,augmented relevant | rewritten specific
+149,Vùng có dịch thì lịch tiêm chủng điều chỉnh thế nào theo TCMR?,thong_tin_chung,tcmr-010,1,augmented relevant | rewritten specific
+150,Nội dung liên quan chi_dinh_lich trong đoạn zos-hdsd-001?,thong_tin_chung,zos-hdsd-001,1,augmented relevant
+151,Giá vaccine Gardasil 9 hiện nay bao nhiêu tiền?,out_of_scope,,0,no-answer / out-of-scope
+152,Trung tâm tiêm chủng nào gần quận 1 nhất?,out_of_scope,,0,no-answer / out-of-scope
+153,Tôi muốn đặt lịch tiêm lúc 8 giờ sáng mai được không?,out_of_scope,,0,no-answer / out-of-scope
+154,Bảo hiểm y tế chi trả bao nhiêu phần trăm vaccine dịch vụ?,out_of_scope,,0,no-answer / out-of-scope
+155,Công ty sản xuất Prevenar 20 ở nước nào?,out_of_scope,,0,no-answer / out-of-scope
+156,Làm sao để xin giấy chứng nhận đã tiêm chủng?,out_of_scope,,0,no-answer / out-of-scope
+157,Vaccine có bán lẻ ở nhà thuốc không?,out_of_scope,,0,no-answer / out-of-scope
+158,Tôi bị đau đầu sau khi xem ti vi có liên quan vaccine không?,out_of_scope,,0,no-answer / out-of-scope
+159,Thời tiết hôm nay có ảnh hưởng đến tiêm chủng không?,out_of_scope,,0,no-answer / out-of-scope
+160,"Con tôi thích ăn kẹo, có ảnh hưởng gì đến vaccine không?",out_of_scope,,0,no-answer / out-of-scope
+161,Vaccine có làm tăng chiều cao không?,out_of_scope,,0,no-answer / out-of-scope
+162,Tôi có thể tiêm vaccine cho thú cưng ở đây không?,out_of_scope,,0,no-answer / out-of-scope
+163,Lịch sử phát minh vaccine đầu tiên trên thế giới?,out_of_scope,,0,no-answer / out-of-scope
+164,So sánh giá xe máy và giá một mũi vaccine?,out_of_scope,,0,no-answer / out-of-scope
+165,Cách đăng ký tài khoản trên app VaxCare?,out_of_scope,,0,no-answer / out-of-scope
+166,Màu sắc của lọ vaccine BCG là gì?,out_of_scope,,0,no-answer / out-of-scope
+167,Tôi muốn biết điểm đánh giá Google của cơ sở tiêm?,out_of_scope,,0,no-answer / out-of-scope
+168,Vaccine có giúp giảm cân không?,out_of_scope,,0,no-answer / out-of-scope
+169,Có được uống rượu sau khi tiêm vaccine 1 tuần không? (ngoài khuyến cáo),out_of_scope,,0,no-answer / out-of-scope
+170,Làm thế nào để trở thành nhân viên tiêm chủng?,out_of_scope,,0,no-answer / out-of-scope
+171,Vaccine nào đẹp nhất về bao bì?,out_of_scope,,0,no-answer / out-of-scope
+172,Tôi có thể quay video quá trình tiêm và đăng TikTok không?,out_of_scope,,0,no-answer / out-of-scope
+173,Có ship vaccine tận nhà không?,out_of_scope,,0,no-answer / out-of-scope
+174,Điểm khác biệt giữa vaccine và thuốc kháng sinh?,out_of_scope,,0,no-answer / out-of-scope
+175,"Tôi muốn hỏi về bệnh tiểu đường type 2, không liên quan tiêm chủng.",out_of_scope,,0,no-answer / out-of-scope

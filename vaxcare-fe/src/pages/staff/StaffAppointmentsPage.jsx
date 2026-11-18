@@ -456,7 +456,6 @@ export default function StaffAppointmentsPage() {
                         <div className="who-info">
                           <div className="name">
                             {a.name}
-                            {a.ai && <span className="ai-tag">AI gợi ý</span>}
                           </div>
                           <div className="meta">
                             {a.age} · {a.phone}
@@ -763,16 +762,6 @@ export default function StaffAppointmentsPage() {
                       Hoàn tiền
                     </button>
                   )}
-                  <button
-                    type="button"
-                    className="btn primary"
-                    onClick={() => {
-                      handleAction(drawerAppt, 'checkin');
-                      closeDrawer();
-                    }}
-                  >
-                    Check-in ngay
-                  </button>
                 </>
               )}
               {drawerAppt.status === 'checkedin' && (
@@ -780,19 +769,7 @@ export default function StaffAppointmentsPage() {
                   <button type="button" className="btn outline" onClick={closeDrawer}>
                     Đóng
                   </button>
-                  {String(drawerAppt.paymentStatus || '').toUpperCase() === 'SUCCESS' && (
-                    <button
-                      type="button"
-                      className="btn outline"
-                      style={{ borderColor: '#fca5a5', color: '#b91c1c' }}
-                      onClick={() => {
-                        setRefundAppt(drawerAppt);
-                        setRefundOpen(true);
-                      }}
-                    >
-                      Hoàn tiền
-                    </button>
-                  )}
+                  {/* BE: CHECKED_IN / COMPLETED không được hoàn tiền */}
                   <button
                     type="button"
                     className="btn primary"
@@ -807,24 +784,31 @@ export default function StaffAppointmentsPage() {
               )}
               {(drawerAppt.status === 'completed' ||
                 drawerAppt.status === 'failed' ||
-                drawerAppt.status === 'cancelled' ||
                 drawerAppt.status === 'noshow') && (
                 <button type="button" className="btn outline" style={{ flex: 1 }} onClick={closeDrawer}>
                   Đóng
                 </button>
               )}
-              {String(drawerAppt.paymentStatus || '').toUpperCase() === 'SUCCESS' && (
-                <button
-                  type="button"
-                  className="btn outline"
-                  style={{ borderColor: '#fca5a5', color: '#b91c1c' }}
-                  onClick={() => {
-                    setRefundAppt(drawerAppt);
-                    setRefundOpen(true);
-                  }}
-                >
-                  Hoàn tiền
-                </button>
+              {drawerAppt.status === 'cancelled' && (
+                <>
+                  <button type="button" className="btn outline" style={{ flex: 1 }} onClick={closeDrawer}>
+                    Đóng
+                  </button>
+                  {/* BE: chỉ cho hoàn khi chưa check-in/hoàn thành; cancelled + đã thanh toán vẫn có thể hoàn */}
+                  {String(drawerAppt.paymentStatus || '').toUpperCase() === 'SUCCESS' && (
+                    <button
+                      type="button"
+                      className="btn outline"
+                      style={{ borderColor: '#fca5a5', color: '#b91c1c' }}
+                      onClick={() => {
+                        setRefundAppt(drawerAppt);
+                        setRefundOpen(true);
+                      }}
+                    >
+                      Hoàn tiền
+                    </button>
+                  )}
+                </>
               )}
             </div>
           </>

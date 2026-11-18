@@ -1,0 +1,5 @@
+case_id,source_set,prompt_or_run_id,score_dung,score_co_nguon,score_tu_choi_dung,error_class,priority,notes,before_after
+E001,llm30,P01,,,,,,,before
+E002,llm30,P11,,,,,,,before
+E003,scenario,S1a,,,,,,,before
+E004,scenario,S5,,,,,,,before

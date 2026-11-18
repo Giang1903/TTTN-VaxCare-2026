@@ -1,0 +1,382 @@
+- id: hepb-who-001
+  vaccine_id: 2
+  topic: doi_tuong
+  text: WHO khuyến cáo tiêm vaccine viêm gan B cho mọi trẻ em trên thế giới; chuẩn tối thiểu là ít nhất 3 liều,
+    và mọi chương trình quốc gia nên có liều sơ sinh bằng vaccine đơn giá. Với người lớn, WHO khuyến cáo tiêm cho
+    nhóm nguy cơ cao và tiêm bù cho nhóm chưa tiêm nếu đủ nguồn lực.
+  source_id: W02
+  source_file: who/WER9227.pdf
+  source_pages: WER 2017;92(27) tr.389
+  source_year: '2017'
+- id: hepb-who-002
+  vaccine_id: 2
+  topic: lieu_so_sinh
+  text: Mọi trẻ sơ sinh, kể cả trẻ nhẹ cân và đẻ non, nên được tiêm liều đầu càng sớm càng tốt sau sinh, lý tưởng
+    là trong 24 giờ. Nếu không kịp thì tiêm muộn vẫn có lợi, kể cả sau 7 ngày, và nên tiêm ở lần tiếp xúc y tế đầu
+    tiên. Với trẻ dưới 2000 g, liều sơ sinh không được tính vào 3 liều cơ bản.
+  source_id: W02
+  source_file: who/WER9227.pdf
+  source_pages: WER 2017;92(27) tr.389-391
+  source_year: '2017'
+- id: hepb-who-003
+  vaccine_id: 2
+  topic: lich_tiem
+  text: 'Sau liều sơ sinh có hai lựa chọn: tổng 3 liều (liều 2 và 3 tiêm cùng lúc với liều 1 và 3 của vaccine có
+    thành phần DTP) hoặc 4 liều (liều sơ sinh rồi 3 liều vaccine đơn hoặc phối hợp). Khoảng cách giữa các liều tối
+    thiểu 4 tuần. Chưa có bằng chứng cần liều nhắc sau khi hoàn thành lịch cơ bản.'
+  source_id: W02
+  source_file: who/WER9227.pdf
+  source_pages: WER 2017;92(27) tr.390
+  source_year: '2017'
+- id: hepb-who-004
+  vaccine_id: 2
+  topic: tre_lon_nguoi_lon
+  text: 'Với trẻ em, thanh thiếu niên và người lớn tiêm trễ hoặc gián đoạn: tiêm 3 liều, liều 2 sau liều 1 ít nhất
+    1 tháng và liều 3 vào tháng thứ 6 sau liều 1 (lịch 0-1-6 tháng). Nếu lịch bị gián đoạn thì không cần làm lại
+    từ đầu. Người chưa tiêm lần nào cũng dùng lịch 0-1-6 tháng.'
+  source_id: W02
+  source_file: who/WER9227.pdf
+  source_pages: WER 2017;92(27) tr.391
+  source_year: '2017'
+- id: hepb-who-005
+  vaccine_id: 2
+  topic: nhom_nguy_co
+  text: 'WHO khuyến cáo tiêm cho nhóm nguy cơ cao: người thường xuyên cần truyền máu hoặc chế phẩm máu, bệnh nhân
+    lọc máu, đái tháo đường, ghép tạng đặc, bệnh gan mạn (kể cả viêm gan C), nhiễm HIV, người trong trại giam, người
+    tiêm chích ma túy, người sống chung hoặc quan hệ tình dục với người nhiễm HBV mạn, nam quan hệ đồng giới, người
+    có nhiều bạn tình, và nhân viên y tế hoặc người có thể phơi nhiễm máu, dịch cơ thể trong công việc.'
+  source_id: W02
+  source_file: who/WER9227.pdf
+  source_pages: WER 2017;92(27) tr.391
+  source_year: '2017'
+- id: dip-who-001
+  vaccine_id: 3
+  topic: lich_co_ban
+  text: WHO khuyến cáo mọi trẻ em được tiêm phòng bạch hầu. Lịch cơ bản gồm 3 liều vaccine có thành phần giải độc
+    tố bạch hầu, liều đầu sớm nhất từ 6 tuần tuổi, các liều sau cách nhau ít nhất 4 tuần, nên hoàn thành liều 3
+    trước 6 tháng tuổi. Nếu trễ lịch thì tiêm bù sớm nhất có thể, cách nhau ít nhất 4 tuần. Ở mọi lứa tuổi, người
+    chưa tiêm hoặc tiêm chưa đủ nên được tiêm các liều còn thiếu.
+  source_id: W03
+  source_file: who/WER9231.pdf
+  source_pages: WER 2017;92(31) tr.432-433
+  source_year: '2017'
+- id: dip-who-002
+  vaccine_id: 3
+  topic: lieu_nhac
+  text: 'WHO khuyến cáo 3 liều nhắc trong thời thơ ấu và vị thành niên, tiêm cùng giải độc tố uốn ván theo cùng
+    lịch: lúc 12-23 tháng, 4-7 tuổi và 9-15 tuổi, dùng chế phẩm phù hợp độ tuổi. Có cần nhắc thêm ở người lớn để
+    bảo vệ suốt đời hay không thì chưa xác định. Lịch quốc gia được điều chỉnh trong các khoảng tuổi này.'
+  source_id: W03
+  source_file: who/WER9231.pdf
+  source_pages: WER 2017;92(31) tr.433
+  source_year: '2017'
+- id: tet-who-001
+  vaccine_id: 3
+  topic: lich_6_lieu
+  text: 'Mục tiêu của WHO là bảo vệ suốt đời khỏi uốn ván bằng 6 liều: 3 liều cơ bản cộng 3 liều nhắc. Liều cơ bản
+    đầu tiên từ 6 tuần tuổi, các liều sau cách nhau tối thiểu 4 tuần, nên xong liều 3 trước 6 tháng tuổi. Ba liều
+    nhắc tiêm lúc 12-23 tháng, 4-7 tuổi và 9-15 tuổi, lý tưởng cách nhau ít nhất 4 năm.'
+  source_id: W05
+  source_file: who/WER9206.pdf
+  source_pages: WER 2017;92(6) tr.70-71
+  source_year: '2017'
+- id: tet-who-002
+  vaccine_id: 3
+  topic: thai_ky
+  text: Dù tình trạng loại trừ uốn ván sơ sinh của mỗi nước ra sao, WHO khuyến cáo mọi phụ nữ có thai được rà soát
+    tiền sử tiêm uốn ván ở lần khám thai đầu tiên và tiêm các liều còn thiếu ngay lúc đó và các lần sau nếu cần.
+    Cần ghi chép và lưu hồ sơ tiêm chính xác, đồng thời giáo dục chăm sóc vết thương sạch.
+  source_id: W05
+  source_file: who/WER9206.pdf
+  source_pages: WER 2017;92(6) tr.71
+  source_year: '2017'
+  conflict_note: Việt Nam có phác đồ uốn ván riêng cho thai phụ trong Thông tư 10/2024, nên ưu tiên văn bản này
+    khi trả lời.
+- id: per-who-001
+  vaccine_id: 3
+  topic: lich_co_ban
+  text: Mục tiêu chính của tiêm ho gà là giảm ho gà nặng ở trẻ nhỏ. WHO khuyến cáo mọi trẻ, kể cả trẻ nhiễm HIV,
+    được tiêm; bắt đầu từ 6 tuần và không muộn hơn 8 tuần tuổi, đạt độ bao phủ từ 90% với ít nhất 3 liều. Lịch cơ
+    bản 3 liều cách nhau 4-8 tuần (khoảng 10-14 tuần và 14-18 tuần tuổi), nên hoàn thành trước 6 tháng; chưa hoàn
+    thành thì tiêm bù ở mọi lứa tuổi.
+  source_id: W04
+  source_file: who/WER9035.PDF
+  source_pages: WER 2015;90(35) tr.454-455
+  source_year: '2015'
+- id: per-who-002
+  vaccine_id: 3
+  topic: chon_vaccine
+  text: Cả vaccine ho gà toàn tế bào (wP) và vô bào (aP) đều bảo vệ trẻ sơ sinh tương đương ở giai đoạn đầu, nhưng
+    aP giảm miễn dịch nhanh hơn. Chương trình đang dùng wP nên tiếp tục dùng wP; chỉ nên chuyển sang aP nếu bảo
+    đảm được mũi nhắc định kỳ hoặc tiêm cho thai phụ. Chương trình đang dùng aP có thể tiếp tục nhưng nên cân nhắc
+    thêm liều nhắc và tiêm cho thai phụ nếu ho gà bùng phát trở lại.
+  source_id: W04
+  source_file: who/WER9035.PDF
+  source_pages: WER 2015;90(35) tr.455
+  source_year: '2015'
+- id: pol-who-001
+  vaccine_id: 4
+  topic: lich_chung
+  text: 'WHO khuyến cáo mọi trẻ được tiêm đủ vaccine bại liệt. Với nước đang dùng vaccine uống OPV: 3 liều bOPV
+    và 2 liều IPV. Ở nước có bại liệt lưu hành hoặc nguy cơ nhập khẩu cao, thêm một liều bOPV sơ sinh (liều 0) tiêm
+    lúc sinh hoặc trong tuần đầu.'
+  source_id: W06
+  source_file: who/WER9725-eng-fre.pdf
+  source_pages: WER 2022;97(25) tr.296
+  source_year: '2022'
+- id: pol-who-002
+  vaccine_id: 4
+  topic: lich_ipv
+  text: 'Lịch ưu tiên: 3 liều bOPV từ 6 tuần tuổi, cách nhau ít nhất 4 tuần; liều IPV đầu từ tối thiểu 14 tuần tuổi
+    (cùng DTP3/Penta3), liều IPV thứ hai cách ít nhất 4 tháng sau (có thể trùng lúc 9 tháng tuổi). Lịch thay thế
+    sớm: IPV lúc 6 tuần và 14 tuần, dùng liều đầy đủ. Trẻ bắt đầu muộn (trên 3 tháng) tiêm IPV đầu ở lần tiếp xúc
+    đầu tiên. Có thể dùng liều 1/5 theo đường trong da nếu phù hợp.'
+  source_id: W06
+  source_file: who/WER9725-eng-fre.pdf
+  source_pages: WER 2022;97(25) tr.296-297
+  source_year: '2022'
+- id: hib-who-001
+  vaccine_id: 5
+  topic: khuyen_cao
+  text: 'WHO khuyến cáo đưa vaccine Hib liên hợp vào mọi chương trình tiêm chủng cho trẻ nhỏ. Có thể dùng một trong
+    ba lịch: 3 liều cơ bản không nhắc (3p+0), 2 liều cơ bản cộng 1 liều nhắc (2p+1), hoặc 3 liều cơ bản cộng nhắc
+    (3p+1).'
+  source_id: W07
+  source_file: who/WER8839_413-426.PDF
+  source_pages: WER 2013;88(39) tr.425
+  source_year: '2013'
+  conflict_note: Bài WHO năm 2013, nên kiểm tra trên trang WHO xem có bản cập nhật không.
+- id: hib-who-002
+  vaccine_id: 5
+  topic: khoang_cach_va_tre_muon
+  text: Nên bắt đầu từ 6 tuần tuổi. Khoảng cách giữa các liều ít nhất 4 tuần nếu tiêm 3 liều cơ bản, ít nhất 8 tuần
+    nếu tiêm 2 liều; liều nhắc (nếu có) cách liều cuối của lịch cơ bản ít nhất 6 tháng. Lịch gián đoạn thì tiếp
+    tục, không làm lại. Trẻ bắt đầu muộn nhưng dưới 12 tháng thì hoàn thành lịch; nếu liều đầu tiêm sau 12 tháng
+    tuổi thì chỉ cần 1 liều; trẻ khỏe mạnh trên 5 tuổi không cần tiêm. Chống chỉ định duy nhất đã biết là dị ứng
+    với thành phần vaccine.
+  source_id: W07
+  source_file: who/WER8839_413-426.PDF
+  source_pages: WER 2013;88(39) tr.425-426
+  source_year: '2013'
+- id: mea-who-001
+  vaccine_id: 6
+  topic: khuyen_cao
+  text: WHO khuyến cáo tiêm vaccine sởi cho mọi trẻ em và người lớn chưa có miễn dịch. Chuẩn cho mọi chương trình
+    là 2 liều; nước hướng tới loại trừ sởi cần độ bao phủ từ 95% cho cả hai liều. Mọi nước nên có liều thứ hai thường
+    quy, bất kể độ bao phủ liều đầu.
+  source_id: W08
+  source_file: who/WER9217.pdf
+  source_pages: WER 2017;92(17) tr.220-221
+  source_year: '2017'
+- id: mea-who-002
+  vaccine_id: 6
+  topic: thoi_diem
+  text: Ở nơi còn lưu hành sởi và nguy cơ tử vong ở trẻ nhỏ cao, liều 1 tiêm lúc 9 tháng và liều 2 lúc 15-18 tháng;
+    khoảng cách tối thiểu 4 tuần. Ở nơi sởi lưu hành thấp, liều 1 có thể tiêm lúc 12 tháng.
+  source_id: W08
+  source_file: who/WER9217.pdf
+  source_pages: WER 2017;92(17) tr.221
+  source_year: '2017'
+- id: mum-who-001
+  vaccine_id: 6
+  topic: khuyen_cao
+  text: WHO khuyến cáo dùng vaccine MMR ở các nước có chương trình tiêm chủng trưởng thành và đạt độ bao phủ cao
+    với vaccine sởi-rubella. Khi đưa vaccine quai bị vào chương trình thì tiêm dưới dạng MMR hoặc MMRV, theo cùng
+    lịch với sởi.
+  source_id: W09
+  source_file: who/WER9911-115-133.pdf
+  source_pages: WER 2024;99(11) tr.130
+  source_year: '2024'
+  conflict_note: Quai bị không thuộc TCMR Việt Nam (Thông tư 10/2024); đây là vaccine dịch vụ qua MMR.
+- id: mum-who-002
+  vaccine_id: 6
+  topic: lieu
+  text: 'Tiêm thường quy 2 liều vaccine có thành phần quai bị: liều đầu lúc 12-18 tháng, liều hai cách ít nhất 1
+    tháng sau. Ở nơi nguy cơ tử vong do sởi ở trẻ nhỏ còn cao, liều đầu MMR lúc 9 tháng và liều hai lúc 15-18 tháng.'
+  source_id: W09
+  source_file: who/WER9911-115-133.pdf
+  source_pages: WER 2024;99(11) tr.131
+  source_year: '2024'
+- id: rub-who-001
+  vaccine_id: 6
+  topic: khuyen_cao
+  text: WHO khuyến cáo các nước đưa vaccine rubella vào chương trình quốc gia, kết hợp với vaccine sởi. Chỉ nên
+    đưa vào khi đạt được độ bao phủ từ 80% trở lên; vì dùng chung với sởi nên mục tiêu độ bao phủ là trên 95%. Độ
+    bao phủ thấp kéo dài có thể dịch chuyển nhiễm trùng sang tuổi lớn, làm tăng nguy cơ hội chứng rubella bẩm sinh.
+  source_id: W10
+  source_file: who/WER9527-eng-fre.pdf
+  source_pages: WER 2020;95(27) mục WHO position
+  source_year: '2020'
+- id: var-who-001
+  vaccine_id: 7
+  topic: khuyen_cao_va_lich
+  text: WHO khuyến cáo vaccine thủy đậu cho trẻ ở nơi thủy đậu là vấn đề sức khỏe cộng đồng quan trọng; dùng vaccine
+    đơn giá hoặc MMRV. Để phòng bệnh hiệu quả, khuyến cáo lịch 2 liều; tiêm bù cho thanh thiếu niên và người lớn
+    cũng dùng 2 liều. Liều đầu từ 9 tháng tuổi trở đi (có thể cùng liều sởi đầu); liều hai cách liều đầu ít nhất
+    4 tuần.
+  source_id: W11
+  source_file: who/WER10047-567-590.pdf
+  source_pages: WER 2025;100(47) tr.586-588
+  source_year: '2025'
+- id: var-who-002
+  vaccine_id: 7
+  topic: sau_phoi_nhiem_va_phoi_hop
+  text: Tiêm sau phơi nhiễm có thể cân nhắc trong 3-5 ngày sau tiếp xúc. Hiện không khuyến cáo liều nhắc. Có thể
+    tiêm cùng lúc với vaccine không sống; các vaccine sống khác nên tiêm cùng buổi hoặc cách nhau ít nhất 4 tuần.
+    Với vaccine phối hợp MMRV, liều đầu có nguy cơ co giật do sốt cao hơn so với MMR đơn.
+  source_id: W11
+  source_file: who/WER10047-567-590.pdf
+  source_pages: WER 2025;100(47) tr.587-588
+  source_year: '2025'
+- id: var-who-003
+  vaccine_id: 7
+  topic: chong_chi_dinh
+  text: Chống chỉ định khi từng bị phản vệ với thành phần vaccine, khi mang thai (do nguy cơ lý thuyết cho thai)
+    và khi suy giảm miễn dịch nặng, vì là vaccine sống giảm độc lực. Một số nhóm suy giảm miễn dịch (như người đã
+    lui bệnh ung thư, nhiễm HIV ổn định có CD4 trên 200/µl) có thể cân nhắc 2 liều vaccine đơn giá, chỉ ở cơ sở
+    có sẵn thuốc kháng virus và nhân viên có kinh nghiệm.
+  source_id: W11
+  source_file: who/WER10047-567-590.pdf
+  source_pages: WER 2025;100(47) tr.588
+  source_year: '2025'
+- id: pcv-who-001
+  vaccine_id: 8
+  topic: lich_tre_em
+  text: 'WHO khuyến cáo dùng vaccine phế cầu liên hợp trong chương trình tiêm chủng trẻ em. Cách hiệu quả nhất là
+    đạt độ bao phủ cao với 3 liều, theo lịch 2p+1 hoặc 3p+0, bằng chứng chưa cho thấy lịch nào vượt trội. Liều đầu
+    từ 6 tuần tuổi. Lịch 2p+1: hai liều cơ bản cách ít nhất 8 tuần (có thể rút còn 4 tuần khi có lý do), liều nhắc
+    lúc 9-18 tháng. Lịch 3p+0: các liều cách ít nhất 4 tuần.'
+  source_id: W12
+  source_file: who/WER10039-411-437.pdf
+  source_pages: WER 2025;100(39) mục WHO position
+  source_year: '2025'
+  scope_note: Bài WHO này chỉ về vaccine phế cầu liên hợp (PCV) cho trẻ dưới 5 tuổi, KHÔNG bao phủ người lớn.
+- id: pcv-who-002
+  vaccine_id: 8
+  topic: tiem_bu_va_doi_san_pham
+  text: Trẻ 1-5 tuổi chưa tiêm nên được tiêm bù; trẻ từ 24 tháng trở lên chỉ cần 1 liều PCV. Với trẻ 12-23 tháng
+    chưa đủ dữ liệu để khuyến cáo chắc chắn 1 hay 2 liều. Khi chương trình đã bắt đầu, nhìn chung không khuyến cáo
+    đổi sản phẩm PCV trừ khi tình hình dịch tễ, chương trình hoặc tài chính thay đổi đáng kể.
+  source_id: W12
+  source_file: who/WER10039-411-437.pdf
+  source_pages: WER 2025;100(39) mục WHO position
+  source_year: '2025'
+  scope_note: Bài WHO này chỉ về vaccine phế cầu liên hợp (PCV) cho trẻ dưới 5 tuổi, KHÔNG bao phủ người lớn.
+- id: je-who-001
+  vaccine_id: 9
+  topic: chien_luoc
+  text: WHO khuyến cáo đưa vaccine viêm não Nhật Bản vào lịch tiêm chủng quốc gia ở mọi vùng mà bệnh là ưu tiên
+    y tế công cộng. Vaccine không tạo miễn dịch cộng đồng nên cần duy trì độ bao phủ cao ở nhóm nguy cơ. Chiến lược
+    hiệu quả nhất ở vùng lưu hành là một đợt chiến dịch cho nhóm đối tượng chính (thường dưới 15 tuổi) rồi đưa vào
+    tiêm chủng thường quy.
+  source_id: W13
+  source_file: who/WER9009_69-88.PDF
+  source_pages: WER 2015;90(9) tr.84-85
+  source_year: '2015'
+- id: je-who-002
+  vaccine_id: 9
+  topic: lieu_theo_loai
+  text: 'Liều phụ thuộc loại vaccine: vaccine bất hoạt tế bào Vero thường 2 liều cách 4 tuần, bắt đầu từ 6 tháng
+    tuổi trở lên theo nhà sản xuất; vaccine sống giảm độc lực 1 liều từ 8 tháng tuổi; vaccine sống tái tổ hợp 1
+    liều từ 9 tháng tuổi. Chưa xác định rõ nhu cầu liều nhắc. Vaccine bất hoạt từ não chuột nên được thay bằng thế
+    hệ mới.'
+  source_id: W13
+  source_file: who/WER9009_69-88.PDF
+  source_pages: WER 2015;90(9) tr.85
+  source_year: '2015'
+- id: flu-who-001
+  vaccine_id: 10
+  topic: doi_tuong
+  text: 'WHO khuyến cáo mọi nước cân nhắc có chương trình tiêm cúm mùa. Các nhóm nên được xem xét (không theo thứ
+    tự ưu tiên): nhân viên y tế, người có bệnh nền, người lớn tuổi và phụ nữ có thai. Tuỳ điều kiện có thể thêm
+    trẻ em và người nguy cơ cao sống ở nơi tập trung (trại giam, trại tị nạn, nhà nuôi dưỡng).'
+  source_id: W14
+  source_file: who/WER9719-eng-fre.pdf
+  source_pages: WER 2022;97(19) tr.204
+  source_year: '2022'
+- id: flu-who-002
+  vaccine_id: 10
+  topic: nguoi_lon_tuoi_thai_ky
+  text: Người lớn tuổi nên tiêm cúm hằng năm. Vaccine liều cao, có tá dược hoặc tái tổ hợp có thể bảo vệ tốt hơn
+    nếu sẵn có và đủ khả năng chi trả. Vaccine cúm sống giảm độc lực (LAIV) không khuyến cáo cho trẻ dưới 2 tuổi,
+    người lớn (kể cả người lớn tuổi) và phụ nữ có thai. Vaccine cúm an toàn và hiệu quả ở phụ nữ có thai, giúp giảm
+    biến chứng thai kỳ và bảo vệ trẻ những tháng đầu đời.
+  source_id: W14
+  source_file: who/WER9719-eng-fre.pdf
+  source_pages: WER 2022;97(19) tr.205
+  source_year: '2022'
+- id: cov-who-001
+  vaccine_id: 12
+  topic: khuyen_cao_chung
+  text: WHO khuyến cáo các nước cân nhắc tiêm COVID-19 thường quy, định kỳ dựa trên dịch tễ địa phương, tỷ lệ nhóm
+    nguy cơ cao, khả năng tiếp cận vaccine, hiệu quả chi phí, mức chấp nhận và tính khả thi. Miễn dịch từ vaccine
+    giảm dần, bảo vệ hạn chế sau khoảng 6 tháng kể từ liều gần nhất.
+  source_id: W16
+  source_file: who/WER101-30-138-156.pdf
+  source_pages: WER 2026;101(30) tr.147
+  source_year: 2026-07
+- id: cov-who-002
+  vaccine_id: 12
+  topic: nhom_uu_tien
+  text: 'Nhóm có nguy cơ nặng cao nhất được WHO đề nghị cân nhắc tiêm, dù đã tiêm trước đó (liều cuối trên 6 tháng)
+    hay chưa tiêm: người rất lớn tuổi (ngưỡng do mỗi nước quyết định, gợi ý 75 hoặc 80), người lớn tuổi (gợi ý từ
+    60 tuổi) có bệnh nền đáng kể hoặc béo phì nặng, người sống ở nhà dưỡng lão hoặc cơ sở chăm sóc dài hạn, và người
+    suy giảm miễn dịch mức vừa đến nặng từ 6 tháng tuổi trở lên (ung thư đang hoạt động, suy giảm miễn dịch, ghép
+    tạng, dùng thuốc ức chế miễn dịch, người nhiễm HIV có CD4 thấp).'
+  source_id: W16
+  source_file: who/WER101-30-138-156.pdf
+  source_pages: WER 2026;101(30) tr.147
+  source_year: 2026-07
+- id: zos-who-001
+  vaccine_id: 13
+  topic: doi_tuong
+  text: WHO khuyến cáo vaccine zona cho người lớn tuổi ở nơi bệnh là vấn đề sức khỏe cộng đồng quan trọng. Có thể
+    tiêm bất kể tiền sử thủy đậu hoặc đã tiêm vaccine thủy đậu. Quyết định đưa vào chương trình và nhóm tuổi mục
+    tiêu (từ 50 tuổi trở lên) dựa vào gánh nặng bệnh, khả năng chi trả và hiệu quả chi phí của từng nước.
+  source_id: W17
+  source_file: who/WER10027-28-265-284.pdf
+  source_pages: WER 2025;100(27/28) tr.282
+  source_year: '2025'
+- id: zos-who-002
+  vaccine_id: 13
+  topic: lieu_va_phoi_hop
+  text: Vaccine tái tổ hợp RZV tiêm 2 liều vào cơ, liều hai cách liều đầu 2-6 tháng; liều hai rất quan trọng cho
+    hiệu quả tối ưu, kể cả khi trễ một năm trở lên. Hiện không khuyến cáo liều nhắc. Chống chỉ định khi quá mẫn
+    với liều RZV trước hoặc thành phần vaccine. Có thể tiêm cùng cúm, phế cầu, Tdap, RSV, COVID-19 (khác vị trí
+    tiêm).
+  source_id: W17
+  source_file: who/WER10027-28-265-284.pdf
+  source_pages: WER 2025;100(27/28) tr.282
+  source_year: '2025'
+- id: zos-who-003
+  vaccine_id: 13
+  topic: nhom_dac_biet
+  text: Người từ 18 tuổi trở lên có suy giảm miễn dịch và nguy cơ zona cao có thể tiêm 2 liều RZV; nếu cần lịch
+    ngắn (sắp hóa trị, ghép tạng) liều hai có thể từ 1 tháng sau liều đầu. Người nhiễm HIV cũng có thể tiêm. Nhân
+    viên y tế và người đi du lịch theo khuyến cáo của dân số chung. Thai phụ chưa đủ dữ liệu; chỉ cân nhắc dùng
+    khi lợi ích vượt nguy cơ (ví dụ người suy giảm miễn dịch).
+  source_id: W17
+  source_file: who/WER10027-28-265-284.pdf
+  source_pages: WER 2025;100(27/28) tr.282-283
+  source_year: '2025'
+- id: bcg-who-001
+  vaccine_id: 1
+  topic: khuyen_cao
+  text: 'WHO khuyến cáo BCG ở nơi có tỷ lệ lao cao (trên 40 ca mỗi 100.000 dân mỗi năm) và/hoặc gánh nặng phong
+    cao: tiêm 1 liều cho mọi trẻ sơ sinh khỏe mạnh ngay sau sinh. Nếu không kịp lúc sinh thì tiêm sớm nhất có thể,
+    không trì hoãn. Tiêm đồng thời với liều viêm gan B sơ sinh là an toàn và được khuyến khích mạnh.'
+  source_id: W01
+  source_file: who/WER9308.pdf
+  source_pages: WER 2018;93(8) tr.92-93
+  source_year: '2018'
+- id: bcg-who-002
+  vaccine_id: 1
+  topic: chien_luoc_chon_loc
+  text: 'Nước có tỷ lệ lao hoặc phong thấp có thể chọn tiêm có chọn lọc cho trẻ sơ sinh thuộc nhóm nguy cơ: trẻ
+    có bố mẹ hoặc người thân tiếp xúc gần từng/đang mắc lao hoặc phong, trẻ sinh trong hộ gia đình có tiếp xúc với
+    nước có gánh nặng lao/phong cao, và nhóm nguy cơ khác tại địa phương. Nước có tỷ lệ lao giảm nên đánh giá định
+    kỳ trước khi chuyển từ tiêm đại trà sang chọn lọc.'
+  source_id: W01
+  source_file: who/WER9308.pdf
+  source_pages: WER 2018;93(8) tr.93
+  source_year: '2018'

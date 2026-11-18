@@ -311,7 +311,7 @@ export default function Vaccines() {
             <div>
               <h3>Danh mục vắc xin</h3>
               <div className="sub">
-                vaccines · vaccination_protocols · {rows.length} bản ghi
+                vaccines {rows.length} bản ghi
               </div>
             </div>
           </div>

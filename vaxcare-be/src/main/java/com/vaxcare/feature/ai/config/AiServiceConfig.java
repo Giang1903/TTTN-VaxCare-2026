@@ -24,21 +24,36 @@ public class AiServiceConfig {
 
     @Bean
     public WebClient aiServiceWebClient() {
+        return buildWebClient(properties.getResponseTimeoutMs());
+    }
+
+    @Bean
+    public WebClient aiChatbotWebClient() {
+        return buildWebClient(properties.getChatbotResponseTimeoutMs());
+    }
+
+    private WebClient buildWebClient(int responseTimeoutMs) {
         HttpClient httpClient = HttpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, properties.getConnectTimeoutMs())
-                .responseTimeout(Duration.ofMillis(properties.getResponseTimeoutMs()));
+                .responseTimeout(Duration.ofMillis(responseTimeoutMs));
 
         ExchangeStrategies strategies = ExchangeStrategies.builder()
                 .codecs(clientCodecConfigurer -> {
                     clientCodecConfigurer.defaultCodecs().jackson2JsonEncoder(new Jackson2JsonEncoder(objectMapper));
                     clientCodecConfigurer.defaultCodecs().jackson2JsonDecoder(new Jackson2JsonDecoder(objectMapper));
+                    clientCodecConfigurer.defaultCodecs().maxInMemorySize(2 * 1024 * 1024);
                 })
                 .build();
 
-        return WebClient.builder()
+        WebClient.Builder builder = WebClient.builder()
                 .baseUrl(properties.getBaseUrl())
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .exchangeStrategies(strategies)
-                .build();
+                .exchangeStrategies(strategies);
+
+        if (properties.getInternalApiKey() != null && !properties.getInternalApiKey().isBlank()) {
+            builder.defaultHeader("X-API-Key", properties.getInternalApiKey().trim());
+        }
+
+        return builder.build();
     }
 }

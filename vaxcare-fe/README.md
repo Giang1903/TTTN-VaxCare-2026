@@ -1,100 +1,63 @@
-# VaxCare Frontend Web Application (`vaxcare-fe`)
+# Frontend VaxCare
 
-**VaxCare Frontend** là giao diện người dùng web đa phân quyền thuộc hệ thống tiêm chủng VaxCare, phục vụ người dân đặt lịch tiêm, nhân viên y tế ghi nhận lượt tiêm và quản trị viên quản lý trung tâm tiêm chủng & kho vắc xin.
+Frontend là ứng dụng web cho người dân, nhân viên y tế và quản trị viên. Ứng dụng được xây dựng bằng React 19, Vite và React Router; dữ liệu nghiệp vụ được lấy từ backend Spring Boot.
 
-Ứng dụng được phát triển bằng **React 19**, **Vite** và **React Router v7**.
+## Các khu vực giao diện
 
----
+- **Công khai:** trang chủ, cơ sở tiêm, danh mục vắc xin, hỗ trợ và thông tin thanh toán.
+- **Người dân:** dashboard, đặt lịch, lịch hẹn, hồ sơ tiêm, thông báo và phản ứng sau tiêm.
+- **Nhân viên:** lịch hẹn, ghi nhận tiêm, tồn kho, phản ứng và báo cáo.
+- **Quản trị viên:** dashboard, người dùng, nhân viên, cơ sở, vắc xin, kho, giá và dự báo.
 
-##  Công Nghệ Sử Dụng
+Mã nguồn nằm trong `src/`; các trang trong `src/pages/`, thành phần dùng lại trong `src/components/`, gọi API trong `src/services/`, định tuyến trong `src/routes/`.
 
-- **Core Framework**: React (v19.2.8), React DOM (v19.2.8)
-- **Build Tool & Bundler**: Vite (v8.2.0), `@vitejs/plugin-react`
-- **Routing**: React Router DOM (v7.18.2)
-- **Styling**: Vanilla CSS / Modern CSS Modules
-- **Code Quality**: ESLint (v10.8.0), React Hooks Plugin
+## Yêu cầu
 
----
+- Node.js 20 trở lên
+- npm
+- Backend đang chạy nếu muốn sử dụng dữ liệu thật
 
-##  Cấu Trúc Thư Mục Project
+## Chạy phát triển
 
-```text
-vaxcare-fe/
-├── public/                 # Tài nguyên tĩnh (favicon, logo, icons)
-├── src/
-│   ├── components/         # Reusable UI components (Navbar, Footer, Modal, Button...)
-│   ├── context/            # React Context (AuthContext, ThemeContext...)
-│   ├── hooks/              # Custom React Hooks (useAuth, useFetch...)
-│   ├── layouts/            # Layout wrappers (MainLayout, AdminLayout, StaffLayout)
-│   ├── mockdata/           # Dữ liệu giả lập cho phát triển & testing
-│   ├── pages/              # Trang giao diện chính
-│   │   ├── admin/          # Quản trị viên (Dashboard, Quản lý kho, Dự báo AI2)
-│   │   ├── auth/           # Đăng nhập, Đăng ký, Quên mật khẩu
-│   │   ├── staff/          # Nhân viên y tế (Check-in, Ghi nhận mũi tiêm, Khám sàng lọc)
-│   │   └── user/           # Người dân (Trang chủ, Đặt lịch tiêm AI1, Tra cứu hồ sơ)
-│   ├── routes/             # Định tuyến ứng dụng & Bảo vệ route (ProtectedRoute)
-│   ├── services/           # REST API client giao tiếp với Backend (`vaxcare-be`)
-│   ├── styles/             # Global Styles & Design System Tokens
-│   ├── utils/              # Helper functions (date formatting, storage, validators)
-│   ├── App.jsx             # Main App Component
-│   └── main.jsx            # Entry point ứng dụng
-├── .env                    # Cấu hình biến môi trường
-├── .env.example
-├── index.html              # HTML Entry Point
-├── package.json            # Node dependencies & npm scripts
-└── vite.config.js          # Vite build config
-```
+Từ thư mục `vaxcare-fe`:
 
----
-
-##  Cấu Hình Môi Trường (.env)
-
-Tạo file `.env` tại thư mục `vaxcare-fe/` dựa trên `.env.example`:
-
-```env
-# URL gốc kết nối đến VaxCare Backend Service (Spring Boot)
-VITE_API_URL=http://localhost:8080/api/v1
-```
-
----
-
-##  Hướng Dẫn Cài Đặt & Chạy Ứng Dụng
-
-### Yêu cầu môi trường:
-- Cài đặt **Node.js** bản 20 trở lên.
-- Quản lý gói **npm** (đi kèm khi cài Node.js).
-
----
-
-### Các Bước Thực Hiện:
-
-```bash
-# 1. Di chuyển vào thư mục vaxcare-fe
-cd vaxcare-fe
-
-# 2. Tạo file cấu hình môi trường
-cp .env.example .env
-
-# 3. Cài đặt các thư viện phụ thuộc
+```powershell
 npm install
-
-# 4. Chạy ứng dụng ở chế độ Development Server (Vite HMR)
 npm run dev
 ```
 
-Sau khi chạy lệnh `npm run dev`, ứng dụng sẽ khả dụng tại trình duyệt:
-👉 **[http://localhost:5173](http://localhost:5173)**
+Mở URL được Vite hiển thị (mặc định `http://localhost:5173`).
 
----
+Backend API mặc định là `http://localhost:8080/api/v1`. Nếu dùng địa chỉ khác, tạo file `.env.local` trong thư mục frontend và đặt:
 
-##  Build Sản Phẩm Triển Khai (Production Build)
+```env
+VITE_API_URL=http://localhost:8080/api/v1
+```
 
-```bash
-# Biển dịch và đóng gói tối ưu code cho Production
+Vite tự đọc các file `.env*` khi khởi chạy. Chỉ đưa vào frontend những cấu hình có thể công khai; biến `VITE_*` được nhúng vào mã client.
+
+## Kiểm tra và build
+
+```powershell
+npm run lint
 npm run build
-
-# Xem thử bản đóng gói (Preview Build)
 npm run preview
 ```
 
-Mã nguồn sau khi build sẽ nằm trong thư mục `dist/`, sẵn sàng triển khai lên Nginx, Vercel hoặc Netlify.
+- `lint`: kiểm tra quy tắc ESLint.
+- `build`: tạo bản production trong `dist/`.
+- `preview`: xem thử bản build trên máy cá nhân.
+
+## Cấu trúc mã nguồn
+
+| Thư mục/tệp | Vai trò |
+|---|---|
+| `src/pages/` | Các trang theo chức năng và vai trò. |
+| `src/components/` | Thành phần giao diện dùng lại. |
+| `src/layouts/` | Bố cục chung theo khu vực. |
+| `src/routes/` | Định nghĩa đường dẫn và bảo vệ trang. |
+| `src/context/` | Trạng thái dùng chung, bao gồm phiên đăng nhập. |
+| `src/services/` | Giao tiếp REST API và realtime. |
+| `src/styles/` | CSS và quy tắc giao diện. |
+
+Việc ẩn trang theo vai trò chỉ phục vụ trải nghiệm giao diện. Backend vẫn phải xác thực và phân quyền cho mọi thao tác dữ liệu.

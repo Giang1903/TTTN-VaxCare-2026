@@ -1,128 +1,164 @@
-# VaxCare – Nền Tảng Quản Lý Và Điều Phối Hoạt Động Tiêm Chủng Thông Minh Ứng Dụng Trí Tuệ Nhân Tạo
+# VaxCare – Nền Tảng Quản Lý Và Điều Phối Tiêm Chủng
 
 ## 1. Tổng Quan Hệ Thống
 
-**VaxCare** là nền tảng website hỗ trợ số hóa toàn bộ quy trình quản lý và điều phối hoạt động tiêm chủng — từ đăng ký tài khoản, tra cứu vắc xin, đặt lịch tiêm trực tuyến, thanh toán qua cổng VNPay, check-in bằng mã QR, quản lý hồ sơ tiêm chủng điện tử, quản lý kho vắc xin theo lô cho đến việc theo dõi phản ứng sau tiêm.
+**VaxCare** là nền tảng web hỗ trợ người dân đặt lịch tiêm chủng và giúp cơ sở y tế quản lý hoạt động tiêm. Người dùng có thể tra cứu vắc xin, chọn cơ sở, đặt lịch và theo dõi hồ sơ tiêm. Nhân viên y tế xử lý lịch hẹn, ghi nhận mũi tiêm và quản lý kho; quản trị viên quản lý danh mục và hoạt động toàn hệ thống.
 
-Điểm nổi bật của hệ thống là việc tích hợp hai mô hình **Trí tuệ Nhân tạo (AI)** độc lập giúp:
-- **AI1 (Schedule Coordination)**: Phân tích lịch sử đặt lịch và năng lực phục vụ để dự đoán thời gian chờ, xác suất quá tải và gợi ý khung giờ tiêm tối ưu.
-- **AI2 (Vaccine Demand Forecasting)**: Dự báo số liều vắc xin tiêu thụ theo chuỗi thời gian đệ quy nhiều bước (Recursive Multi-Step Forecasting) hỗ trợ cơ sở y tế lập kế hoạch nhập kho chủ động.
+VaxCare gồm bốn thành phần:
 
----
+- **Frontend:** giao diện web cho người dân, nhân viên y tế và quản trị viên.
+- **Backend:** API và nghiệp vụ, phân quyền người dùng, lưu và truy xuất dữ liệu.
+- **AI service:** các API riêng cho gợi ý lịch tiêm, dự báo nhu cầu và chatbot.
+- **Database:** MySQL lưu tài khoản, lịch hẹn, hồ sơ tiêm, kho và các dữ liệu liên quan.
+
+AI hỗ trợ ra quyết định và cung cấp thông tin tham khảo; kết quả không thay thế tư vấn hoặc khám sàng lọc của nhân viên y tế.
 
 ## 2. Kiến Trúc Tổng Thể
 
-Hệ thống được thiết kế theo kiến trúc 3 tầng phân tán (Client-Server / Microservices architecture), giao tiếp qua giao thức HTTP/REST API chuẩn định dạng JSON:
+Frontend gửi yêu cầu HTTP/JSON đến backend. Backend đọc/ghi dữ liệu qua MySQL và gọi AI service khi cần các tính năng AI.
 
 ```text
-                           +-----------------------------------+
-                           |  Frontend Web App (React 19+Vite) |
-                           |            (Port 5173)            |
-                           +-----------------------------------+
-                                             |
-                                    HTTP REST API / JSON
-                                             v
-                           +-----------------------------------+
-                           |   Backend Service (Spring Boot)   |
-                           |            (Port 8080)            |
-                           +-----------------------------------+
-                                   /                   \
-                       Spring Data JPA              WebClient + Circuit Breaker
-                                 /                       \
-                                v                         v
-                  +------------------------+   +------------------------+
-                  |  MySQL 8.0 Database    |   |   AI Service (FastAPI) |
-                  |  (vaxcare_2026:3306)   |   |       (Port 8000)      |
-                  +------------------------+   +------------------------+
-                                                          |
-                                               +----------+----------+
-                                               |                     |
-                                               v                     v
-                                          Module AI1            Module AI2
-                                         (Schedule)             (Demand)
+  Người dân / Nhân viên y tế / Quản trị viên
+                       |
+                       v
+           +------------------------+
+           | Frontend React + Vite  |
+           |       Port 5173        |
+           +------------------------+
+                       |
+                 REST API / JSON
+                       v
+           +------------------------+
+           | Backend Spring Boot   |
+           |       Port 8080        |
+           +------------------------+
+                 |             |
+          Spring Data JPA   HTTP API
+                 |             |
+                 v             v
+          +-----------+  +----------------------+
+          | MySQL 8   |  | AI Service FastAPI   |
+          | Port 3306 |  | Port 8000            |
+          +-----------+  +----------------------+
+                               |
+                 +-------------+-------------+
+                 |             |             |
+                 v             v             v
+              Lịch tiêm     Dự báo        Chatbot
+               (AI1)       nhu cầu (AI2)
 ```
 
----
+## 3. Danh Sách Phân Hệ & Công Nghệ
 
-## 3. Danh Sách Phân Hệ & Cấu Trúc Thư Mục
+| Phân hệ | Thư mục | Công nghệ chính | Cổng mặc định | Tài liệu |
+|---|---|---|---:|---|
+| Frontend | [`vaxcare-fe/`](./vaxcare-fe/) | React 19, Vite, React Router | `5173` | [README Frontend](./vaxcare-fe/README.md) |
+| Backend | [`vaxcare-be/`](./vaxcare-be/) | Java 21, Spring Boot 3, Spring Data JPA, Spring Security | `8080` | [README Backend](./vaxcare-be/README.md) |
+| AI service | [`vaxcare-ai/`](./vaxcare-ai/) | Python, FastAPI, scikit-learn, XGBoost và chatbot | `8000` | [README AI](./vaxcare-ai/README.md) |
+| Database | [`database/`](./database/) | MySQL 8 | `3306` | [README Database](./database/README.md) |
 
-| Phân hệ | Thư mục | Công nghệ chính | Port | Chi tiết tài liệu |
-| :--- | :--- | :--- | :--- | :--- |
-| **Frontend** | [`vaxcare-fe/`](./vaxcare-fe/README.md) | React 19, Vite 8, React Router v7 | `5173` | [vaxcare-fe/README.md](./vaxcare-fe/README.md) |
-| **Backend** | [`vaxcare-be/`](./vaxcare-be/README.md) | Java 21, Spring Boot 3.3.2, JPA, WebFlux | `8080` | [vaxcare-be/README.md](./vaxcare-be/README.md) |
-| **AI Service** | [`vaxcare-ai/`](./vaxcare-ai/README.md) | Python 3.11, FastAPI, XGBoost, Scikit-learn | `8000` | [vaxcare-ai/README.md](./vaxcare-ai/README.md) |
-| **Database** | [`database/`](./database/README.md) | MySQL 8.0 (`vaxcare_2026.sql`) | `3306` | [database/README.md](./database/README.md) |
+Các cổng có thể thay đổi theo cấu hình. Docker Compose trong `vaxcare-be/` khởi chạy backend và MySQL; frontend và AI service được khởi chạy riêng.
 
----
+## 4. Phân Quyền & Vai Trò
 
-## 4. Phân Quyền & Vai Trò (Actors)
+1. **Người dân (USER):** tìm hiểu vắc xin/cơ sở, đặt lịch, thanh toán, xem lịch sử tiêm và gửi thông tin phản ứng sau tiêm.
+2. **Nhân viên y tế (MEDICAL_STAFF):** xử lý lịch hẹn, check-in, ghi nhận kết quả tiêm, quản lý kho tại cơ sở được phân công và xem báo cáo.
+3. **Quản trị viên (ADMIN):** quản lý tài khoản, cơ sở, nhân viên, vắc xin, giá, phác đồ, kho và báo cáo quản trị.
+4. **AI service:** cung cấp gợi ý khung giờ, dự báo nhu cầu vắc xin và chatbot hỗ trợ tra cứu thông tin tiêm chủng.
 
-Hệ thống phục vụ 4 tác nhân chính:
-
-1. **Người dùng (User)**: Tra cứu vắc xin/cơ sở, đặt lịch tiêm có AI1 gợi ý khung giờ, thanh toán VNPay, check-in bằng mã QR, xem lịch sử tiêm, xuất chứng nhận PDF (Apache PDFBox), khai báo phản ứng sau tiêm 24–72h.
-2. **Nhân viên y tế (Medical Staff)**: Xác nhận/hủy lịch hẹn tại cơ sở, quét QR check-in, ghi nhận kết quả tiêm chủng, quản lý kho vắc xin theo lô (nhập lô, tồn kho, hạn dùng FEFO), xem báo cáo thống kê cơ sở.
-3. **Quản trị viên (Administrator)**: Quản lý tài khoản & phân quyền RBAC, quản lý cơ sở tiêm, danh mục vắc xin/giá/phác đồ, theo dõi Admin Dashboard, đối soát giao dịch, giám sát & kích hoạt chạy lại dự báo AI2.
-4. **Hệ thống AI (AI Service)**: Dịch vụ FastAPI độc lập thực hiện suy luận mô hình học máy (XGBoost Regressor) cho AI1 và AI2.
-
----
+Phân quyền thực tế được kiểm tra ở backend; việc ẩn/hiện trang ở frontend không thay thế xác thực API.
 
 ## 5. Các Dịch Vụ & Thư Viện Tích Hợp
 
-- **Cổng thanh toán VNPay**: Thanh toán trực tuyến qua giao thức HMAC SHA512 với Return URL & Instant Payment Notification (IPN).
-- **Mã QR & ZXing**: Sinh mã QR chứa token tham chiếu hỗ trợ check-in nhanh tại cơ sở.
-- **Apache PDFBox**: Sinh chứng nhận tiêm chủng điện tử chuẩn Unicode dưới dạng file PDF kèm mã QR xác thực.
-- **SMTP Gmail Service**: Gửi email bất đồng bộ xác thực tài khoản, thông báo lịch hẹn và nhắc phác đồ tiêm mũi tiếp theo.
-
----
+- **MySQL và Spring Data JPA:** lưu trữ dữ liệu nghiệp vụ.
+- **JWT và Spring Security:** xác thực và kiểm soát quyền truy cập API.
+- **AI service FastAPI:** backend gọi các API điều phối lịch, dự báo nhu cầu và chatbot.
+- **VNPay và ZaloPay:** hỗ trợ tạo giao dịch và xử lý callback thanh toán theo cấu hình môi trường.
+- **ZXing:** tạo mã QR phục vụ các luồng nghiệp vụ như check-in.
+- **Apache PDFBox:** hỗ trợ tạo tài liệu PDF.
+- **SMTP:** gửi email thông báo khi được cấu hình.
+- **WebSocket/STOMP:** hỗ trợ cập nhật realtime cho một số màn hình.
 
 ## 6. Hướng Dẫn Khởi Chạy Toàn Bộ Hệ Thống
 
-### Bước 1: Khởi Tạo CSDL MySQL (`database/`)
-```bash
-mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS vaxcare_2026 CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
-mysql -u root -p vaxcare_2026 < database/vaxcare_2026.sql
+### Yêu cầu
+
+- MySQL 8
+- Java 21
+- Python 3.11
+- Node.js và npm
+
+Chạy các thành phần trong các cửa sổ PowerShell riêng. Trước khi khởi chạy, cấu hình kết nối database và các thông tin dịch vụ cần thiết. Không dùng credential mẫu hoặc đưa secret thật vào Git.
+
+### Bước 1: Khởi tạo MySQL
+
+Tạo database `vaxcare_2026`, sau đó import [`database/vaxcare_2026.sql`](./database/vaxcare_2026.sql). Lệnh PowerShell/Windows chi tiết có trong [hướng dẫn database](./database/README.md).
+
+### Bước 2: Chạy AI service
+
+Từ thư mục gốc của dự án:
+
+```powershell
+Set-Location .\vaxcare-ai
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### Bước 2: Chạy FastAPI AI Service (`vaxcare-ai/`)
-```bash
-cd vaxcare-ai
-python -m venv venv
-.\venv\Scripts\Activate.ps1   # (Windows) hoặc source venv/bin/activate (Linux/macOS)
-pip install -r requirements.txt
-cp .env.example .env
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-```
-👉 Endpoint Swagger UI: `http://localhost:8000/docs`
+API docs: [http://localhost:8000/docs](http://localhost:8000/docs).
 
-### Bước 3: Chạy Spring Boot Backend (`vaxcare-be/`)
-```bash
-cd vaxcare-be
-cp .env.example .env
-./mvnw spring-boot:run
-```
-👉 Endpoint Swagger UI: `http://localhost:8080/swagger-ui.html`
+### Bước 3: Chạy backend
 
-### Bước 4: Chạy React Frontend (`vaxcare-fe/`)
-```bash
-cd vaxcare-fe
-cp .env.example .env
+Trong một PowerShell khác, vào thư mục `vaxcare-be`, thiết lập các biến môi trường cho database/JWT và những dịch vụ cần dùng, sau đó chạy:
+
+```powershell
+Set-Location .\vaxcare-be
+.\mvnw.cmd spring-boot:run
+```
+
+Spring Boot không tự đọc file `.env` theo mặc định; `.env.example` chỉ để tham khảo. Thiết lập biến môi trường trong terminal hoặc cấu hình chạy của IDE.
+
+API docs: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html).
+
+### Bước 4: Chạy frontend
+
+Trong một PowerShell khác:
+
+```powershell
+Set-Location .\vaxcare-fe
 npm install
 npm run dev
 ```
-👉 Truy cập Web App: **[http://localhost:5173](http://localhost:5173)**
 
----
+Mở [http://localhost:5173](http://localhost:5173). Frontend mặc định gọi backend tại `http://localhost:8080/api/v1`; nếu backend dùng địa chỉ khác, cấu hình `VITE_API_URL`.
 
-## 7. Danh Mục Tài Liệu Chi Tiết
+### Kiểm tra dự án
 
-- **Tài liệu Báo cáo PDF**: [`Vaxcare_2026.pdf`](./Vaxcare_2026.pdf) 
-- **Tài liệu Backend Service**: [`vaxcare-be/README.md`](./vaxcare-be/README.md)
-- **Tài liệu Frontend Application**: [`vaxcare-fe/README.md`](./vaxcare-fe/README.md)
-- **Tài liệu Cơ sở Dữ liệu**: [`database/README.md`](./database/README.md)
-- **Tài liệu AI Service**:
-  - [`vaxcare-ai/README.md`](./vaxcare-ai/README.md): Hướng dẫn cài đặt & tổng quan FastAPI AI Service.
-  - [`vaxcare-ai/AI_OVERVIEW.md`](./vaxcare-ai/AI_OVERVIEW.md): Kiến trúc AI & Luồng tương tác Circuit Breaker.
-  - [`vaxcare-ai/DATASET.md`](./vaxcare-ai/DATASET.md): Chi tiết 2 tập dữ liệu `appointment_waittime.csv` & `vaccine_demand.csv`.
-  - [`vaxcare-ai/AI1_APPOINTMENT_PREDICTION.md`](./vaxcare-ai/AI1_APPOINTMENT_PREDICTION.md): Chi tiết mô hình AI1 & logic xếp hạng khung giờ.
-  - [`vaxcare-ai/AI2_DEMAND_FORECAST.md`](./vaxcare-ai/AI2_DEMAND_FORECAST.md): Chi tiết mô hình AI2 & logic dự báo chuỗi thời gian.
-  - [`vaxcare-ai/TRAINING.md`](./vaxcare-ai/TRAINING.md): Quy trình 8 bước huấn luyện model qua Jupyter Notebooks.
+```powershell
+# Backend (cần database phát triển/kiểm thử riêng)
+Set-Location .\vaxcare-be
+.\mvnw.cmd test
+
+# AI service
+Set-Location ..\vaxcare-ai
+python -m pytest -q
+
+# Frontend
+Set-Location ..\vaxcare-fe
+npm run lint
+npm run build
+```
+
+Không trỏ bài kiểm tra backend vào database đang vận hành.
+
+## 7. Danh Mục Tài Liệu
+
+- [Hướng dẫn Backend](./vaxcare-be/README.md)
+- [Bắt đầu nhanh Backend](./vaxcare-be/HELP.md)
+- [Hướng dẫn Frontend](./vaxcare-fe/README.md)
+- [Hướng dẫn AI service](./vaxcare-ai/README.md)
+- [Quy ước dữ liệu intent chatbot](./vaxcare-ai/intent_data/README.md)
+- [Kịch bản kiểm thử chatbot](./vaxcare-ai/knowledge/scenarios/SCENARIOS_README.md)
+- [Hướng dẫn Database](./database/README.md)

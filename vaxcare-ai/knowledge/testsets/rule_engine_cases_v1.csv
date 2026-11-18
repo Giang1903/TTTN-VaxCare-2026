@@ -1,0 +1,61 @@
+case_id,age_months,population,history_json,expected_due_json,expected_status,source,notes
+RE001,0,child,"[]","[{""vaccine_id"":2,""dose"":1,""name"":""Viêm gan B""},{""vaccine_id"":1,""dose"":1,""name"":""BCG""}]",due_now,tt10-2024,Sơ sinh chưa tiêm gì: HepB 24h + BCG trong 1 tháng
+RE002,0,child,"[{""vaccine_id"":2,""dose"":1}]","[{""vaccine_id"":1,""dose"":1,""name"":""BCG""}]",partial,tt10-2024,Đã HepB sơ sinh còn BCG
+RE003,0,child,"[{""vaccine_id"":2,""dose"":1},{""vaccine_id"":1,""dose"":1}]","[]",up_to_date,tt10-2024,Sơ sinh đủ HepB+BCG
+RE004,1,child,"[]","[{""vaccine_id"":2,""dose"":1},{""vaccine_id"":1,""dose"":1}]",overdue,tt10-2024,1 tháng chưa tiêm sơ sinh → overdue
+RE005,2,child,"[{""vaccine_id"":2,""dose"":1},{""vaccine_id"":1,""dose"":1}]","[{""vaccine_id"":3,""dose"":1},{""vaccine_id"":4,""dose"":1},{""vaccine_id"":5,""dose"":1},{""vaccine_id"":2,""dose"":2}]",due_now,tt10-2024,2 tháng: DTP1 IPV1 Hib1 HepB2
+RE006,2,child,"[]","[{""vaccine_id"":2,""dose"":1},{""vaccine_id"":1,""dose"":1},{""vaccine_id"":3,""dose"":1},{""vaccine_id"":4,""dose"":1},{""vaccine_id"":5,""dose"":1}]",overdue_and_due,tt10-2024,2 tháng chưa có gì: bù sơ sinh + lịch 2 tháng
+RE007,2,child,"[{""vaccine_id"":2,""dose"":1},{""vaccine_id"":1,""dose"":1},{""vaccine_id"":3,""dose"":1},{""vaccine_id"":4,""dose"":1},{""vaccine_id"":5,""dose"":1},{""vaccine_id"":2,""dose"":2}]","[]",up_to_date,tt10-2024,Đủ lịch 2 tháng
+RE008,4,child,"[{""vaccine_id"":2,""dose"":1},{""vaccine_id"":1,""dose"":1},{""vaccine_id"":3,""dose"":1},{""vaccine_id"":2,""dose"":2}]","[{""vaccine_id"":3,""dose"":2},{""vaccine_id"":4,""dose"":2},{""vaccine_id"":5,""dose"":2},{""vaccine_id"":2,""dose"":3}]",due_now,tt10-2024,4 tháng: mũi 2 các vaccine phối hợp
+RE009,4,child,"[{""vaccine_id"":3,""dose"":1}]","[{""vaccine_id"":2,""dose"":1},{""vaccine_id"":1,""dose"":1},{""vaccine_id"":3,""dose"":2},{""vaccine_id"":4,""dose"":1},{""vaccine_id"":5,""dose"":1}]",overdue_and_due,tt10-2024,Chỉ có DTP1 thiếu nhiều
+RE010,6,child,"[{""vaccine_id"":3,""dose"":1},{""vaccine_id"":3,""dose"":2}]","[{""vaccine_id"":3,""dose"":3},{""vaccine_id"":5,""dose"":3}]",due_now,tt10-2024,6 tháng DTP3 Hib3
+RE011,5,child,"[]","[{""vaccine_id"":4,""dose"":1}]",due_now,tt10-2024,IPV mũi 1 theo lịch VN 5 tháng (nếu tách)
+RE012,9,child,"[{""vaccine_id"":4,""dose"":1}]","[{""vaccine_id"":4,""dose"":2},{""vaccine_id"":6,""dose"":1}]",due_now,tt10-2024,9 tháng: IPV2 + sởi/MMR1
+RE013,9,child,"[{""vaccine_id"":6,""dose"":1},{""vaccine_id"":4,""dose"":2}]","[]",up_to_date,tt10-2024,Đủ 9 tháng
+RE014,9,child,"[]","[{""vaccine_id"":6,""dose"":1},{""vaccine_id"":4,""dose"":1}]",overdue_and_due,tt10-2024,9 tháng trống hoàn toàn
+RE015,12,child,"[{""vaccine_id"":6,""dose"":1}]","[{""vaccine_id"":9,""dose"":1}]",due_now,tt10-2024,12 tháng JE1 (thủy đậu/PCV dịch vụ tùy chọn)
+RE016,12,child,"[{""vaccine_id"":9,""dose"":1}]","[]",up_to_date_tcmr,tt10-2024,JE1 xong; dịch vụ không bắt buộc
+RE017,14,child,"[{""vaccine_id"":9,""dose"":1}]","[{""vaccine_id"":9,""dose"":2}]",due_now,tt10-2024,JE2 cách mũi 1 ~1-2 tuần đến vài tháng
+RE018,18,child,"[{""vaccine_id"":3,""dose"":3},{""vaccine_id"":6,""dose"":1}]","[{""vaccine_id"":3,""dose"":4},{""vaccine_id"":6,""dose"":2}]",due_now,tt10-2024,18 tháng: DTP nhắc + MMR2
+RE019,18,child,"[{""vaccine_id"":3,""dose"":4},{""vaccine_id"":6,""dose"":2}]","[]",up_to_date,tt10-2024,Đủ 18 tháng
+RE020,24,child,"[{""vaccine_id"":9,""dose"":1},{""vaccine_id"":9,""dose"":2}]","[{""vaccine_id"":9,""dose"":3}]",due_now,tt10-2024,24 tháng JE3
+RE021,24,child,"[{""vaccine_id"":9,""dose"":3}]","[]",up_to_date,tt10-2024,JE đủ 3 mũi
+RE022,60,child,"[{""vaccine_id"":3,""dose"":4}]","[{""vaccine_id"":3,""dose"":5}]",due_now,tt10-2024,4-7 tuổi Td/Tdap nhắc (age 60m = 5 tuổi)
+RE023,84,child,"[{""vaccine_id"":3,""dose"":5}]","[]",up_to_date,tt10-2024,7 tuổi đã nhắc
+RE024,120,child,"[]","[{""vaccine_id"":11,""dose"":1}]",due_now,who-hpv,10 tuổi: HPV mũi 1 (2-liều scheme)
+RE025,132,child,"[{""vaccine_id"":11,""dose"":1}]","[{""vaccine_id"":11,""dose"":2}]",due_now,who-hpv,11 tuổi đã HPV1 → HPV2 sau ≥6 tháng
+RE026,132,child,"[{""vaccine_id"":11,""dose"":1},{""vaccine_id"":11,""dose"":2}]","[]",up_to_date,who-hpv,HPV 2 mũi đủ (9-14)
+RE027,180,adult,"[]","[{""vaccine_id"":11,""dose"":1}]",due_now,who-hpv,15 tuổi: HPV phác đồ 3 mũi
+RE028,180,adult,"[{""vaccine_id"":11,""dose"":1},{""vaccine_id"":11,""dose"":2}]","[{""vaccine_id"":11,""dose"":3}]",due_now,who-hpv,Còn HPV3
+RE029,600,adult,"[]","[{""vaccine_id"":13,""dose"":1},{""vaccine_id"":10,""dose"":1}]",due_now,who-zoster,50 tuổi: Shingrix1 + cúm hàng năm
+RE030,600,adult,"[{""vaccine_id"":13,""dose"":1}]","[{""vaccine_id"":13,""dose"":2}]",due_now,hdsd-shingrix,Shingrix2 cách 2-6 tháng
+RE031,600,adult,"[{""vaccine_id"":13,""dose"":1},{""vaccine_id"":13,""dose"":2}]","[{""vaccine_id"":10,""dose"":1}]",due_annual,who-flu,Zona đủ; còn cúm năm
+RE032,3,pregnant,"[]","[{""vaccine_id"":3,""dose"":1},{""vaccine_id"":10,""dose"":1}]",due_now,tt10-2024,Thai 3 tháng chưa tiêm UV: bắt đầu UV + cúm
+RE033,3,pregnant,"[{""vaccine_id"":3,""dose"":1}]","[{""vaccine_id"":3,""dose"":2},{""vaccine_id"":10,""dose"":1}]",due_now,tt10-2024,Đã UV1 còn UV2 + cúm
+RE034,6,pregnant,"[{""vaccine_id"":3,""dose"":5}]","[{""vaccine_id"":10,""dose"":1}]",due_now,tt10-2024,Đủ 5 mũi UV đời: không cần UV thêm; vẫn cúm
+RE035,6,pregnant,"[{""vaccine_id"":3,""dose"":3}]","[{""vaccine_id"":3,""dose"":1},{""vaccine_id"":10,""dose"":1}]",due_now,tt10-2024,Đã 3-4 mũi UV: nhắc 1 mũi trong thai kỳ
+RE036,2,child,"[{""vaccine_id"":3,""dose"":1}]","[{""vaccine_id"":3,""dose"":2}]",not_yet_interval,tt10-2024,Vừa tiêm DTP1 hôm nay → chưa đủ 28 ngày cho DTP2 (interval gate)
+RE037,2,child,"[{""vaccine_id"":2,""dose"":1},{""vaccine_id"":2,""dose"":2}]","[{""vaccine_id"":3,""dose"":1},{""vaccine_id"":4,""dose"":1},{""vaccine_id"":5,""dose"":1}]",due_now,tt10-2024,HepB đủ 2 mũi sớm; vẫn cần DTP/IPV/Hib
+RE038,12,child,"[{""vaccine_id"":7,""dose"":1}]","[]",up_to_date_optional,hdsd-varivax,Đã thủy đậu 1 mũi (VN HDSD <13t); WHO vẫn có thể gợi ý mũi 2
+RE039,156,adult,"[]","[{""vaccine_id"":7,""dose"":1}]",due_now,hdsd-varivax,≥13 tuổi chưa thủy đậu: 2 mũi
+RE040,156,adult,"[{""vaccine_id"":7,""dose"":1}]","[{""vaccine_id"":7,""dose"":2}]",due_now,hdsd-varivax,Còn mũi 2 cách 4-8 tuần
+RE041,36,child,"[{""vaccine_id"":8,""dose"":1}]","[{""vaccine_id"":8,""dose"":2}]",catch_up,who-pcv,PCV bắt kịp 2-5 tuổi
+RE042,0,preterm,"[]","[{""vaccine_id"":2,""dose"":1}]",due_now_delay_bcg,tt10-2024,Sinh non <34w: HepB vẫn; BCG hoãn đến 34w
+RE043,1,preterm,"[{""vaccine_id"":2,""dose"":1}]","[{""vaccine_id"":1,""dose"":1}]",due_bcg_if_34w,tt10-2024,Khi đủ 34 tuần mới BCG
+RE044,10,child,"[{""vaccine_id"":6,""dose"":1},{""vaccine_id"":4,""dose"":2}]","[]",up_to_date,tt10-2024,Sau 9 tháng đủ; chờ 12m JE
+RE045,11,child,"[{""vaccine_id"":6,""dose"":1}]","[]",wait,tt10-2024,Chưa đủ 12 tháng cho JE
+RE046,216,adult,"[]","[{""vaccine_id"":10,""dose"":1}]",due_annual,who-flu,Người lớn 18t: cúm hàng năm (nhóm nguy cơ)
+RE047,720,adult,"[{""vaccine_id"":13,""dose"":2},{""vaccine_id"":10,""dose"":1}]","[]",up_to_date,who-zoster,60t đã zona đủ + cúm năm nay
+RE048,4,child,"[{""vaccine_id"":3,""dose"":1},{""vaccine_id"":3,""dose"":2},{""vaccine_id"":3,""dose"":3}]","[]",up_to_date_dtp_primary,tt10-2024,Đủ 3 mũi DTP cơ bản sớm; chờ 18m nhắc
+RE049,18,child,"[{""vaccine_id"":3,""dose"":1},{""vaccine_id"":3,""dose"":2}]","[{""vaccine_id"":3,""dose"":3},{""vaccine_id"":3,""dose"":4},{""vaccine_id"":6,""dose"":1},{""vaccine_id"":6,""dose"":2}]",catch_up,tt10-2024,18m thiếu DTP3+nhắc và MMR
+RE050,9,child,"[{""vaccine_id"":6,""dose"":1}]","[{""vaccine_id"":4,""dose"":2}]",due_now,tt10-2024,Có sởi thiếu IPV2
+RE051,24,child,"[]","[{""vaccine_id"":9,""dose"":1},{""vaccine_id"":6,""dose"":1},{""vaccine_id"":3,""dose"":1}]",catch_up_heavy,tt10-2024,2 tuổi chưa tiêm gì: bù theo catch-up không từ đầu máy móc
+RE052,168,child,"[{""vaccine_id"":11,""dose"":1}]","[{""vaccine_id"":11,""dose"":2}]",due_now,who-hpv,14t còn HPV2
+RE053,200,adult,"[{""vaccine_id"":11,""dose"":1},{""vaccine_id"":11,""dose"":2},{""vaccine_id"":11,""dose"":3}]","[]",up_to_date,who-hpv,HPV 3 mũi đủ
+RE054,2,child,"[{""vaccine_id"":1,""dose"":1},{""vaccine_id"":2,""dose"":1},{""vaccine_id"":2,""dose"":2},{""vaccine_id"":3,""dose"":1},{""vaccine_id"":4,""dose"":1},{""vaccine_id"":5,""dose"":1}]","[]",up_to_date,tt10-2024,Đủ full 2 tháng
+RE055,12,child,"[{""vaccine_id"":9,""dose"":1},{""vaccine_id"":7,""dose"":1},{""vaccine_id"":8,""dose"":1}]","[]",up_to_date_with_optional,tt10-2024,JE+thủy đậu+PCV lúc 12m
+RE056,18,child,"[{""vaccine_id"":6,""dose"":2},{""vaccine_id"":3,""dose"":3}]","[{""vaccine_id"":3,""dose"":4}]",due_now,tt10-2024,Có MMR2 thiếu DTP nhắc
+RE057,0,child,"[{""vaccine_id"":2,""dose"":1}]",[],wait_bcg_window,tt10-2024,HepB xong trong 24h; BCG vẫn trong cửa sổ 0-1m
+RE058,8,child,"[{""vaccine_id"":6,""dose"":1}]","[]",too_early_measles_ok_if_done,tt10-2024,Sởi tiêm sớm hơn 9m: không tiêm lại ngay; MMR2 vẫn theo lịch 18m
+RE059,600,adult,"[{""vaccine_id"":13,""dose"":1},{""vaccine_id"":13,""dose"":2},{""vaccine_id"":10,""dose"":1},{""vaccine_id"":11,""dose"":3}]","[]",up_to_date,combined,50t đủ zona cúm HPV
+RE060,3,pregnant,"[{""vaccine_id"":3,""dose"":2},{""vaccine_id"":10,""dose"":1}]","[]",up_to_date,tt10-2024,Thai đủ UV2 + cúm

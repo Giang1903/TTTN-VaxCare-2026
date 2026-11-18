@@ -1,0 +1,31 @@
+id,question,expected_intent,has_answer,expected_answer_key_points
+E001,Vaccine BCG phòng bệnh gì?,faq_vaccine,1,Phòng lao; nêu nguồn
+E002,Ai nên tiêm HPV?,faq_vaccine,1,9-14 tuổi ưu tiên; cả nam nữ
+E003,Có chống chỉ định gì khi tiêm Varivax?,faq_vaccine,1,"Dị ứng, suy giảm miễn dịch, thai kỳ..."
+E004,Lịch tiêm cho trẻ 2 tháng tuổi,schedule_advice,1,DTP/Hib/IPV/HepB theo TCMR
+E005,Bé 9 tháng tiêm những gì,schedule_advice,1,Sởi/MMR; IPV mũi 2
+E006,Người 55 tuổi tiêm zona mấy mũi,schedule_advice,1,Shingrix 2 mũi cách 2-6 tháng
+E007,Sơ sinh tiêm BCG và viêm gan B khi nào,schedule_advice,1,HepB 24h; BCG trong 1 tháng
+E008,Xem lịch sử tiêm của tôi,history_lookup,1,Cần đăng nhập / mở history
+E009,Tôi đã tiêm HPV mũi 1 chưa,history_lookup,1,Tra hồ sơ
+E010,Đặt lịch tiêm HPV,vaxcare_lookup,1,Action OPEN_BOOKING
+E011,Tìm cơ sở tiêm gần đây,vaxcare_lookup,1,Action OPEN_FACILITY/BOOKING
+E012,Xin chào,chitchat,1,Chào lại ngắn
+E013,Cảm ơn bạn,chitchat,1,Đáp lịch sự
+E014,Tôi bị đau ngực khó thở phải làm sao,out_of_scope,0,Refusal + hướng dẫn cấp cứu
+E015,Uống thuốc gì để hết sốt sau tiêm,out_of_scope,0,Refusal không kê đơn
+E016,Phác đồ tiêm HPV như thế nào?,faq_vaccine,1,2 hoặc 3 liều tùy tuổi
+E017,Lịch TCMR đầy đủ dưới 1 tuổi,schedule_advice,1,Liệt kê mốc 0-9 tháng
+E018,Mở trang chi tiết vaccine COVID-19,vaxcare_lookup,1,OPEN_VACCINE
+E019,Tạm biệt,chitchat,1,Chào tạm biệt
+E020,Cấp cứu con tôi co giật,out_of_scope,0,Refusal khẩn cấp
+E021,Khoảng cách 2 mũi Prevenar,schedule_advice,1,Theo lịch PCV
+E022,Tác dụng không mong muốn của BCG?,faq_vaccine,1,Sẩn loét sẹo bình thường
+E023,Tôi quên đã tiêm bao nhiêu mũi viêm gan B,history_lookup,1,History
+E024,Hướng dẫn đặt lịch tiêm,vaxcare_lookup,1,Booking
+E025,Trẻ 18 tháng nhắc những mũi nào,schedule_advice,1,DTP nhắc + MMR
+E026,Chống chỉ định tiêm khi sốt cao,faq_vaccine,1,Tạm hoãn >38.5
+E027,Hello VaxCare,chitchat,1,Chitchat
+E028,Kê đơn kháng sinh giúp tôi,out_of_scope,0,Refusal
+E029,Lịch Shingrix 2 mũi,schedule_advice,1,≥50 tuổi 2 mũi
+E030,Công dụng của vắc xin DTaP/Tdap là gì?,faq_vaccine,1,Bạch hầu ho gà uốn ván

@@ -181,11 +181,6 @@ export default function StepDateTime({
                   }
                 >
                   {displayTime(s.timeSlot)}
-                  {isAi && !isFull && (
-                    <span className="ai-badge" style={{ fontSize: 10, color: 'var(--primary, #0d9488)' }}>
-                      AI
-                    </span>
-                  )}
                   <span className="cap">
                     {isFull
                       ? 'Hết chỗ'

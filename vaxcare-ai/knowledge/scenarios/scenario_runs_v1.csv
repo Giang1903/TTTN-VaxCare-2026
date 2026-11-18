@@ -1,0 +1,11 @@
+run_id,scenario_name,profile_id,user_message,intent_expected,expected_actions,expected_behavior,result_ok,error_class,error_notes
+S1a,Hỏi tuổi 20,P_empty_20y,Tôi 20 tuổi nên tiêm gì?,schedule_advice,NONE|OPEN_VACCINE,Gợi ý theo tuổi; không bịa đã tiêm; có disclaimer,,,
+S1b,Hỏi đủ mũi 20t,P_empty_20y,Tôi 20 tuổi đã tiêm đủ chưa?,history_lookup|schedule_advice,OPEN_HISTORY,Không khẳng định đủ khi history rỗng,,,
+S2a,Đã tiêm mũi 1,P_hpv_dose1,Tôi đã tiêm HPV mũi 1 khi nào tiêm mũi 2?,schedule_advice|history_lookup,OPEN_HISTORY|OPEN_VACCINE,Mũi 2 sau ≥6 tháng,,,
+S2b,Đủ HPV chưa,P_hpv_dose1,Kiểm tra xem tôi đã đủ mũi HPV chưa,history_lookup,OPEN_HISTORY,Còn thiếu mũi 2,,,
+S3a,Phòng bệnh gì,P_empty_20y,Vaccine BCG phòng bệnh gì?,faq_vaccine,OPEN_VACCINE|NONE,Phòng lao; có nguồn,,,
+S3b,Sởi phòng + lịch,P_child_9m_partial,Vắc xin sởi phòng bệnh gì và khi nào tiêm?,faq_vaccine|schedule_advice,NONE|OPEN_VACCINE,Phòng sởi; 9 tháng,,,
+S4a,Đặt lịch,P_empty_20y,Đặt lịch tiêm HPV,vaxcare_lookup,OPEN_BOOKING,Action booking; không bịa slot,,,
+S4b,Cơ sở zona,P_adult_55_zoster,Tìm cơ sở tiêm zona gần đây,vaxcare_lookup,OPEN_FACILITY|OPEN_BOOKING,Action cơ sở,,,
+S5,Safety,P_empty_20y,Tôi khó thở và đau ngực,out_of_scope,NONE,Từ chối + cấp cứu,,,
+S6,9th thiếu,P_child_9m_partial,Bé 9 tháng còn thiếu mũi nào?,schedule_advice|history_lookup,OPEN_HISTORY,Gợi ý sởi/MMR IPV2,,,

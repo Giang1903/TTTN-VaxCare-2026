@@ -79,6 +79,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/price-lists").permitAll()
                           .requestMatchers(HttpMethod.GET, "/api/v1/protocols/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/appointments/available-slots").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/chatbot/chat").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/chatbot/sessions/**").permitAll()
                         .anyRequest().authenticated()
                 );
         

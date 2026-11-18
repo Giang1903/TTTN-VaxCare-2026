@@ -1,0 +1,6 @@
+metric,before_n,before_pass,before_rate,after_n,after_pass,after_rate,notes
+dung,,,,,,
+co_nguon_khi_bat_buoc,,,,,,
+bia_so,,,,,,
+rule_sai_count,,,,,,
+latency_p50_ms,,,,,,

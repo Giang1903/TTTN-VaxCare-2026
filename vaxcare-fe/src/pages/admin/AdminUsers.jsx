@@ -86,7 +86,7 @@ export default function Users() {
         </div>
 
         <div className="panel">
-          <div className="panel-head"><div><h3>Danh sách người dùng</h3><div className="sub">accounts (role USER) · {rows.length} bản ghi</div></div></div>
+          <div className="panel-head"><div><h3>Danh sách người dùng</h3><div className="sub"></div></div></div>
           <div className="table-wrap">
             <table>
               <thead>
